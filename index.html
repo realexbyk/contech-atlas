@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConTech Atlas — Construction Technology, AI & Data Governance</title>
+<meta name="description" content="ConTech Atlas charts how technology, AI and data governance connect across the construction lifecycle.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0c0e; --muted:#66707d; --hair:#e6e8eb; --bg:#ffffff;
+    --accent:#2545ff; --dark:#0b0c0e;
+    --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--sans);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .container{max-width:1180px;margin:0 auto;padding:0 32px;}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+
+  /* header */
+  header{border-bottom:1px solid var(--hair);position:sticky;top:0;background:#ffffffee;backdrop-filter:blur(8px);z-index:50;}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px;}
+  .wordmark{font-weight:800;font-size:15px;letter-spacing:-.01em;}
+  .wordmark span{color:var(--accent);}
+  .wordmark small{display:block;font-family:var(--mono);font-weight:400;font-size:9px;letter-spacing:.22em;color:var(--muted);margin-top:1px;}
+  nav.links{display:flex;gap:28px;font-size:13.5px;font-weight:500;color:#3c434c;}
+  nav.links a:hover{color:var(--ink);}
+  .btn{display:inline-block;font-size:13px;font-weight:600;padding:9px 18px;border:1px solid var(--ink);transition:.18s;}
+  .btn:hover{background:var(--ink);color:#fff;}
+  .btn.solid{background:var(--ink);color:#fff;}
+  .btn.solid:hover{background:var(--accent);border-color:var(--accent);}
+
+  /* hero */
+  .hero{padding:96px 0 84px;border-bottom:1px solid var(--hair);}
+  .hero h1{font-size:clamp(40px,6vw,72px);line-height:1.02;letter-spacing:-.03em;font-weight:800;max-width:900px;margin:22px 0 26px;}
+  .hero p{font-size:19px;line-height:1.6;color:var(--muted);max-width:640px;margin-bottom:36px;}
+  .hero .cta{display:flex;gap:14px;flex-wrap:wrap;}
+
+  /* atlas band */
+  .band{background:var(--dark);color:#f2f4f7;border-bottom:1px solid var(--hair);}
+  .band .inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;padding:76px 0;}
+  .band .kicker{color:#8a93a3;}
+  .band h2{font-size:clamp(28px,3.4vw,42px);letter-spacing:-.02em;line-height:1.1;margin:16px 0 18px;}
+  .band p{color:#aab3c0;font-size:15.5px;line-height:1.65;max-width:480px;}
+  .band .btn{border-color:#f2f4f7;color:#f2f4f7;margin-top:28px;}
+  .band .btn:hover{background:#f2f4f7;color:var(--dark);}
+  .schematic{width:100%;height:auto;}
+  .schematic .plane{fill:rgba(255,255,255,.03);stroke:#3a4353;stroke-width:1;}
+  .schematic .lbl{font-family:var(--mono);font-size:9px;fill:#7d8797;letter-spacing:.12em;}
+  .schematic .ln{stroke:#2545ff;stroke-width:1;opacity:.65;}
+  .schematic .dot{fill:#2545ff;}
+
+  /* articles */
+  .section{padding:76px 0;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:0;}
+  .section-head h3{font-size:22px;letter-spacing:-.01em;}
+  .section-head a{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .section-head a:hover{color:var(--accent);}
+  .feature{display:grid;grid-template-columns:1.2fr .8fr;gap:48px;padding:40px 0;border-bottom:1px solid var(--hair);}
+  .feature h4{font-size:clamp(24px,3vw,34px);line-height:1.15;letter-spacing:-.02em;margin:14px 0 14px;}
+  .feature h4 a:hover{color:var(--accent);}
+  .feature p{color:var(--muted);font-size:16px;line-height:1.65;max-width:560px;}
+  .meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:18px;}
+  .fig{background:linear-gradient(135deg,#0b0c0e 0%,#1b2440 70%,#2545ff 160%);aspect-ratio:16/10;display:flex;align-items:flex-end;padding:18px;}
+  .fig span{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:#93a0ff;text-transform:uppercase;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);}
+  .card{padding:30px 26px 34px;border-bottom:1px solid var(--hair);border-right:1px solid var(--hair);}
+  .card:nth-child(3n){border-right:none;}
+  .card h5{font-size:18px;line-height:1.3;letter-spacing:-.01em;margin:12px 0 10px;}
+  .card h5 a:hover{color:var(--accent);}
+  .card p{font-size:13.5px;line-height:1.6;color:var(--muted);}
+
+  /* newsletter */
+  .news{border-top:1px solid var(--hair);}
+  .news .inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;padding:70px 0;align-items:center;}
+  .news h3{font-size:30px;letter-spacing:-.02em;margin-top:14px;}
+  .news form{display:flex;gap:10px;}
+  .news input{flex:1;border:1px solid var(--ink);padding:12px 14px;font-family:var(--sans);font-size:14px;outline:none;}
+  .news input:focus{border-color:var(--accent);}
+
+  footer{border-top:1px solid var(--hair);padding:36px 0 48px;}
+  footer .inner{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
+  footer .fine{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  footer nav{display:flex;gap:22px;font-size:13px;color:var(--muted);}
+  footer nav a:hover{color:var(--ink);}
+
+  @media(max-width:860px){
+    .band .inner,.feature,.news .inner{grid-template-columns:1fr;}
+    .grid{grid-template-columns:1fr;}
+    .card{border-right:none;}
+    nav.links{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="wordmark" href="index.html">CONTECH<span>ATLAS</span><small>CONSTRUCTION · TECHNOLOGY · DATA</small></a>
+    <nav class="links">
+      <a href="atlas.html">The Atlas</a>
+      <a href="articles.html">Briefings</a>
+      <a href="article-data-governance.html">Data Governance</a>
+      <a href="#about">About</a>
+    </nav>
+    <a class="btn solid" href="atlas.html">Explore the Atlas</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="kicker">Construction technology · AI · Data governance</div>
+    <h1>The operating map of the&nbsp;built&nbsp;world.</h1>
+    <p>ConTech Atlas charts how technologies connect into systems across the construction lifecycle —
+       from capture on site to decisions in the boardroom — and why data governance decides whether any of it works.</p>
+    <div class="cta">
+      <a class="btn solid" href="atlas.html">Explore the Atlas &rarr;</a>
+      <a class="btn" href="articles.html">Read the briefings</a>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="atlas-teaser">
+  <div class="container inner">
+    <div>
+      <div class="kicker">The Atlas</div>
+      <h2>Every technology.<br>Every layer. One map.</h2>
+      <p>An interactive, layered graph of the construction technology landscape: six stack layers,
+         six lifecycle phases, and the data flows that bind site capture, systems of record,
+         governance, platforms and AI into working systems.</p>
+      <a class="btn" href="atlas.html">Open the interactive map &rarr;</a>
+    </div>
+    <svg class="schematic" viewBox="0 0 460 340" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g>
+        <path class="plane" d="M230 10 L400 70 L230 130 L60 70 Z"/>
+        <path class="plane" d="M230 110 L400 170 L230 230 L60 170 Z"/>
+        <path class="plane" d="M230 210 L400 270 L230 330 L60 270 Z"/>
+        <line class="ln" x1="180" y1="78" x2="180" y2="172"/>
+        <line class="ln" x1="285" y1="90" x2="285" y2="186"/>
+        <line class="ln" x1="230" y1="182" x2="230" y2="276"/>
+        <line class="ln" x1="310" y1="176" x2="310" y2="262"/>
+        <circle class="dot" cx="180" cy="78" r="3"/><circle class="dot" cx="180" cy="172" r="3"/>
+        <circle class="dot" cx="285" cy="90" r="3"/><circle class="dot" cx="285" cy="186" r="3"/>
+        <circle class="dot" cx="230" cy="182" r="3"/><circle class="dot" cx="230" cy="276" r="3"/>
+        <circle class="dot" cx="310" cy="176" r="3"/><circle class="dot" cx="310" cy="262" r="3"/>
+        <text class="lbl" x="406" y="74">DECISION</text>
+        <text class="lbl" x="406" y="174">PLATFORM</text>
+        <text class="lbl" x="406" y="274">CAPTURE</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="section" id="briefings">
+  <div class="container">
+    <div class="section-head">
+      <h3>Latest briefings</h3>
+      <a href="articles.html">VIEW ALL &rarr;</a>
+    </div>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">Data governance</div>
+        <h4><a href="article-data-governance.html">Data governance is about decisions, not data</a></h4>
+        <p>Metadata gaps, lineage tooling, framework maturity — that's how governance gets pitched, and why the business
+           stops listening. Start instead with the question every capital-project executive already cares about:
+           who decides when this number changes?</p>
+        <div class="meta">05 JUL 2026 · 7 MIN READ</div>
+      </div>
+      <a class="fig" href="article-data-governance.html"><span>Briefing 001</span></a>
+    </article>
+
+    <div class="grid">
+      <div class="card">
+        <div class="kicker">PMO technology</div>
+        <h5><a href="#">Why portfolio schedule data refuses to aggregate</a></h5>
+        <p>Every contractor structures their programme differently. Without a governed WBS master library, the portfolio view is fiction.</p>
+        <div class="meta">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="kicker">AI</div>
+        <h5><a href="#">Predictive, generative, reasoning: three AIs on a jobsite</a></h5>
+        <p>The AI conversation collapses three very different capabilities into one word. A taxonomy for telling them apart — and where each pays off.</p>
+        <div class="meta">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Stack</div>
+        <h5><a href="#">The digital twin stack, explained layer by layer</a></h5>
+        <p>From IoT sensors and edge devices up through GIS and simulation — what each layer does and where the integration debt hides.</p>
+        <div class="meta">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Standards</div>
+        <h5><a href="#">ISO 19650 beyond the acronym</a></h5>
+        <p>Information management standards are codified decision rights. How CDE status codes quietly run your project.</p>
+        <div class="meta">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="kicker">PMO technology</div>
+        <h5><a href="#">From monthly report to control tower</a></h5>
+        <p>The monthly reporting cycle is a data pipeline with humans as middleware. What it takes to make it continuous.</p>
+        <div class="meta">COMING SOON</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Field data</div>
+        <h5><a href="#">Form design is data governance at the source</a></h5>
+        <p>Free-text daily reports are where analytics goes to die. Structured field capture as the cheapest governance win available.</p>
+        <div class="meta">COMING SOON</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="news" id="about">
+  <div class="container inner">
+    <div>
+      <div class="kicker">Newsletter</div>
+      <h3>One map, updated.<br>Briefings, monthly.</h3>
+    </div>
+    <div>
+      <p style="color:var(--muted);font-size:14.5px;line-height:1.65;margin-bottom:18px;">
+        ConTech Atlas is an independent knowledge project on construction &amp; PMO technology,
+        AI in the built environment, and construction data governance.</p>
+      <form onsubmit="event.preventDefault();this.innerHTML='<b>Thanks — you are on the list.</b>';">
+        <input type="email" placeholder="you@company.com" required>
+        <button class="btn solid" type="submit">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container inner">
+    <div class="fine">© 2026 CONTECH ATLAS · PROTOTYPE</div>
+    <nav>
+      <a href="atlas.html">Atlas</a>
+      <a href="articles.html">Briefings</a>
+      <a href="#">LinkedIn</a>
+      <a href="#">Contact</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

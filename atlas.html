@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Atlas — ConTech Atlas</title>
+<meta name="description" content="Interactive layered map of construction & PMO technology, AI and data governance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08090c; --bg2:#0c0e12; --hair:#1d2129; --hair2:#2a2f3a;
+    --txt:#e8eaee; --dim:#8b93a1; --faint:#565e6b;
+    --accent:#5b76ff; --accent2:#37c8dd; --amber:#d9a53f;
+    --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(var(--hair) 1px,transparent 1px),linear-gradient(90deg,var(--hair) 1px,transparent 1px);
+    background-size:72px 72px;background-position:center top;
+  }
+  a{color:inherit;text-decoration:none;}
+  .container{max-width:1380px;margin:0 auto;padding:0 32px;}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);}
+
+  header{border-bottom:1px solid var(--hair2);background:#08090cf0;backdrop-filter:blur(8px);position:sticky;top:0;z-index:50;}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px;}
+  .wordmark{font-weight:800;font-size:15px;letter-spacing:-.01em;color:#fff;}
+  .wordmark span{color:var(--accent);}
+  .wordmark small{display:block;font-family:var(--mono);font-weight:400;font-size:9px;letter-spacing:.22em;color:var(--faint);margin-top:1px;}
+  nav.links{display:flex;gap:28px;font-size:13.5px;font-weight:500;color:var(--dim);}
+  nav.links a:hover,nav.links a.on{color:#fff;}
+
+  .titlebar{padding:44px 0 8px;}
+  .titlebar h1{font-size:clamp(28px,3.6vw,44px);letter-spacing:-.02em;font-weight:800;margin-top:14px;}
+  .titlebar p{color:var(--dim);font-size:15px;line-height:1.6;max-width:720px;margin-top:12px;}
+
+  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;margin:30px 0 0;border-bottom:1px solid var(--hair2);}
+  .tab{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+       background:none;border:none;border-bottom:2px solid transparent;padding:12px 14px;cursor:pointer;transition:.15s;}
+  .tab:hover{color:var(--txt);}
+  .tab.active{color:#fff;border-bottom-color:var(--accent);}
+  .lens{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+        color:var(--dim);background:none;border:1px solid var(--hair2);padding:8px 14px;cursor:pointer;transition:.15s;margin-bottom:8px;}
+  .lens:hover{color:var(--txt);border-color:var(--faint);}
+  .lens.active{color:#ffd98a;border-color:var(--amber);background:#d9a53f14;}
+
+  .gov-note{display:none;font-family:var(--mono);font-size:11.5px;color:#d9b56b;padding:12px 0 0;line-height:1.6;}
+  .gov-note.show{display:block;}
+
+  .stage{display:flex;align-items:flex-start;gap:36px;padding:26px 0 40px;}
+  #mapbox{flex:1 1 auto;min-width:0;}
+  svg{display:block;width:100%;height:auto;}
+
+  .layer-plane{fill:#0c0e13d9;stroke:var(--hair2);stroke-width:1;}
+  .layer-label{fill:var(--txt);font-family:var(--mono);font-size:11px;letter-spacing:.14em;font-weight:500;}
+  .layer-sub{fill:var(--faint);font-family:var(--mono);font-size:9px;letter-spacing:.06em;}
+  .layer-idx{fill:var(--faint);font-family:var(--mono);font-size:9px;letter-spacing:.14em;}
+
+  .edge{fill:none;stroke:#39414f;stroke-width:1;opacity:.55;transition:opacity .2s,stroke .2s;}
+  .edge.hot{stroke:var(--accent);opacity:1;stroke-width:1.4;}
+  .edge.off{opacity:.07;}
+
+  .node{cursor:pointer;}
+  .node rect{fill:#0e1116;stroke:#454e5c;stroke-width:1;transition:.18s;}
+  .node text{fill:#d4d9e1;font-family:var(--mono);font-size:9.5px;text-anchor:middle;pointer-events:none;}
+  .node .ai-tick{fill:var(--accent2);font-size:8px;}
+  .node:hover rect,.node.sel rect{stroke:var(--accent);fill:#12172a;}
+  .node.sel rect{stroke-width:1.6;}
+  .node.off{opacity:.12;pointer-events:none;}
+  .node.govhot rect{stroke:var(--amber);}
+  .node.govdim{opacity:.28;}
+
+  #panel{width:340px;flex:0 0 340px;border:1px solid var(--hair2);background:#0b0d11f2;padding:24px;position:sticky;top:84px;min-height:430px;}
+  #panel .layer-tag{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;}
+  #panel h2{font-size:19px;letter-spacing:-.01em;margin:6px 0 4px;}
+  #panel .badge{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 8px;border:1px solid var(--hair2);color:var(--dim);margin:8px 6px 0 0;}
+  #panel .badge.ai{color:var(--accent2);border-color:#1e5560;}
+  #panel p{font-size:13px;color:#b7bdc8;line-height:1.65;margin-top:14px;}
+  #panel .prods{margin-top:16px;}
+  #panel .prods b{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt);display:block;margin-bottom:8px;}
+  #panel .prods .chip{display:inline-block;font-family:var(--mono);font-size:10px;color:#c3cad4;border:1px solid var(--hair2);background:#11141a;padding:4px 9px;margin:0 6px 6px 0;}
+  #panel .gov{margin-top:14px;padding:12px;border:1px solid #4d3d14;background:#d9a53f0d;font-size:12px;color:#d9b56b;line-height:1.6;}
+  #panel .gov b{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:6px;}
+  #panel .conn{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.9;}
+  #panel .conn b{color:var(--txt);letter-spacing:.14em;font-size:10px;display:block;margin-bottom:4px;}
+  #panel .hint{color:var(--faint);font-size:12.5px;line-height:1.7;margin-top:26px;}
+
+  .legend{display:flex;gap:26px;flex-wrap:wrap;padding:0 0 60px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;}
+  .legend i{display:inline-block;width:10px;height:10px;margin-right:7px;vertical-align:-1px;}
+
+  footer{border-top:1px solid var(--hair2);padding:28px 0 40px;}
+  footer .inner{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--faint);}
+  footer a:hover{color:var(--txt);}
+
+  @media(max-width:1000px){
+    .stage{flex-direction:column;}
+    #panel{width:100%;flex:1 1 auto;position:static;}
+    nav.links{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="wordmark" href="index.html">CONTECH<span>ATLAS</span><small>CONSTRUCTION · TECHNOLOGY · DATA</small></a>
+    <nav class="links">
+      <a href="atlas.html" class="on">The Atlas</a>
+      <a href="articles.html">Briefings</a>
+      <a href="article-data-governance.html">Data Governance</a>
+      <a href="index.html#about">About</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="titlebar">
+    <div class="kicker">Interactive map · v0.2</div>
+    <h1>The construction technology stack.</h1>
+    <p>Six layers, six lifecycle phases, and the data flows that connect them. Filter by phase to see which
+       technologies are active, select any node for detail, or apply the governance lens to expose where
+       decision authority actually lives.</p>
+  </div>
+
+  <div class="controls" id="phaseBar">
+    <button class="tab active" data-phase="all">Full lifecycle</button>
+    <button class="tab" data-phase="plan">01 Planning</button>
+    <button class="tab" data-phase="design">02 Design</button>
+    <button class="tab" data-phase="procure">03 Procurement</button>
+    <button class="tab" data-phase="construct">04 Construction</button>
+    <button class="tab" data-phase="handover">05 Handover</button>
+    <button class="tab" data-phase="operate">06 Operations</button>
+    <button class="lens" id="govLens">&#9678; Governance lens</button>
+  </div>
+  <div class="gov-note" id="govBanner">DATA GOVERNANCE IS NOT ABOUT DATA — IT IS ABOUT WHO CONTROLS DECISIONS.
+    HIGHLIGHTED NODES HOLD DECISION AUTHORITY: MASTER DATA, STANDARDS, QUALITY, LINEAGE, RECORDS.</div>
+
+  <div class="stage">
+    <div id="mapbox">
+      <svg id="map" viewBox="0 0 920 940" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#39414f"/>
+          </marker>
+          <marker id="arrowHot" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#5b76ff"/>
+          </marker>
+        </defs>
+        <g id="planes"></g>
+        <g id="edges"></g>
+        <g id="nodes"></g>
+      </svg>
+    </div>
+
+    <aside id="panel">
+      <div id="panelContent">
+        <div class="layer-tag">Node inspector</div>
+        <h2>Select a technology</h2>
+        <p class="hint">
+          Click any node to see what it does, which lifecycle phases it serves, what it connects to,
+          and its role in data governance.<br><br>
+          Data flows upward: captured on site &rarr; recorded in systems &rarr; integrated &amp; governed &rarr;
+          unified in the platform &rarr; enriched with AI &rarr; delivered as decisions.
+        </p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:#0e1116;border:1px solid #454e5c;"></i>Technology node</span>
+    <span><i style="background:none;border:1px solid var(--amber);"></i>Governance-critical</span>
+    <span><i style="background:var(--accent2);"></i>AI capability</span>
+    <span><i style="background:none;border-bottom:1px solid #39414f;height:1px;width:22px;margin-bottom:4px;"></i>Data flow</span>
+  </div>
+</div>
+
+<footer>
+  <div class="container inner">
+    <div>© 2026 CONTECH ATLAS · PROTOTYPE V0.2</div>
+    <div><a href="index.html">HOME</a> &nbsp;·&nbsp; <a href="articles.html">BRIEFINGS</a></div>
+  </div>
+</footer>
+
+<script>
+const LAYERS = [
+  {id:'experience',  idx:'06', name:'DECISION & EXPERIENCE', sub:'dashboards / twins / reporting'},
+  {id:'intelligence',idx:'05', name:'INTELLIGENCE',          sub:'predictive / generative / reasoning'},
+  {id:'platform',    idx:'04', name:'DATA PLATFORM',         sub:'lakehouse / graph / geospatial'},
+  {id:'integration', idx:'03', name:'INTEGRATION & GOVERNANCE', sub:'apis / standards / master data / quality'},
+  {id:'systems',     idx:'02', name:'SYSTEMS OF RECORD',     sub:'bim / schedule / cost / erp / docs'},
+  {id:'capture',     idx:'01', name:'SITE & FIELD CAPTURE',  sub:'iot / drones / scans / cameras / forms'},
+];
+
+const PHASE_NAMES = {plan:'Planning', design:'Design', procure:'Procurement',
+                     construct:'Construction', handover:'Handover', operate:'Operations'};
+
+const NODES = [
+ {id:'dash', layer:'experience', u:.28, v:.38, name:'PMO CONTROL TOWER', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Portfolio-level dashboards for cost, schedule, risk and progress. The single pane of glass for owners and PMO teams.',
+  gov:'Only as trustworthy as the governed data beneath it — every KPI must trace to an owned definition.',
+  products:['Microsoft Power BI','Tableau','Mastt','Qlik']},
+ {id:'twin', layer:'experience', u:.56, v:.6, name:'DIGITAL TWIN', phases:['design','construct','handover','operate'],
+  desc:'3D/GIS visualization of the asset with live overlays — progress, sensor telemetry, simulation results.',
+  gov:'Requires governed model versioning: which model version is “the truth” at handover?',
+  products:['Bentley iTwin','Matterport','Cesium','Azure Digital Twins','Autodesk Tandem']},
+ {id:'report', layer:'experience', u:.78, v:.3, name:'PORTFOLIO REPORTING', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Automated periodic reporting: monthly reports, dashboards-to-slides, narrative generation.',
+  gov:'Consistent KPIs across projects require enforced metric definitions.',
+  products:['Power BI','Palantir Foundry','Procore Analytics','Mastt']},
+ {id:'pred', layer:'intelligence', u:.16, v:.42, name:'PREDICTIVE RISK', ai:'Predictive', phases:['plan','design','procure','construct'],
+  desc:'ML models forecasting delay probability, cost overrun and claims exposure from historical and live project data.',
+  gov:'Models trained on ungoverned data amplify errors — training-data lineage is essential.',
+  products:['nPlan','InEight Schedule','Oracle Primavera Cloud','Foresight']},
+ {id:'sched', layer:'intelligence', u:.38, v:.26, name:'SCHEDULE INTELLIGENCE', ai:'Predictive', phases:['plan','procure','construct'],
+  desc:'AI-driven WBS normalization and portfolio schedule aggregation — comparing and benchmarking schedules across projects.',
+  gov:'Depends on a governed WBS/activity master library to map contractor schedules to a common structure.',
+  products:['ALICE Technologies','nPlan','Aphex','SmartPM']},
+ {id:'cv', layer:'intelligence', u:.52, v:.62, name:'CV PROGRESS', ai:'Predictive', phases:['construct'],
+  desc:'Computer vision on camera and drone imagery to measure physical progress and detect safety issues.',
+  gov:'Needs governed baselines (BIM, schedule) to compare observed against planned.',
+  products:['OpenSpace','Buildots','Track3D','Disperse']},
+ {id:'gen', layer:'intelligence', u:.68, v:.4, name:'GENAI COPILOTS', ai:'Generative', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Generative assistants drafting reports, specs and RFI responses; querying project data in natural language.',
+  gov:'Retrieval must respect document permissions and the governed single source of truth.',
+  products:['Procore Copilot','Document Crunch','Microsoft 365 Copilot','Anthropic Claude']},
+ {id:'reason', layer:'intelligence', u:.87, v:.28, name:'REASONING AGENTS', ai:'Reasoning', phases:['plan','procure','construct','operate'],
+  desc:'Agentic AI evaluating scenarios: procurement strategies, claims positions, resource trade-offs.',
+  gov:'Agents acting on data need explicit decision-authority boundaries.',
+  products:['Palantir AIP','Trunk Tools','Anthropic Claude','OpenAI']},
+ {id:'lake', layer:'platform', u:.32, v:.42, name:'LAKEHOUSE', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Unified analytical store for structured (cost, schedule) and unstructured (documents, imagery) project data.',
+  gov:'The layer where quality rules, access control and lineage are physically enforced.',
+  products:['Databricks','Snowflake','Microsoft Fabric','Google BigQuery']},
+ {id:'kg', layer:'platform', u:.6, v:.52, name:'KNOWLEDGE GRAPH', phases:['design','construct','handover','operate'],
+  desc:'Graph of entities — assets, activities, contracts, organizations — connecting records across systems.',
+  gov:'Makes governance queryable: who owns what, what depends on what.',
+  products:['Neo4j','Palantir Foundry Ontology','Stardog','Amazon Neptune']},
+ {id:'gis', layer:'platform', u:.82, v:.26, name:'GEOSPATIAL', phases:['plan','design','construct','operate'],
+  desc:'GIS data: terrain, utilities, logistics, land parcels — spatial context for infrastructure programmes.',
+  gov:'Coordinate systems and survey control are governance artifacts too.',
+  products:['Esri ArcGIS','QGIS','Cesium','Google Earth Engine']},
+ {id:'api', layer:'integration', u:.22, v:.46, name:'INTEGRATION HUB', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'iPaaS / API layer moving data between systems of record and the platform. Replaces spreadsheet exports.',
+  gov:'Every integration is a contract: schemas, ownership and change control must be managed.', isGov:true,
+  products:['Azure Integration Services','MuleSoft','Boomi','Workato']},
+ {id:'mdm', layer:'integration', u:.44, v:.3, name:'MASTER DATA · WBS/CBS', phases:['plan','design','procure','construct','handover'],
+  desc:'Master libraries: WBS/CBS structures, activity codes, asset classifications, organization registers.',
+  gov:'The core governance asset — enables comparison across projects and contractors.', isGov:true,
+  products:['Informatica MDM','Profisee','Semarchy','CFIHOS / Uniclass libraries']},
+ {id:'dq', layer:'integration', u:.56, v:.62, name:'DATA QUALITY', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Automated validation: completeness, timeliness and conformity of schedules, cost data and models.',
+  gov:'Quality rules make decisions reliable. Flag at source, not in the monthly report.', isGov:true,
+  products:['Great Expectations','Monte Carlo','Soda','Informatica DQ']},
+ {id:'std', layer:'integration', u:.72, v:.42, name:'ISO 19650 / IFC', phases:['design','construct','handover'],
+  desc:'Information standards: CDE workflows, IFC/COBie exchange, naming conventions, exchange requirements.',
+  gov:'Standards are codified decision rights over how information is produced and exchanged.', isGov:true,
+  products:['Solibri','buildingSMART openBIM','Plannerly','Morta']},
+ {id:'cat', layer:'integration', u:.9, v:.24, name:'CATALOG & LINEAGE', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Data catalog: what data exists, who owns it, where it came from, how fresh it is.',
+  gov:'Answers “who decides when this KPI changes?” — the metadata backbone.', isGov:true,
+  products:['Microsoft Purview','Collibra','Atlan','Alation']},
+ {id:'bim', layer:'systems', u:.12, v:.46, name:'BIM / CDE', phases:['design','construct','handover'],
+  desc:'Common Data Environment holding models and coordinated design information.',
+  gov:'Model status codes (WIP / Shared / Published) are governance states.', isGov:true,
+  products:['Autodesk Construction Cloud','Bentley ProjectWise','Trimble Connect','Dalux']},
+ {id:'p6', layer:'systems', u:.33, v:.3, name:'SCHEDULE · P6', phases:['plan','procure','construct'],
+  desc:'Planning and scheduling systems — the source of baselines, updates and progress logic.',
+  gov:'Baseline change control is a governance process, not a planner preference.',
+  products:['Oracle Primavera P6','Microsoft Project','Asta Powerproject','Oracle Primavera Cloud']},
+ {id:'cost', layer:'systems', u:.48, v:.56, name:'COST MGMT', phases:['plan','procure','construct','handover'],
+  desc:'Budgets, commitments, actuals, forecasts and change orders.',
+  gov:'The cost breakdown structure must reconcile with WBS master data.',
+  products:['Hexagon EcoSys','ARES Prism','InEight','Cost X / RIB']},
+ {id:'erp', layer:'systems', u:.64, v:.36, name:'ERP / FINANCE', phases:['procure','construct','operate'],
+  desc:'Corporate finance, procurement and HR systems — actuals and payments.',
+  gov:'The finance-project reconciliation point; mapping rules need clear owners.',
+  products:['SAP S/4HANA','Oracle Fusion Cloud','Microsoft Dynamics 365','CMiC']},
+ {id:'docs', layer:'systems', u:.79, v:.52, name:'DOCUMENT CONTROL', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Correspondence, transmittals, RFIs and submittals.',
+  gov:'The audit trail of decisions — retention and access rules are contractual.', isGov:true,
+  products:['Oracle Aconex','Asite','Newforma','SharePoint']},
+ {id:'contract', layer:'systems', u:.91, v:.26, name:'CONTRACTS & CLAIMS', phases:['procure','construct','handover'],
+  desc:'Contract administration, variations, claims and disputes management.',
+  gov:'Notices and time-bars demand governed dates and record completeness.', isGov:true,
+  products:['Thinkproject CEMAR','Document Crunch','Oracle Aconex','Ironclad']},
+ {id:'iot', layer:'capture', u:.18, v:.46, name:'IOT SENSORS', phases:['construct','operate'],
+  desc:'Environmental, structural and equipment sensors streaming site telemetry.',
+  gov:'Sensor registry and calibration records keep telemetry trustworthy.',
+  products:['Siemens','Schneider Electric','Honeywell','Milesight']},
+ {id:'drones', layer:'capture', u:.38, v:.3, name:'DRONES', phases:['construct'],
+  desc:'Aerial capture for progress, earthworks volumes and logistics planning.',
+  gov:'Flight cadence and survey control governed for comparability over time.',
+  products:['DJI Enterprise','DroneDeploy','Pix4D','Propeller']},
+ {id:'scan', layer:'capture', u:.54, v:.56, name:'LASER SCANNING', phases:['design','construct','handover'],
+  desc:'Point clouds for existing conditions, verification and as-built capture.',
+  gov:'Scan-to-BIM tolerance thresholds should be defined in exchange requirements.',
+  products:['Leica Geosystems','FARO','NavVis','Trimble']},
+ {id:'cams', layer:'capture', u:.7, v:.36, name:'SITE CAMERAS', phases:['construct'],
+  desc:'Fixed and wearable cameras feeding CV progress and safety analytics.',
+  gov:'Privacy and retention policies apply — governance beyond data quality.',
+  products:['EarthCam','OpenSpace','TrueLook','Multivista']},
+ {id:'forms', layer:'capture', u:.86, v:.5, name:'FIELD APPS', phases:['construct','handover'],
+  desc:'Digital forms: inspections, quality checklists, daily reports, snagging.',
+  gov:'Structured forms beat free text — form design is governance at the source.',
+  products:['Procore','Fieldwire by Hilti','Autodesk Build','Dalux Field']},
+];
+
+const EDGES = [
+ ['iot','lake'],['cams','cv'],['drones','cv'],['scan','bim'],['forms','docs'],
+ ['bim','api'],['p6','api'],['erp','api'],['cost','api'],['docs','api'],['contract','api'],
+ ['mdm','p6'],['mdm','cost'],['std','bim'],['dq','lake'],['cat','lake'],
+ ['api','lake'],['lake','kg'],['lake','pred'],['lake','gen'],['kg','reason'],['lake','sched'],
+ ['gis','twin'],['kg','twin'],
+ ['pred','dash'],['sched','dash'],['cv','dash'],['gen','report'],['reason','dash'],['lake','report'],
+];
+
+const CX=470, TOPY=36, GAP=146, HW=350, HH=72;
+function layerY(i){return TOPY + i*GAP;}
+function pos(node){
+  const i = LAYERS.findIndex(l=>l.id===node.layer);
+  const y = layerY(i);
+  return {x: CX + HW*node.u - HW*node.v, y: y + HH*node.u + HH*node.v};
+}
+const svgNS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(svgNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+
+const planes=document.getElementById('planes');
+LAYERS.forEach((l,i)=>{
+  const y=layerY(i);
+  el('path',{d:`M ${CX} ${y} L ${CX+HW} ${y+HH} L ${CX} ${y+2*HH} L ${CX-HW} ${y+HH} Z`,class:'layer-plane'},planes);
+  const ix=el('text',{x:CX-HW-8,y:y+HH-24,class:'layer-idx','text-anchor':'end'},planes); ix.textContent=l.idx;
+  const t=el('text',{x:CX-HW-8,y:y+HH-8,class:'layer-label','text-anchor':'end'},planes); t.textContent=l.name;
+  const s=el('text',{x:CX-HW-8,y:y+HH+8,class:'layer-sub','text-anchor':'end'},planes); s.textContent=l.sub;
+});
+
+const edgesG=document.getElementById('edges');
+const nodeById={};NODES.forEach(n=>nodeById[n.id]=n);
+const edgeEls=[];
+EDGES.forEach(([a,b])=>{
+  const A=pos(nodeById[a]),B=pos(nodeById[b]);
+  const dy=B.y-A.y;
+  const d=`M ${A.x} ${A.y} C ${A.x} ${A.y+dy*0.4}, ${B.x} ${B.y-dy*0.4}, ${B.x} ${B.y}`;
+  const p=el('path',{d,class:'edge','marker-end':'url(#arrow)'},edgesG);
+  edgeEls.push({a,b,elm:p});
+});
+
+const nodesG=document.getElementById('nodes');
+const nodeEls={};
+NODES.forEach(n=>{
+  const p=pos(n);
+  const g=el('g',{class:'node','data-id':n.id},nodesG);
+  const w=Math.max(80,n.name.length*6.4+18);
+  el('rect',{x:p.x-w/2,y:p.y-13,width:w,height:26},g);
+  const t=el('text',{x:p.x,y:p.y+3.5},g);t.textContent=n.name;
+  if(n.ai){const a=el('circle',{cx:p.x-w/2+7,cy:p.y-6,r:2.2,fill:'#37c8dd'},g);}
+  g.addEventListener('click',()=>select(n.id));
+  g.addEventListener('mouseenter',()=>hover(n.id,true));
+  g.addEventListener('mouseleave',()=>hover(n.id,false));
+  nodeEls[n.id]=g;
+});
+
+let currentPhase='all',govOn=false;
+
+function applyState(){
+  NODES.forEach(n=>{
+    const g=nodeEls[n.id];
+    const inPhase=currentPhase==='all'||n.phases.includes(currentPhase);
+    g.classList.toggle('off',!inPhase);
+    g.classList.toggle('govhot',govOn&&!!n.isGov&&inPhase);
+    g.classList.toggle('govdim',govOn&&!n.isGov&&inPhase);
+  });
+  edgeEls.forEach(e=>{
+    const aOk=currentPhase==='all'||nodeById[e.a].phases.includes(currentPhase);
+    const bOk=currentPhase==='all'||nodeById[e.b].phases.includes(currentPhase);
+    e.elm.classList.toggle('off',!(aOk&&bOk));
+  });
+}
+function hover(id,on){
+  edgeEls.forEach(e=>{
+    if(e.a===id||e.b===id){
+      e.elm.classList.toggle('hot',on);
+      e.elm.setAttribute('marker-end',on?'url(#arrowHot)':'url(#arrow)');
+    }
+  });
+}
+function select(id){
+  document.querySelectorAll('.node').forEach(g=>g.classList.toggle('sel',g.dataset.id===id));
+  const n=nodeById[id];
+  const layer=LAYERS.find(l=>l.id===n.layer);
+  const conns=EDGES.filter(([a,b])=>a===id||b===id)
+    .map(([a,b])=>a===id?'&rarr; '+nodeById[b].name:'&larr; '+nodeById[a].name);
+  let html=`<div class="layer-tag">${layer.idx} · ${layer.name}</div><h2>${n.name}</h2>`;
+  if(n.ai)html+=`<span class="badge ai">${n.ai} AI</span>`;
+  html+=n.phases.map(p=>`<span class="badge">${PHASE_NAMES[p]}</span>`).join('');
+  html+=`<p>${n.desc}</p>`;
+  if(n.products)html+=`<div class="prods"><b>Example products</b>${n.products.map(p=>`<span class="chip">${p}</span>`).join('')}</div>`;
+  html+=`<div class="gov"><b>Governance</b>${n.gov}</div>`;
+  html+=`<div class="conn"><b>Data flows</b>${conns.join('<br>')}</div>`;
+  document.getElementById('panelContent').innerHTML=html;
+}
+
+document.getElementById('phaseBar').addEventListener('click',e=>{
+  const b=e.target.closest('.tab');if(!b)return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  currentPhase=b.dataset.phase;
+  applyState();
+});
+document.getElementById('govLens').addEventListener('click',e=>{
+  govOn=!govOn;
+  e.currentTarget.classList.toggle('active',govOn);
+  document.getElementById('govBanner').classList.toggle('show',govOn);
+  applyState();
+});
+applyState();
+</script>
+</body>
+</html>
