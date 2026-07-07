@@ -320,18 +320,18 @@ function render(){
   el('path',{d:'M0,0 L8,4 L0,8 z',fill:'#6b5518'},mkg);
 
   const bandH=96,gap=18,top=16,left=182,width=660;
-  const flowsG=el('g',{},svg),nodesG=el('g',{},svg);
+  const bandsG=el('g',{},svg),flowsG=el('g',{},svg),nodesG=el('g',{},svg);
   const anchors={};
 
   LAYERS.forEach((l,i)=>{
     const y=top+i*(bandH+gap);
-    el('rect',{x:left,y,width,height:bandH,class:'band'},svg);
-    const t=el('text',{x:left-12,y:y+bandH/2-2,class:'band-label','text-anchor':'end'},svg);t.textContent=l.name;
-    const ix=el('text',{x:left-12,y:y+bandH/2+13,class:'band-idx','text-anchor':'end'},svg);ix.textContent=l.idx;
+    el('rect',{x:left,y,width,height:bandH,class:'band'},bandsG);
+    const t=el('text',{x:left-12,y:y+bandH/2-2,class:'band-label','text-anchor':'end'},bandsG);t.textContent=l.name;
+    const ix=el('text',{x:left-12,y:y+bandH/2+13,class:'band-idx','text-anchor':'end'},bandsG);ix.textContent=l.idx;
 
     const sel=PRODUCTS.filter(p=>p.c && picked.has(pid(p)) && CATS.find(c=>c.id===p.c).lay===l.id);
     if(!sel.length){
-      const h=el('text',{x:left+width/2,y:y+bandH/2+3,class:'empty-hint','text-anchor':'middle'},svg);
+      const h=el('text',{x:left+width/2,y:y+bandH/2+3,class:'empty-hint','text-anchor':'middle'},bandsG);
       h.textContent='— SELECT PRODUCTS FROM THE CATALOG —';
       return;
     }
