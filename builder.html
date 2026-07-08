@@ -184,6 +184,7 @@ const CATS=[
  {id:'dash',lay:'experience',name:'Dashboards / Control tower'},
  {id:'twin',lay:'experience',name:'Digital twin'},
  {id:'report',lay:'experience',name:'Portfolio reporting'},
+ {id:'dataprod',lay:'experience',name:'Data products & portals'},
  {id:'pred',lay:'intelligence',name:'Predictive risk & delay'},
  {id:'sched',lay:'intelligence',name:'Schedule intelligence'},
  {id:'cv',lay:'intelligence',name:'CV progress tracking'},
@@ -203,6 +204,8 @@ const CATS=[
  {id:'erp',lay:'systems',name:'ERP / finance'},
  {id:'docs',lay:'systems',name:'Document control'},
  {id:'contract',lay:'systems',name:'Contracts & claims'},
+ {id:'crm',lay:'systems',name:'Sales & leasing (CRM)'},
+ {id:'epm',lay:'systems',name:'FP&A / EPM'},
  {id:'iot',lay:'capture',name:'IoT sensors'},
  {id:'drones',lay:'capture',name:'Drones'},
  {id:'scan',lay:'capture',name:'Laser scanning'},
@@ -250,6 +253,9 @@ const PRODUCTS=[
  {n:'Trimble X9',d:'trimble.com',c:'scan'},
  {n:'Milesight',d:'milesight.com',c:'iot'},
  {n:'Sensera',d:'senserasystems.com',c:'cams'},
+ {n:'Microsoft Fabric',d:'microsoft.com',c:'dataprod'},{n:'Power Apps',d:'powerapps.microsoft.com',c:'dataprod'},{n:'Palantir Foundry',d:'palantir.com',c:'dataprod'},{n:'Retool',d:'retool.com',c:'dataprod'},
+ {n:'Salesforce',d:'salesforce.com',c:'crm'},{n:'Dynamics 365',d:'microsoft.com',c:'crm'},{n:'Yardi Voyager',d:'yardi.com',c:'crm'},{n:'MRI Software',d:'mrisoftware.com',c:'crm'},
+ {n:'Oracle EPM',d:'oracle.com',c:'epm'},{n:'Anaplan',d:'anaplan.com',c:'epm'},{n:'SAP Analytics Cloud',d:'sap.com',c:'epm'},
 ];
 
 const FLOWS=[
@@ -259,6 +265,7 @@ const FLOWS=[
  ['gis','twin'],['kg','twin'],['bim','twin'],
  ['pred','dash'],['sched','dash'],['cv','dash'],['gen','report'],['reason','dash'],['lake','report'],['lake','dash'],
  ['mdm','p6',1],['mdm','cost',1],['std','bim',1],['dq','lake',1],['cat','lake',1],['docs','gen'],
+ ['crm','api'],['epm','api'],['lake','dataprod'],['dq','dataprod',1],['mdm','crm',1],
 ];
 
 const USECASES=[
@@ -278,6 +285,12 @@ const USECASES=[
   desc:'Assemble evidence chains for EOT and disruption claims from governed records.'},
  {name:'Agentic scenario analysis',needs:['lake','kg','reason'],
   desc:'Let reasoning agents evaluate procurement or recovery scenarios across connected project data.'},
+ {name:'Intelligent reporting assistant',needs:['lake','dataprod','gen'],
+  desc:'Chat with governed portfolio data: ask for trends, outliers and drill-downs; the assistant drafts the narrative.'},
+ {name:'Lessons-learned & lookback assistant',needs:['docs','kg','gen'],
+  desc:'Mine closed projects for what actually went wrong and surface it at the next stage gate.'},
+ {name:'Feasibility-to-actuals reconciliation',needs:['epm','cost','lake'],
+  desc:'Track investment-case assumptions against delivered cost and schedule, continuously instead of at close-out.'},
 ];
 
 const svgNS='http://www.w3.org/2000/svg';
