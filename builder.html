@@ -95,6 +95,10 @@
   .snode:hover rect{stroke:var(--accent);}
   .flow{fill:none;stroke:#39414f;stroke-width:1.1;opacity:.75;}
   .flow.gov{stroke:#6b5518;}
+  .govframe{fill:none;stroke:#6b5518;stroke-width:1.2;stroke-dasharray:6 5;}
+  .gov-title{fill:var(--amber);font-family:var(--mono);font-size:10px;letter-spacing:.14em;}
+  .gov-sub{fill:#8a6d28;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;}
+  .snode.gov rect{stroke:#6b5518;}
   #canvasFoot{display:flex;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--hair2);
     font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;flex-wrap:wrap;gap:8px;}
 
@@ -128,6 +132,7 @@
     <nav class="links">
       <a href="atlas.html">The Atlas</a>
       <a href="builder.html" class="on">Stack Builder</a>
+      <a href="skills.html">Skills</a>
       <a href="articles.html">Briefings</a>
       <a href="index.html#about">About</a>
     </nav>
@@ -143,6 +148,7 @@
          and the panel shows which AI use cases your stack unlocks and where the governance gaps are.</p>
     </div>
     <div class="actions">
+      <button class="abtn" id="autoFill">&#10022; Auto-complete stack</button>
       <button class="abtn" id="loadExample">Load example stack</button>
       <button class="abtn" id="clearAll">Clear</button>
     </div>
@@ -168,7 +174,7 @@
     </aside>
 
     <main id="canvasBox">
-      <svg id="stackSvg" viewBox="0 0 860 700" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="stackSvg" viewBox="-75 0 985 750" xmlns="http://www.w3.org/2000/svg"></svg>
       <div id="canvasFoot">
         <span id="countLbl">0 PRODUCTS SELECTED</span>
         <span>ARROWS = RECOMMENDED DATA FLOWS · AMBER = GOVERNANCE DEPENDENCY</span>
@@ -198,7 +204,7 @@ const LAYERS=[
  {id:'experience', idx:'06', name:'DECISION & EXPERIENCE'},
  {id:'intelligence',idx:'05', name:'INTELLIGENCE (AI)'},
  {id:'platform',   idx:'04', name:'DATA PLATFORM'},
- {id:'integration',idx:'03', name:'INTEGRATION & GOVERNANCE'},
+ {id:'integration',idx:'03', name:'INTEGRATION'},
  {id:'systems',    idx:'02', name:'SYSTEMS OF RECORD'},
  {id:'capture',    idx:'01', name:'SITE & FIELD CAPTURE'},
 ];
@@ -217,10 +223,10 @@ const CATS=[
  {id:'kg',lay:'platform',name:'Knowledge graph'},
  {id:'gis',lay:'platform',name:'Geospatial'},
  {id:'api',lay:'integration',name:'Integration hub / iPaaS'},
- {id:'mdm',lay:'integration',name:'Master data (WBS/CBS)'},
- {id:'dq',lay:'integration',name:'Data quality'},
- {id:'std',lay:'integration',name:'Standards (ISO 19650/IFC)'},
- {id:'cat',lay:'integration',name:'Catalog & lineage'},
+ {id:'mdm',lay:'governance',name:'Master data (WBS/CBS)'},
+ {id:'dq',lay:'governance',name:'Data quality'},
+ {id:'std',lay:'governance',name:'Standards (ISO 19650/IFC)'},
+ {id:'cat',lay:'governance',name:'Catalog & lineage'},
  {id:'bim',lay:'systems',name:'BIM / CDE'},
  {id:'p6',lay:'systems',name:'Scheduling'},
  {id:'cost',lay:'systems',name:'Cost management'},
@@ -242,7 +248,7 @@ const PRODUCTS=[
  {n:'Palantir Foundry',d:'palantir.com',c:'report'},{n:'Procore Analytics',d:'procore.com',c:'report'},{n:'Qlik',d:'qlik.com',c:'report'},
  {n:'nPlan',d:'nplan.io',c:'pred'},{n:'InEight Schedule',d:'ineight.com',c:'pred'},{n:'Primavera Cloud',d:'oracle.com',c:'pred'},
  {n:'ALICE',d:'alicetechnologies.com',c:'sched'},{n:'SmartPM',d:'smartpm.com',c:'sched'},{n:'Aphex',d:'aphex.co',c:'sched'},
- {n:'OpenSpace',d:'openspace.ai',c:'cv'},{n:'Buildots',d:'buildots.com',c:'cv'},{n:'Track3D',d:'track3d.ai',c:'cv'},{n:'Disperse',d:'disperse.io',c:'cv'},
+ {n:'OpenSpace',d:'openspace.ai',c:'cv'},{n:'Buildots',d:'buildots.com',c:'cv'},{n:'Track3D',d:'track3d.ai',c:'cv'},{n:'Disperse',d:'disperse.io',c:'cv'},{n:'AI Clearing',d:'aiclearing.com',c:'cv'},
  {n:'Document Crunch',d:'documentcrunch.com',c:'gen'},{n:'M365 Copilot',d:'microsoft.com',c:'gen'},{n:'Anthropic Claude',d:'anthropic.com',c:'gen'},
  {n:'Palantir AIP',d:'palantir.com',c:'reason'},{n:'Trunk Tools',d:'trunk.tools',c:'reason'},{n:'OpenAI',d:'openai.com',c:'reason'},
  {n:'Databricks',d:'databricks.com',c:'lake'},{n:'Snowflake',d:'snowflake.com',c:'lake'},{n:'MS Fabric',d:'microsoft.com',c:'lake'},{n:'BigQuery',d:'cloud.google.com',c:'lake'},
@@ -268,7 +274,7 @@ const PRODUCTS=[
  {n:'Nvidia Omniverse',d:'nvidia.com',c:'twin'},
  {n:'Foresight',d:'foresight.works',c:'pred'},
  {n:'Nodes & Links',d:'nodeslinks.com',c:'sched'},
- {n:'Procore Copilot',d:'procore.com',c:'gen'},{n:'Google Gemini',d:'gemini.google.com',c:'gen'},
+ {n:'Procore Copilot',d:'procore.com',c:'gen'},{n:'Google Gemini',d:'gemini.google.com',c:'gen'},{n:'Fabric Data Agents',d:'microsoft.com',c:'gen'},
  {n:'Revizto',d:'revizto.com',c:'bim'},{n:'Catenda',d:'catenda.com',c:'bim'},
  {n:'RIB CostX',d:'rib-software.com',c:'cost'},{n:'Kahua',d:'kahua.com',c:'cost'},
  {n:'Trimble Viewpoint',d:'viewpoint.com',c:'erp'},{n:'CMiC',d:'cmicglobal.com',c:'erp'},
@@ -317,21 +323,21 @@ const USECASES=[
 ];
 
 const PERSONAS={
- any:{name:'Any role',expected:['experience','intelligence','platform','integration','systems','capture'],core:null,note:''},
+ any:{name:'Any role',expected:['experience','intelligence','platform','integration','systems','capture','governance'],core:null,note:''},
  dev:{name:'Developer / Owner',
   note:'MASTER DEVELOPERS RUN PORTFOLIOS: THEY CONSOLIDATE CONTRACTOR DATA RATHER THAN CAPTURE IT. CORE = PORTFOLIO SYSTEMS, MASTER DATA, A DATA PLATFORM AND DECISION PRODUCTS. SITE CAPTURE USUALLY ARRIVES VIA CONTRACTORS.',
   core:['dash','report','dataprod','twin','pred','sched','gen','reason','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm'],
-  expected:['experience','intelligence','platform','integration','systems'],
+  expected:['experience','intelligence','platform','integration','systems','governance'],
   example:['Power BI|dash','Microsoft Fabric|dataprod','nPlan|pred','SmartPM|sched','Databricks|lake','MS Purview|cat','Great Expectations|dq','Informatica MDM|mdm','Azure Integration|api','Primavera P6|p6','Hexagon EcoSys|cost','Oracle Aconex|docs','Salesforce|crm','Oracle EPM|epm']},
  gc:{name:'General Contractor',
   note:'GENERAL CONTRACTORS LIVE AT THE POINT OF PRODUCTION: FIELD CAPTURE, COORDINATION AND COST/SCHEDULE CONTROL ARE CORE. FIELD-TO-OFFICE INTEGRATION MATTERS BEFORE ANY DATA PLATFORM DOES.',
   core:['forms','cams','drones','scan','bim','p6','cost','docs','erp','api','mdm','dq','cv','sched','gen','dash'],
-  expected:['capture','systems','integration','experience'],
+  expected:['capture','systems','integration','experience','governance'],
   example:['Procore|forms','OpenSpace|cv','DroneDeploy|drones','Primavera P6|p6','InEight|cost','Autodesk ACC|bim','Oracle Aconex|docs','Azure Integration|api','Power BI|dash']},
  epc:{name:'EPC',
   note:'EPCS SPAN ENGINEERING, PROCUREMENT AND CONSTRUCTION: DOCUMENT CONTROL, ENGINEERING STANDARDS, TAG/ASSET MASTER DATA AND ERP INTEGRATION DOMINATE. DIGITAL HANDOVER IS A CONTRACTUAL DELIVERABLE, NOT AN AFTERTHOUGHT.',
   core:['bim','docs','p6','cost','erp','contract','std','mdm','api','dq','scan','iot','twin','dash','gen'],
-  expected:['capture','systems','integration','experience'],
+  expected:['capture','systems','integration','experience','governance'],
   example:['ProjectWise|bim','Oracle Aconex|docs','Primavera P6|p6','Hexagon EcoSys|cost','SAP S/4HANA|erp','CEMAR|contract','Solibri|std','Leica|scan','Bentley iTwin|twin','Power BI|dash']},
  sub:{name:'Subcontractor',
   note:'SUBCONTRACTORS NEED LEAN STACKS: FIELD APPS, SIMPLE SCHEDULING, DOCUMENT COMPLIANCE AND GETTING PAID. CLEAN, STRUCTURED FIELD DATA PAYS OFF FASTER THAN ANY PLATFORM.',
@@ -341,6 +347,8 @@ const PERSONAS={
 };
 let persona=localStorage.getItem('ctaPersona')||'any';
 
+const GOVGROUP={id:'governance',idx:'✦',name:'DATA GOVERNANCE — ALL LAYERS'};
+const GROUPS=[...LAYERS,GOVGROUP];
 const svgNS='http://www.w3.org/2000/svg';
 let picked=new Set(JSON.parse(localStorage.getItem('ctaStack')||'[]'));
 
@@ -349,7 +357,7 @@ function ico(d){return 'https://www.google.com/s2/favicons?domain='+d+'&sz=64';}
 
 /* catalog */
 const body=document.getElementById('catalogBody');
-LAYERS.forEach(l=>{
+GROUPS.forEach(l=>{
   const g=document.createElement('div');g.className='layer-group';
   g.innerHTML='<div class="layer-title">'+l.idx+' · '+l.name+'</div>';
   CATS.filter(c=>c.lay===l.id).forEach(c=>{
@@ -380,15 +388,22 @@ function render(){
   const mkg=el('marker',{id:'arwg',viewBox:'0 0 8 8',refX:'7',refY:'4',markerWidth:'5',markerHeight:'5',orient:'auto'},defs);
   el('path',{d:'M0,0 L8,4 L0,8 z',fill:'#6b5518'},mkg);
 
-  const bandH=96,gap=18,top=16,left=182,width=660;
+  const bandH=96,gap=18,top=44,left=182,width=548;
+  const railX=756,railW=132,railCx=railX+railW/2;
+  const H=top+6*(bandH+gap)+4;
   const bandsG=el('g',{},svg),flowsG=el('g',{},svg),nodesG=el('g',{},svg);
   const anchors={};
+
+  /* governance frame — wraps every layer */
+  el('rect',{x:left-10,y:10,width:railX+railW-left+20,height:H-16,class:'govframe'},bandsG);
+  const ft=el('text',{x:railCx,y:26,class:'gov-title','text-anchor':'middle'},bandsG);ft.textContent='DATA GOVERNANCE';
+  const fs=el('text',{x:railCx,y:38,class:'gov-sub','text-anchor':'middle'},bandsG);fs.textContent='✦ CROSS-CUTTING · ALL LAYERS';
 
   LAYERS.forEach((l,i)=>{
     const y=top+i*(bandH+gap);
     el('rect',{x:left,y,width,height:bandH,class:'band'},bandsG);
-    const t=el('text',{x:left-12,y:y+bandH/2-2,class:'band-label','text-anchor':'end'},bandsG);t.textContent=l.name;
-    const ix=el('text',{x:left-12,y:y+bandH/2+13,class:'band-idx','text-anchor':'end'},bandsG);ix.textContent=l.idx;
+    const t=el('text',{x:left-22,y:y+bandH/2-2,class:'band-label','text-anchor':'end'},bandsG);t.textContent=l.name;
+    const ix=el('text',{x:left-22,y:y+bandH/2+13,class:'band-idx','text-anchor':'end'},bandsG);ix.textContent=l.idx;
 
     const sel=PRODUCTS.filter(p=>p.c && picked.has(pid(p)) && CATS.find(c=>c.id===p.c).lay===l.id);
     if(!sel.length){
@@ -396,36 +411,61 @@ function render(){
       h.textContent='— SELECT PRODUCTS FROM THE CATALOG —';
       return;
     }
-    const perRow=Math.min(sel.length,4);
-    const rows=Math.ceil(sel.length/4);
+    const rows=Math.ceil(sel.length/3);
     sel.forEach((p,j)=>{
-      const row=Math.floor(j/4),col=j%4;
-      const inRow=Math.min(sel.length-row*4,4);
-      const w=150,h=30;
+      const row=Math.floor(j/3),col=j%3;
+      const inRow=Math.min(sel.length-row*3,3);
+      const w=158,h=30;
       const x=left+width/2+(col-(inRow-1)/2)*(w+14)-w/2;
       const ny=y+bandH/2-((rows-1)*18)+row*36-h/2;
       const g=el('g',{class:'snode'},nodesG);
       el('rect',{x,y:ny,width:w,height:h},g);
       el('image',{href:ico(p.d),x:x+7,y:ny+7,width:16,height:16},g);
       const tx=el('text',{x:x+29,y:ny+19},g);
-      tx.textContent=p.n.length>16?p.n.slice(0,15)+'…':p.n;
+      tx.textContent=p.n.length>17?p.n.slice(0,16)+'…':p.n;
       if(!anchors[p.c])anchors[p.c]=[];
       anchors[p.c].push({x:x+w/2,yTop:ny,yBot:ny+h});
     });
   });
 
+  /* governance rail — products live on the frame, not in a band */
+  const govSel=PRODUCTS.filter(p=>picked.has(pid(p))&&CATS.find(c=>c.id===p.c).lay==='governance');
+  if(!govSel.length){
+    ['SELECT','GOVERNANCE','PRODUCTS'].forEach((w,i)=>{
+      const t=el('text',{x:railCx,y:H/2-14+i*14,class:'empty-hint','text-anchor':'middle'},bandsG);t.textContent=w;
+    });
+  }else{
+    govSel.forEach((p,j)=>{
+      const w=railW-10,h=28;
+      const x=railX+5,ny=54+j*38;
+      const g=el('g',{class:'snode gov'},nodesG);
+      el('rect',{x,y:ny,width:w,height:h},g);
+      el('image',{href:ico(p.d),x:x+6,y:ny+6,width:15,height:15},g);
+      const tx=el('text',{x:x+26,y:ny+18.5},g);
+      tx.textContent=p.n.length>14?p.n.slice(0,13)+'…':p.n;
+      if(!anchors[p.c])anchors[p.c]=[];
+      anchors[p.c].push({x,xL:x,yTop:ny,yBot:ny+h,rail:true,cy:ny+h/2});
+    });
+  }
+
   FLOWS.forEach(f=>{
     const [a,b,gov]=f;
     if(!anchors[a]||!anchors[b])return;
     const A=anchors[a][0],B=anchors[b][0];
-    const down=A.yTop>B.yTop;
-    const y1=down?A.yTop:A.yBot, y2=down?B.yBot:B.yTop;
-    const d=`M ${A.x} ${y1} C ${A.x} ${(y1+y2)/2}, ${B.x} ${(y1+y2)/2}, ${B.x} ${y2}`;
+    let d;
+    if(A.rail||B.rail){
+      const R=A.rail?A:B, N=A.rail?B:A;
+      const y1=R.cy,x1=R.xL,x2=N.x+79,y2=(N.yTop+N.yBot)/2;
+      d=`M ${x1} ${y1} C ${x1-60} ${y1}, ${x2+60} ${y2}, ${x2} ${y2}`;
+    }else{
+      const down=A.yTop>B.yTop;
+      const y1=down?A.yTop:A.yBot, y2=down?B.yBot:B.yTop;
+      d=`M ${A.x} ${y1} C ${A.x} ${(y1+y2)/2}, ${B.x} ${(y1+y2)/2}, ${B.x} ${y2}`;
+    }
     el('path',{d,class:'flow'+(gov?' gov':''),'marker-end':gov?'url(#arwg)':'url(#arw)'},flowsG);
   });
 
-  const h=top+6*(bandH+gap);
-  svg.setAttribute('viewBox','0 0 860 '+h);
+  svg.setAttribute('viewBox','-75 0 985 '+H);
 
   document.getElementById('countLbl').textContent=picked.size+' PRODUCTS SELECTED';
   renderInsights();
@@ -461,7 +501,7 @@ function renderLayerCoverage(){
   const lc=document.getElementById('layerCov');lc.innerHTML='';
   if(picked.size===0){lc.innerHTML='<div class="okmsg">Select products (or search above) to see which layers of your stack are covered and which are missing.</div>';return;}
   const P=PERSONAS[persona];
-  LAYERS.forEach(l=>{
+  GROUPS.forEach(l=>{
     const ok=layerPicked(l.id);
     const expected=P.expected.includes(l.id);
     const d=document.createElement('div');
@@ -520,6 +560,23 @@ document.getElementById('loadExample').onclick=()=>{
     'Informatica MDM|mdm','Azure Integration|api','Great Expectations|dq','MS Purview|cat',
     'Databricks|lake','Power BI|dash','nPlan|pred','Document Crunch|gen','OpenSpace|cv','EarthCam|cams'];
   picked=new Set(persona==='any'?def:PERSONAS[persona].example);
+  save();
+  document.querySelectorAll('.prod').forEach(b=>b.classList.toggle('picked',picked.has(b.dataset.id)));
+  render();
+};
+
+document.getElementById('autoFill').onclick=()=>{
+  const P=PERSONAS[persona];
+  GROUPS.forEach(l=>{
+    if(!P.expected.includes(l.id)||layerPicked(l.id))return;
+    let cats=CATS.filter(c=>c.lay===l.id);
+    if(P.core)cats=cats.filter(c=>P.core.includes(c.id)).concat(cats.filter(c=>!P.core.includes(c.id)));
+    const wanted=l.id==='governance'?2:1;
+    cats.slice(0,wanted).forEach(c=>{
+      const p=PRODUCTS.find(p=>p.c===c.id);
+      if(p)picked.add(pid(p));
+    });
+  });
   save();
   document.querySelectorAll('.prod').forEach(b=>b.classList.toggle('picked',picked.has(b.dataset.id)));
   render();

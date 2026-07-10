@@ -111,6 +111,7 @@
     <nav class="links">
       <a href="atlas.html" class="on">The Atlas</a>
       <a href="builder.html">Stack Builder</a>
+      <a href="skills.html">Skills</a>
       <a href="articles.html">Briefings</a>
       <a href="article-data-governance.html">Data Governance</a>
       <a href="index.html#about">About</a>
@@ -142,7 +143,7 @@
 
   <div class="stage">
     <div id="mapbox">
-      <svg id="map" viewBox="-95 0 1015 940" xmlns="http://www.w3.org/2000/svg">
+      <svg id="map" viewBox="-95 0 1180 940" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto">
             <path d="M0,0 L8,4 L0,8 z" fill="#39414f"/>
@@ -191,7 +192,7 @@ const LAYERS = [
   {id:'experience',  idx:'06', name:'DECISION & EXPERIENCE', sub:'dashboards / twins / reporting'},
   {id:'intelligence',idx:'05', name:'INTELLIGENCE',          sub:'predictive / generative / reasoning'},
   {id:'platform',    idx:'04', name:'DATA PLATFORM',         sub:'lakehouse / graph / geospatial'},
-  {id:'integration', idx:'03', name:'INTEGRATION & GOVERNANCE', sub:'apis / standards / master data / quality'},
+  {id:'integration', idx:'03', name:'INTEGRATION', sub:'apis / pipelines / exchange'},
   {id:'systems',     idx:'02', name:'SYSTEMS OF RECORD',     sub:'bim / schedule / cost / erp / docs'},
   {id:'capture',     idx:'01', name:'SITE & FIELD CAPTURE',  sub:'iot / drones / scans / cameras / forms'},
 ];
@@ -227,11 +228,11 @@ const NODES = [
  {id:'cv', layer:'intelligence', u:.52, v:.62, name:'CV PROGRESS', ai:'Predictive', phases:['construct'],
   desc:'Computer vision on camera and drone imagery to measure physical progress and detect safety issues.',
   gov:'Needs governed baselines (BIM, schedule) to compare observed against planned.',
-  products:['OpenSpace','Buildots','Track3D','Disperse']},
+  products:['OpenSpace','Buildots','AI Clearing','Track3D','Disperse']},
  {id:'gen', layer:'intelligence', u:.68, v:.4, name:'GENAI COPILOTS', ai:'Generative', phases:['plan','design','procure','construct','handover','operate'],
   desc:'Generative assistants drafting reports, specs and RFI responses; querying project data in natural language.',
   gov:'Retrieval must respect document permissions and the governed single source of truth.',
-  products:['Procore Copilot','Document Crunch','Microsoft 365 Copilot','Anthropic Claude']},
+  products:['Procore Copilot','Document Crunch','Fabric Data Agents','Anthropic Claude']},
  {id:'reason', layer:'intelligence', u:.87, v:.28, name:'REASONING AGENTS', ai:'Reasoning', phases:['plan','procure','construct','operate'],
   desc:'Agentic AI evaluating scenarios: procurement strategies, claims positions, resource trade-offs.',
   gov:'Agents acting on data need explicit decision-authority boundaries.',
@@ -248,23 +249,23 @@ const NODES = [
   desc:'GIS data: terrain, utilities, logistics, land parcels — spatial context for infrastructure programmes.',
   gov:'Coordinate systems and survey control are governance artifacts too.',
   products:['Esri ArcGIS','QGIS','Cesium','Google Earth Engine']},
- {id:'api', layer:'integration', u:.22, v:.46, name:'INTEGRATION HUB', phases:['plan','design','procure','construct','handover','operate'],
+ {id:'api', layer:'integration', u:.45, v:.42, name:'INTEGRATION HUB', phases:['plan','design','procure','construct','handover','operate'],
   desc:'iPaaS / API layer moving data between systems of record and the platform. Replaces spreadsheet exports.',
   gov:'Every integration is a contract: schemas, ownership and change control must be managed.', isGov:true,
   products:['Azure Integration Services','MuleSoft','Boomi','Workato']},
- {id:'mdm', layer:'integration', u:.44, v:.3, name:'MASTER DATA · WBS/CBS', phases:['plan','design','procure','construct','handover'],
+ {id:'mdm', layer:'governance', gi:0, u:0, v:0, name:'MASTER DATA · WBS/CBS', phases:['plan','design','procure','construct','handover'],
   desc:'Master libraries: WBS/CBS structures, activity codes, asset classifications, organization registers.',
   gov:'The core governance asset — enables comparison across projects and contractors.', isGov:true,
   products:['Informatica MDM','Profisee','Semarchy','CFIHOS / Uniclass libraries']},
- {id:'dq', layer:'integration', u:.56, v:.62, name:'DATA QUALITY', phases:['plan','design','procure','construct','handover','operate'],
+ {id:'dq', layer:'governance', gi:1, u:0, v:0, name:'DATA QUALITY', phases:['plan','design','procure','construct','handover','operate'],
   desc:'Automated validation: completeness, timeliness and conformity of schedules, cost data and models.',
   gov:'Quality rules make decisions reliable. Flag at source, not in the monthly report.', isGov:true,
   products:['Great Expectations','Monte Carlo','Soda','Informatica DQ']},
- {id:'std', layer:'integration', u:.72, v:.42, name:'ISO 19650 / IFC', phases:['design','construct','handover'],
+ {id:'std', layer:'governance', gi:2, u:0, v:0, name:'ISO 19650 / IFC', phases:['design','construct','handover'],
   desc:'Information standards: CDE workflows, IFC/COBie exchange, naming conventions, exchange requirements.',
   gov:'Standards are codified decision rights over how information is produced and exchanged.', isGov:true,
   products:['Solibri','buildingSMART openBIM','Plannerly','Morta']},
- {id:'cat', layer:'integration', u:.9, v:.24, name:'CATALOG & LINEAGE', phases:['plan','design','procure','construct','handover','operate'],
+ {id:'cat', layer:'governance', gi:3, u:0, v:0, name:'CATALOG & LINEAGE', phases:['plan','design','procure','construct','handover','operate'],
   desc:'Data catalog: what data exists, who owns it, where it came from, how fresh it is.',
   gov:'Answers “who decides when this KPI changes?” — the metadata backbone.', isGov:true,
   products:['Microsoft Purview','Collibra','Atlan','Alation']},
@@ -333,8 +334,12 @@ const EDGES = [
 ];
 
 const CX=470, TOPY=36, GAP=146, HW=350, HH=72;
+const GOVX=CX+HW+150, GOVTOP=TOPY+130, GOVGAP=170;
 function layerY(i){return TOPY + i*GAP;}
 function pos(node){
+  if(node.layer==='governance'){
+    return {x:GOVX, y:GOVTOP + node.gi*GOVGAP};
+  }
   const i = LAYERS.findIndex(l=>l.id===node.layer);
   const y = layerY(i);
   return {x: CX + HW*node.u - HW*node.v, y: y + HH*node.u + HH*node.v};
@@ -350,6 +355,16 @@ LAYERS.forEach((l,i)=>{
   const t=el('text',{x:CX-HW-8,y:y+HH-8,class:'layer-label','text-anchor':'end'},planes); t.textContent=l.name;
   const s=el('text',{x:CX-HW-8,y:y+HH+8,class:'layer-sub','text-anchor':'end'},planes); s.textContent=l.sub;
 });
+
+/* governance frame — cross-cutting, wraps the whole stack */
+const govBottom=layerY(5)+2*HH+22;
+el('rect',{x:CX-HW-16,y:TOPY-18,width:(GOVX+92)-(CX-HW-16),height:govBottom-TOPY+18,
+  fill:'none',stroke:'#6b5518','stroke-width':1.2,'stroke-dasharray':'6 5'},planes);
+const gt1=el('text',{x:GOVX,y:TOPY+8,class:'layer-label','text-anchor':'middle',fill:'#d9a53f'},planes);
+gt1.textContent='DATA GOVERNANCE';
+gt1.setAttribute('style','fill:#d9a53f');
+const gt2=el('text',{x:GOVX,y:TOPY+24,class:'layer-sub','text-anchor':'middle'},planes);
+gt2.textContent='✦ cross-cutting · every layer';
 
 const edgesG=document.getElementById('edges');
 const nodeById={};NODES.forEach(n=>nodeById[n.id]=n);
@@ -401,10 +416,42 @@ function hover(id,on){
     }
   });
 }
+const CONN={
+ dash:'Native BI connectors to the warehouse/semantic layer (DirectQuery/Import); REST APIs of source systems for near-real-time tiles.',
+ twin:'IFC/glTF model import; REST & streaming APIs for live telemetry; OGC services (WMS/WFS) for GIS context.',
+ report:'Reads governed warehouse views / semantic models; outputs via PowerPoint-PDF export APIs.',
+ dataprod:'Served as semantic models, embedded analytics, low-code apps (Power Apps) and OData/REST endpoints; consumed downstream with contracts + SLAs.',
+ pred:'Batch reads from the lakehouse; XER/XML schedule ingestion; scoring exposed as REST endpoints.',
+ sched:'P6 EPPM API or XER/MPP file ingestion; writes normalized WBS mappings back via API/exports.',
+ cv:'Imagery via cloud APIs or upload (360/drone/fixed); results pushed by REST/webhooks into dashboards and the CDE.',
+ gen:'RAG over document stores via Graph/REST connectors with SSO permission trimming; grounded on the governed source of truth.',
+ reason:'Tool-use/function-calling against governed APIs (MCP-style connectors); every action audit-logged.',
+ lake:'ELT connectors (ADF/Fivetran/Dataflows), file drops (CSV/Parquet), REST ingestion; serves SQL endpoints + semantic layer.',
+ kg:'Entity-resolution pipelines from the lakehouse; queried via Cypher/SPARQL/GraphQL.',
+ gis:'ArcGIS REST / OGC services (WMS/WFS); geodatabase replication; shared coordinate-system registry.',
+ api:'REST/SOAP adapters, webhooks and event queues with retries, monitoring and schema mapping — the alternative to spreadsheet exports.',
+ mdm:'Published as reference-data APIs/files; scheduled sync jobs push codes into P6, cost and ERP systems.',
+ dq:'Rules run in-pipeline (dbt tests / GX checkpoints) and at source; failures alert owners via webhooks.',
+ std:'Enforced through CDE workflows, IFC/COBie exchange validation and automated naming checks.',
+ cat:'Metadata harvested via system API scanners; lineage captured from pipeline run logs.',
+ bim:'Autodesk Platform Services / ProjectWise APIs; IFC & COBie exports; webhooks on model publish.',
+ p6:'P6 EPPM REST/Web Services; XER/XML exchange; MSP XML — scheduled syncs rather than webhooks.',
+ cost:'REST APIs or ODBC reads; ERP integration for actuals; Excel import/export as legacy fallback.',
+ erp:'SAP OData/BAPI/IDoc or Oracle REST — always through the integration hub, never point-to-point.',
+ docs:'Aconex/Asite REST APIs; mail-in registration; scheduled register exports.',
+ contract:'REST APIs/exports; linked to the document register via document IDs.',
+ crm:'Salesforce/Dynamics REST + webhooks; unit and lease master data synced against the asset register.',
+ epm:'Data-management pipelines + REST; Excel add-ins for modelling; forecasts written back to the warehouse.',
+ iot:'MQTT/OPC UA into a broker via edge gateways; time-series ingestion to the platform.',
+ drones:'Photogrammetry outputs (orthomosaics, point clouds) delivered via cloud APIs or SFTP.',
+ scan:'E57/LAS point clouds registered and pushed to the CDE; scan-to-BIM tolerances defined in EIRs.',
+ cams:'RTSP streams or vendor cloud APIs; event webhooks feed CV analytics.',
+ forms:'Procore/ACC APIs with webhooks on submission; structured exports to the lakehouse.',
+};
 function select(id){
   document.querySelectorAll('.node').forEach(g=>g.classList.toggle('sel',g.dataset.id===id));
   const n=nodeById[id];
-  const layer=LAYERS.find(l=>l.id===n.layer);
+  const layer=LAYERS.find(l=>l.id===n.layer)||{idx:'✦',name:'DATA GOVERNANCE — CROSS-CUTTING'};
   const conns=EDGES.filter(([a,b])=>a===id||b===id)
     .map(([a,b])=>a===id?'&rarr; '+nodeById[b].name:'&larr; '+nodeById[a].name);
   let html=`<div class="layer-tag">${layer.idx} · ${layer.name}</div><h2>${n.name}</h2>`;
@@ -412,6 +459,7 @@ function select(id){
   html+=n.phases.map(p=>`<span class="badge">${PHASE_NAMES[p]}</span>`).join('');
   html+=`<p>${n.desc}</p>`;
   if(n.products)html+=`<div class="prods"><b>Example products</b>${n.products.map(p=>`<span class="chip">${p}</span>`).join('')}</div>`;
+  if(CONN[n.id])html+=`<div class="conn" style="margin-top:14px;"><b>How it connects</b><span style="font-family:var(--sans);font-size:12px;color:#b7bdc8;letter-spacing:0;line-height:1.6;display:block;">${CONN[n.id]}</span></div>`;
   html+=`<div class="gov"><b>Governance</b>${n.gov}</div>`;
   html+=`<div class="conn"><b>Data flows</b>${conns.join('<br>')}</div>`;
   document.getElementById('panelContent').innerHTML=html;
