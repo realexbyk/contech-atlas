@@ -39,6 +39,19 @@
     background:none;border:1px solid var(--hair2);padding:9px 16px;cursor:pointer;transition:.15s;}
   .abtn:hover{color:var(--txt);border-color:var(--faint);}
 
+  /* personas */
+  .personas{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0 2px;}
+  .plabel{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--faint);}
+  .pchip{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);
+    background:none;border:1px solid var(--hair2);padding:8px 14px;cursor:pointer;transition:.15s;}
+  .pchip:hover{color:var(--txt);border-color:var(--faint);}
+  .pchip.active{color:#fff;border-color:var(--accent);background:#5b76ff14;}
+  .pnote{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.7;padding:10px 0 14px;max-width:900px;min-height:18px;}
+  .coretag{color:var(--accent2);margin-left:7px;font-size:8.5px;letter-spacing:.16em;}
+  .category.dimmed{opacity:.4;}
+  .gap.opt b{color:var(--faint);}
+  .usecase.dim{opacity:.38;}
+
   .workbench{display:grid;grid-template-columns:320px 1fr 330px;gap:22px;padding:6px 0 50px;align-items:start;}
 
   /* catalog */
@@ -134,6 +147,16 @@
       <button class="abtn" id="clearAll">Clear</button>
     </div>
   </div>
+
+  <div class="personas" id="personaBar">
+    <span class="plabel">BUILD AS</span>
+    <button class="pchip active" data-p="any">Any role</button>
+    <button class="pchip" data-p="dev">Developer / Owner</button>
+    <button class="pchip" data-p="gc">General Contractor</button>
+    <button class="pchip" data-p="epc">EPC</button>
+    <button class="pchip" data-p="sub">Subcontractor</button>
+  </div>
+  <div class="pnote" id="pnote"></div>
 
   <div class="workbench">
     <aside id="catalog">
@@ -269,29 +292,54 @@ const FLOWS=[
 ];
 
 const USECASES=[
- {name:'Predictive delay & cost forecasting',needs:['p6','cost','lake','pred'],
+ {name:'Predictive delay & cost forecasting',needs:['p6','cost','lake','pred'],p:['dev','gc','epc'],
   desc:'Forecast overruns before they land in the monthly report, from live schedule + cost data.'},
- {name:'Portfolio schedule aggregation',needs:['p6','mdm','lake','sched'],
+ {name:'Portfolio schedule aggregation',needs:['p6','mdm','lake','sched'],p:['dev'],
   desc:'Normalize contractor programmes into one governed WBS and benchmark across projects.'},
- {name:'AI progress verification',needs:['cams','bim','p6','cv'],
+ {name:'AI progress verification',needs:['cams','bim','p6','cv'],p:['dev','gc'],
   desc:'Compare observed site reality against the model and baseline — automatic, daily.'},
  {name:'Project copilot over documents',needs:['docs','lake','gen'],
   desc:'Ask questions across RFIs, submittals and correspondence in natural language.'},
- {name:'Living digital twin',needs:['bim','gis','twin'],
+ {name:'Living digital twin',needs:['bim','gis','twin'],p:['dev','epc'],
   desc:'A spatial, model-based view of the asset with live data overlays through delivery and operations.'},
- {name:'Automated monthly reporting',needs:['cost','p6','lake','report'],
+ {name:'Automated monthly reporting',needs:['cost','p6','lake','report'],p:['dev','gc','epc'],
   desc:'Generate the periodic report pack from governed data instead of copy-paste.'},
  {name:'Claims & dispute readiness',needs:['docs','contract','p6','gen'],
   desc:'Assemble evidence chains for EOT and disruption claims from governed records.'},
- {name:'Agentic scenario analysis',needs:['lake','kg','reason'],
+ {name:'Agentic scenario analysis',needs:['lake','kg','reason'],p:['dev','epc'],
   desc:'Let reasoning agents evaluate procurement or recovery scenarios across connected project data.'},
- {name:'Intelligent reporting assistant',needs:['lake','dataprod','gen'],
+ {name:'Intelligent reporting assistant',needs:['lake','dataprod','gen'],p:['dev'],
   desc:'Chat with governed portfolio data: ask for trends, outliers and drill-downs; the assistant drafts the narrative.'},
- {name:'Lessons-learned & lookback assistant',needs:['docs','kg','gen'],
+ {name:'Lessons-learned & lookback assistant',needs:['docs','kg','gen'],p:['dev','gc','epc'],
   desc:'Mine closed projects for what actually went wrong and surface it at the next stage gate.'},
- {name:'Feasibility-to-actuals reconciliation',needs:['epm','cost','lake'],
+ {name:'Feasibility-to-actuals reconciliation',needs:['epm','cost','lake'],p:['dev'],
   desc:'Track investment-case assumptions against delivered cost and schedule, continuously instead of at close-out.'},
 ];
+
+const PERSONAS={
+ any:{name:'Any role',expected:['experience','intelligence','platform','integration','systems','capture'],core:null,note:''},
+ dev:{name:'Developer / Owner',
+  note:'MASTER DEVELOPERS RUN PORTFOLIOS: THEY CONSOLIDATE CONTRACTOR DATA RATHER THAN CAPTURE IT. CORE = PORTFOLIO SYSTEMS, MASTER DATA, A DATA PLATFORM AND DECISION PRODUCTS. SITE CAPTURE USUALLY ARRIVES VIA CONTRACTORS.',
+  core:['dash','report','dataprod','twin','pred','sched','gen','reason','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm'],
+  expected:['experience','intelligence','platform','integration','systems'],
+  example:['Power BI|dash','Microsoft Fabric|dataprod','nPlan|pred','SmartPM|sched','Databricks|lake','MS Purview|cat','Great Expectations|dq','Informatica MDM|mdm','Azure Integration|api','Primavera P6|p6','Hexagon EcoSys|cost','Oracle Aconex|docs','Salesforce|crm','Oracle EPM|epm']},
+ gc:{name:'General Contractor',
+  note:'GENERAL CONTRACTORS LIVE AT THE POINT OF PRODUCTION: FIELD CAPTURE, COORDINATION AND COST/SCHEDULE CONTROL ARE CORE. FIELD-TO-OFFICE INTEGRATION MATTERS BEFORE ANY DATA PLATFORM DOES.',
+  core:['forms','cams','drones','scan','bim','p6','cost','docs','erp','api','mdm','dq','cv','sched','gen','dash'],
+  expected:['capture','systems','integration','experience'],
+  example:['Procore|forms','OpenSpace|cv','DroneDeploy|drones','Primavera P6|p6','InEight|cost','Autodesk ACC|bim','Oracle Aconex|docs','Azure Integration|api','Power BI|dash']},
+ epc:{name:'EPC',
+  note:'EPCS SPAN ENGINEERING, PROCUREMENT AND CONSTRUCTION: DOCUMENT CONTROL, ENGINEERING STANDARDS, TAG/ASSET MASTER DATA AND ERP INTEGRATION DOMINATE. DIGITAL HANDOVER IS A CONTRACTUAL DELIVERABLE, NOT AN AFTERTHOUGHT.',
+  core:['bim','docs','p6','cost','erp','contract','std','mdm','api','dq','scan','iot','twin','dash','gen'],
+  expected:['capture','systems','integration','experience'],
+  example:['ProjectWise|bim','Oracle Aconex|docs','Primavera P6|p6','Hexagon EcoSys|cost','SAP S/4HANA|erp','CEMAR|contract','Solibri|std','Leica|scan','Bentley iTwin|twin','Power BI|dash']},
+ sub:{name:'Subcontractor',
+  note:'SUBCONTRACTORS NEED LEAN STACKS: FIELD APPS, SIMPLE SCHEDULING, DOCUMENT COMPLIANCE AND GETTING PAID. CLEAN, STRUCTURED FIELD DATA PAYS OFF FASTER THAN ANY PLATFORM.',
+  core:['forms','p6','docs','cost','gen','dash'],
+  expected:['capture','systems'],
+  example:['Fieldwire|forms','Powerproject|p6','SharePoint|docs','Power BI|dash']},
+};
+let persona=localStorage.getItem('ctaPersona')||'any';
 
 const svgNS='http://www.w3.org/2000/svg';
 let picked=new Set(JSON.parse(localStorage.getItem('ctaStack')||'[]'));
@@ -305,7 +353,7 @@ LAYERS.forEach(l=>{
   const g=document.createElement('div');g.className='layer-group';
   g.innerHTML='<div class="layer-title">'+l.idx+' · '+l.name+'</div>';
   CATS.filter(c=>c.lay===l.id).forEach(c=>{
-    const div=document.createElement('div');div.className='category';
+    const div=document.createElement('div');div.className='category';div.dataset.cat=c.id;
     div.innerHTML='<h4>'+c.name+'</h4>';
     PRODUCTS.filter(p=>p.c===c.id).forEach(p=>{
       const b=document.createElement('button');b.className='prod';b.dataset.id=pid(p);
@@ -412,14 +460,19 @@ function addProduct(id){
 function renderLayerCoverage(){
   const lc=document.getElementById('layerCov');lc.innerHTML='';
   if(picked.size===0){lc.innerHTML='<div class="okmsg">Select products (or search above) to see which layers of your stack are covered and which are missing.</div>';return;}
+  const P=PERSONAS[persona];
   LAYERS.forEach(l=>{
     const ok=layerPicked(l.id);
-    const d=document.createElement('div');d.className='gap '+(ok?'ok':'miss');
-    if(ok){d.innerHTML='<b>&#10003; '+l.idx+' · '+l.name+'</b>';}
+    const expected=P.expected.includes(l.id);
+    const d=document.createElement('div');
+    if(ok){d.className='gap ok';d.innerHTML='<b>&#10003; '+l.idx+' · '+l.name+'</b>';}
+    else if(!expected){d.className='gap opt';d.innerHTML='<b>&#9675; '+l.idx+' · '+l.name+' — OPTIONAL FOR THIS ROLE</b>';}
     else{
+      d.className='gap miss';
       d.innerHTML='<b>&#9888; '+l.idx+' · '+l.name+' — MISSING</b><div class="sug"></div>';
       const sug=d.querySelector('.sug');
-      const cats=CATS.filter(c=>c.lay===l.id);
+      let cats=CATS.filter(c=>c.lay===l.id);
+      if(P.core)cats=cats.filter(c=>P.core.includes(c.id)).concat(cats.filter(c=>!P.core.includes(c.id)));
       const picks=[];
       for(const c of cats){const p=PRODUCTS.find(p=>p.c===c.id);if(p)picks.push(p);if(picks.length>=3)break;}
       picks.forEach(p=>{
@@ -435,12 +488,14 @@ function renderLayerCoverage(){
 function renderInsights(){
   renderLayerCoverage();
   const uc=document.getElementById('useCases');uc.innerHTML='';
-  USECASES.forEach(u=>{
+  const relevant=u=>persona==='any'||!u.p||u.p.includes(persona);
+  [...USECASES].sort((a,b)=>relevant(b)-relevant(a)).forEach(u=>{
     const missing=u.needs.filter(n=>!catPicked(n));
     const on=missing.length===0;
-    const d=document.createElement('div');d.className='usecase'+(on?' on':'');
-    let html='<span class="st">'+(on?'&#10003; UNLOCKED':'LOCKED')+'</span><b>'+u.name+'</b><p>'+u.desc+'</p>';
-    if(!on)html+='<div class="miss">MISSING: '+missing.map(m=>CATS.find(c=>c.id===m).name).join(' · ')+'</div>';
+    const rel=relevant(u);
+    const d=document.createElement('div');d.className='usecase'+(on?' on':'')+(rel?'':' dim');
+    let html='<span class="st">'+(on?'&#10003; UNLOCKED':rel?'LOCKED':'LESS TYPICAL FOR THIS ROLE')+'</span><b>'+u.name+'</b><p>'+u.desc+'</p>';
+    if(!on&&rel)html+='<div class="miss">MISSING: '+missing.map(m=>CATS.find(c=>c.id===m).name).join(' · ')+'</div>';
     d.innerHTML=html;uc.appendChild(d);
   });
 
@@ -461,14 +516,38 @@ function renderInsights(){
 /* actions */
 document.getElementById('clearAll').onclick=()=>{picked.clear();save();document.querySelectorAll('.prod').forEach(b=>b.classList.remove('picked'));render();};
 document.getElementById('loadExample').onclick=()=>{
-  picked=new Set(['Primavera P6|p6','Hexagon EcoSys|cost','Oracle Aconex|docs','Autodesk ACC|bim',
+  const def=['Primavera P6|p6','Hexagon EcoSys|cost','Oracle Aconex|docs','Autodesk ACC|bim',
     'Informatica MDM|mdm','Azure Integration|api','Great Expectations|dq','MS Purview|cat',
-    'Databricks|lake','Power BI|dash','nPlan|pred','Document Crunch|gen','OpenSpace|cv','EarthCam|cams']);
+    'Databricks|lake','Power BI|dash','nPlan|pred','Document Crunch|gen','OpenSpace|cv','EarthCam|cams'];
+  picked=new Set(persona==='any'?def:PERSONAS[persona].example);
   save();
   document.querySelectorAll('.prod').forEach(b=>b.classList.toggle('picked',picked.has(b.dataset.id)));
   render();
 };
-render();
+
+/* persona wiring */
+function applyPersona(){
+  localStorage.setItem('ctaPersona',persona);
+  document.querySelectorAll('.pchip').forEach(b=>b.classList.toggle('active',b.dataset.p===persona));
+  document.getElementById('pnote').textContent=PERSONAS[persona].note;
+  const core=PERSONAS[persona].core;
+  document.querySelectorAll('#catalogBody .category').forEach(div=>{
+    const h4=div.querySelector('h4');
+    const old=h4.querySelector('.coretag');if(old)old.remove();
+    if(!core){div.classList.remove('dimmed');return;}
+    if(core.includes(div.dataset.cat)){
+      div.classList.remove('dimmed');
+      const s=document.createElement('span');s.className='coretag';s.textContent='CORE';h4.appendChild(s);
+    }else div.classList.add('dimmed');
+  });
+  render();
+}
+document.getElementById('personaBar').addEventListener('click',e=>{
+  const b=e.target.closest('.pchip');if(!b)return;
+  persona=b.dataset.p;
+  applyPersona();
+});
+applyPersona();
 </script>
 </body>
 </html>
