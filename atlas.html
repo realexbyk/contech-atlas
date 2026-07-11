@@ -72,6 +72,16 @@
   .node.off{opacity:.12;pointer-events:none;}
   .node.govhot rect{stroke:var(--amber);}
   .node.govdim{opacity:.28;}
+  .node.fab rect{stroke:#1e5560;}
+  .node.fab:hover rect,.node.fab.sel rect{stroke:var(--accent2);}
+
+  .proc-strip{display:none;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 0 0;}
+  .proc-strip.show{display:flex;}
+  .proc-strip .plbl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--faint);}
+  .proc{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim);background:none;
+    border:1px solid var(--hair2);padding:7px 12px;cursor:pointer;transition:.15s;}
+  .proc:hover{color:var(--txt);border-color:var(--faint);}
+  .proc.active{color:#dff8ff;border-color:var(--accent2);background:#37c8dd12;}
 
   #panel{width:340px;flex:0 0 340px;border:1px solid var(--hair2);background:#0b0d11f2;padding:24px;position:sticky;top:84px;min-height:430px;}
   #panel .layer-tag{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;}
@@ -140,6 +150,7 @@
   </div>
   <div class="gov-note" id="govBanner">DATA GOVERNANCE IS NOT ABOUT DATA — IT IS ABOUT WHO CONTROLS DECISIONS.
     HIGHLIGHTED NODES HOLD DECISION AUTHORITY: MASTER DATA, STANDARDS, QUALITY, LINEAGE, RECORDS.</div>
+  <div class="proc-strip" id="procStrip"></div>
 
   <div class="stage">
     <div id="mapbox">
@@ -213,6 +224,10 @@ const NODES = [
   desc:'Automated periodic reporting: monthly reports, dashboards-to-slides, narrative generation.',
   gov:'Consistent KPIs across projects require enforced metric definitions.',
   products:['Power BI','Palantir Foundry','Procore Analytics','Mastt']},
+ {id:'evm', layer:'experience', u:.13, v:.55, name:'EVM & KPIS · CPI/SPI', phases:['procure','construct','handover'],
+  desc:'Earned value and performance metrics — EV, CPI, SPI, CV, SV, forecast at completion — calculated once in the semantic layer from governed cost and schedule data, not re-derived in every spreadsheet.',
+  gov:'CPI is only comparable across projects if EV rules, WBS mapping and progress measurement methods are governed.',
+  products:['Deltek Cobra','Hexagon EcoSys','InEight','Power BI semantic models']},
  {id:'dataprod', layer:'experience', u:.47, v:.22, name:'DATA PRODUCTS', phases:['plan','design','procure','construct','handover','operate'],
   desc:'Packaged, reusable data assets — dashboards, portals, apps and APIs — each with a named owner, a defined consumer, quality rules and an SLA. Run-and-maintain plus continuous enhancement, so they scale across a portfolio instead of dying as one-off reports.',
   gov:'A data product without an owner and a quality SLA is just another dashboard. Productization is governance made operational.',
@@ -301,6 +316,26 @@ const NODES = [
   desc:'Enterprise planning: feasibility models, revenue and cashflow forecasts, CAPEX/OPEX planning.',
   gov:'Forecast models must trace back to governed cost and schedule actuals — or feasibility drifts from delivery reality.',
   products:['Oracle EPM Cloud','Anaplan','SAP Analytics Cloud']},
+ {id:'hse', layer:'systems', u:.2, v:.66, name:'HSE MANAGEMENT', phases:['construct','handover','operate'],
+  desc:'Health, safety and environment: incidents, observations, permits to work, audits and leading indicators.',
+  gov:'Incident classifications and severity scales must be standardized or portfolio HSE stats are meaningless.',
+  products:['HammerTech','Intelex','Cority','SafetyCulture']},
+ {id:'risk', layer:'systems', u:.76, v:.7, name:'RISK MANAGEMENT', phases:['plan','design','procure','construct'],
+  desc:'Risk registers, QSRA/QCRA, mitigation tracking and contingency drawdown across the portfolio.',
+  gov:'Risk scoring matrices and breakdown structures need a governed common scale to aggregate.',
+  products:['Safran Risk','Riskonnect','Primavera Risk Analysis']},
+ {id:'sem', layer:'fabric', gi:0, u:0, v:0, name:'SEMANTIC LAYER', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Business definitions expressed once — what CPI means, what "complete" means, how phases roll up — and reused by every dashboard, report and AI agent. The layer that turns data into meaning.',
+  gov:'The semantic layer is where metric governance becomes executable: one definition, one owner, every consumer.',
+  products:['Power BI semantic models','dbt Semantic Layer','Cube','AtScale']},
+ {id:'context', layer:'fabric', gi:1, u:0, v:0, name:'CONTEXT LAYER', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'The shared project context AI can see: entities, current state, relationships, relevant documents — assembled across many applications at query time. Context lives everywhere; this layer makes it addressable.',
+  gov:'Context assembly must respect source-system permissions — an agent should never see more than its user.',
+  products:['MCP connectors','Palantir Ontology','Microsoft Graph','Glean']},
+ {id:'memory', layer:'fabric', gi:2, u:0, v:0, name:'AI MEMORY', phases:['plan','design','procure','construct','handover','operate'],
+  desc:'Durable memory for AI assistants and agents: decisions taken, preferences, lessons learned, prior analyses — so every conversation does not start from zero.',
+  gov:'Memory is a record: retention, correction and deletion rules apply to it like any other project record.',
+  products:['pgvector','Pinecone','Zep','Mem0']},
  {id:'iot', layer:'capture', u:.18, v:.46, name:'IOT SENSORS', phases:['construct','operate'],
   desc:'Environmental, structural and equipment sensors streaming site telemetry.',
   gov:'Sensor registry and calibration records keep telemetry trustworthy.',
@@ -325,8 +360,9 @@ const NODES = [
 
 const EDGES = [
  ['iot','lake'],['cams','cv'],['drones','cv'],['scan','bim'],['forms','docs'],
- ['bim','api'],['p6','api'],['erp','api'],['cost','api'],['docs','api'],['contract','api'],['crm','api'],['epm','api'],
+ ['bim','api'],['p6','api'],['erp','api'],['cost','api'],['docs','api'],['contract','api'],['crm','api'],['epm','api'],['hse','api'],['risk','api'],
  ['lake','dataprod'],['dq','dataprod'],
+ ['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],['evm','report'],
  ['mdm','p6'],['mdm','cost'],['std','bim'],['dq','lake'],['cat','lake'],
  ['api','lake'],['lake','kg'],['lake','pred'],['lake','gen'],['kg','reason'],['lake','sched'],
  ['gis','twin'],['kg','twin'],
@@ -334,11 +370,14 @@ const EDGES = [
 ];
 
 const CX=470, TOPY=36, GAP=146, HW=350, HH=72;
-const GOVX=CX+HW+150, GOVTOP=TOPY+130, GOVGAP=170;
+const GOVX=CX+HW+150, GOVTOP=TOPY+114, GOVGAP=112, FABTOP=GOVTOP+4*GOVGAP+56;
 function layerY(i){return TOPY + i*GAP;}
 function pos(node){
   if(node.layer==='governance'){
     return {x:GOVX, y:GOVTOP + node.gi*GOVGAP};
+  }
+  if(node.layer==='fabric'){
+    return {x:GOVX, y:FABTOP + node.gi*GOVGAP};
   }
   const i = LAYERS.findIndex(l=>l.id===node.layer);
   const y = layerY(i);
@@ -365,6 +404,11 @@ gt1.textContent='DATA GOVERNANCE';
 gt1.setAttribute('style','fill:#d9a53f');
 const gt2=el('text',{x:GOVX,y:TOPY+24,class:'layer-sub','text-anchor':'middle'},planes);
 gt2.textContent='✦ cross-cutting · every layer';
+const ft1=el('text',{x:GOVX,y:FABTOP-34,class:'layer-label','text-anchor':'middle'},planes);
+ft1.textContent='CONTEXT · SEMANTICS · MEMORY';
+ft1.setAttribute('style','fill:#37c8dd');
+const ft2=el('text',{x:GOVX,y:FABTOP-20,class:'layer-sub','text-anchor':'middle'},planes);
+ft2.textContent='◈ shared across applications';
 
 const edgesG=document.getElementById('edges');
 const nodeById={};NODES.forEach(n=>nodeById[n.id]=n);
@@ -381,7 +425,7 @@ const nodesG=document.getElementById('nodes');
 const nodeEls={};
 NODES.forEach(n=>{
   const p=pos(n);
-  const g=el('g',{class:'node','data-id':n.id},nodesG);
+  const g=el('g',{class:'node'+(n.layer==='fabric'?' fab':''),'data-id':n.id},nodesG);
   const w=Math.max(80,n.name.length*6.4+18);
   el('rect',{x:p.x-w/2,y:p.y-13,width:w,height:26},g);
   const t=el('text',{x:p.x,y:p.y+3.5},g);t.textContent=n.name;
@@ -394,18 +438,21 @@ NODES.forEach(n=>{
 
 let currentPhase='all',govOn=false;
 
+function visible(n){
+  const inPhase=currentPhase==='all'||n.phases.includes(currentPhase);
+  const inProc=!selectedProc||selectedProc.ids.includes(n.id);
+  return inPhase&&inProc;
+}
 function applyState(){
   NODES.forEach(n=>{
     const g=nodeEls[n.id];
-    const inPhase=currentPhase==='all'||n.phases.includes(currentPhase);
-    g.classList.toggle('off',!inPhase);
-    g.classList.toggle('govhot',govOn&&!!n.isGov&&inPhase);
-    g.classList.toggle('govdim',govOn&&!n.isGov&&inPhase);
+    const v=visible(n);
+    g.classList.toggle('off',!v);
+    g.classList.toggle('govhot',govOn&&!!n.isGov&&v);
+    g.classList.toggle('govdim',govOn&&!n.isGov&&v);
   });
   edgeEls.forEach(e=>{
-    const aOk=currentPhase==='all'||nodeById[e.a].phases.includes(currentPhase);
-    const bOk=currentPhase==='all'||nodeById[e.b].phases.includes(currentPhase);
-    e.elm.classList.toggle('off',!(aOk&&bOk));
+    e.elm.classList.toggle('off',!(visible(nodeById[e.a])&&visible(nodeById[e.b])));
   });
 }
 function hover(id,on){
@@ -447,11 +494,77 @@ const CONN={
  scan:'E57/LAS point clouds registered and pushed to the CDE; scan-to-BIM tolerances defined in EIRs.',
  cams:'RTSP streams or vendor cloud APIs; event webhooks feed CV analytics.',
  forms:'Procore/ACC APIs with webhooks on submission; structured exports to the lakehouse.',
+ evm:'Computed in the semantic layer from cost actuals + schedule progress; identical measures served to dashboards, reports and agents.',
+ sem:'Sits over the lakehouse; queried via SQL/DAX/MDX and APIs; one definition of CPI/SPI reused by every consumer.',
+ context:'Exposed through MCP servers and APIs over governed sources; assembled at query time with the caller’s permissions.',
+ memory:'Read/write via agent frameworks; scoped per project and role; retention and deletion governed like project records.',
+ hse:'REST APIs + mobile capture; incidents and observations streamed to the lakehouse for leading-indicator analytics.',
+ risk:'API/exports of the register; QSRA results linked to schedule activities via activity IDs.',
 };
+
+const PROCESSES={
+ plan:[
+  {n:'Land & site selection',ids:['gis','epm','lake']},
+  {n:'Feasibility & business case',ids:['epm','cost','report']},
+  {n:'Master planning',ids:['gis','bim','mdm']},
+  {n:'Investment approval',ids:['epm','report','docs']},
+  {n:'Portfolio risk baseline',ids:['risk','p6','cost']}],
+ design:[
+  {n:'Design management',ids:['bim','docs','p6']},
+  {n:'BIM coordination & clash',ids:['bim','std','mdm']},
+  {n:'Design reviews & approvals',ids:['docs','forms','gen']},
+  {n:'Value engineering',ids:['cost','bim','epm']}],
+ procure:[
+  {n:'Package strategy',ids:['mdm','cost','p6']},
+  {n:'Tendering & award',ids:['docs','contract','erp']},
+  {n:'Procurement plan vs programme',ids:['p6','erp','gen','sched']},
+  {n:'Long-lead tracking',ids:['p6','erp','dash']}],
+ construct:[
+  {n:'Progress measurement',ids:['cv','forms','p6','evm']},
+  {n:'Cost control & EVM',ids:['cost','evm','sem','dash']},
+  {n:'QA/QC inspections',ids:['forms','docs','std']},
+  {n:'HSE management',ids:['hse','cams','forms']},
+  {n:'Variations & claims',ids:['contract','docs','p6','gen']},
+  {n:'Risk reviews',ids:['risk','report','p6']}],
+ handover:[
+  {n:'Commissioning & completion',ids:['forms','iot','docs']},
+  {n:'Digital handover / as-builts',ids:['bim','std','twin','scan']},
+  {n:'Defects (DLP) management',ids:['forms','docs','dash']},
+  {n:'Financial close-out',ids:['cost','erp','contract','evm']}],
+ operate:[
+  {n:'Maintenance planning',ids:['iot','twin','erp']},
+  {n:'Leasing & occupancy',ids:['crm','report','dash']},
+  {n:'Asset performance',ids:['iot','dash','sem']},
+  {n:'Lessons learned',ids:['gen','kg','docs','memory']}],
+};
+let selectedProc=null;
+function renderProcs(){
+  const strip=document.getElementById('procStrip');
+  strip.innerHTML='';
+  selectedProc=null;
+  const list=PROCESSES[currentPhase];
+  strip.classList.toggle('show',!!list);
+  if(!list)return;
+  const lbl=document.createElement('span');lbl.className='plbl';lbl.textContent='PROCESSES';
+  strip.appendChild(lbl);
+  list.forEach(pr=>{
+    const b=document.createElement('button');b.className='proc';b.textContent=pr.n;
+    b.onclick=()=>{
+      const on=selectedProc===pr;
+      selectedProc=on?null:pr;
+      strip.querySelectorAll('.proc').forEach(x=>x.classList.remove('active'));
+      if(!on)b.classList.add('active');
+      applyState();
+    };
+    strip.appendChild(b);
+  });
+}
 function select(id){
   document.querySelectorAll('.node').forEach(g=>g.classList.toggle('sel',g.dataset.id===id));
   const n=nodeById[id];
-  const layer=LAYERS.find(l=>l.id===n.layer)||{idx:'✦',name:'DATA GOVERNANCE — CROSS-CUTTING'};
+  const layer=LAYERS.find(l=>l.id===n.layer)||(n.layer==='fabric'
+    ?{idx:'◈',name:'CONTEXT FABRIC — CROSS-CUTTING'}
+    :{idx:'✦',name:'DATA GOVERNANCE — CROSS-CUTTING'});
   const conns=EDGES.filter(([a,b])=>a===id||b===id)
     .map(([a,b])=>a===id?'&rarr; '+nodeById[b].name:'&larr; '+nodeById[a].name);
   let html=`<div class="layer-tag">${layer.idx} · ${layer.name}</div><h2>${n.name}</h2>`;
@@ -470,6 +583,7 @@ document.getElementById('phaseBar').addEventListener('click',e=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   currentPhase=b.dataset.phase;
+  renderProcs();
   applyState();
 });
 document.getElementById('govLens').addEventListener('click',e=>{

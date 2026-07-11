@@ -99,6 +99,16 @@
   .gov-title{fill:var(--amber);font-family:var(--mono);font-size:10px;letter-spacing:.14em;}
   .gov-sub{fill:#8a6d28;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;}
   .snode.gov rect{stroke:#6b5518;}
+  .snode.fab rect{stroke:#1e5560;}
+  .func{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--hair2);padding:9px 12px;margin-bottom:7px;}
+  .func b{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;font-weight:500;color:#c3cad4;}
+  .func .fst{font-family:var(--mono);font-size:9px;letter-spacing:.12em;}
+  .func.ok{border-color:#1e5f45;}
+  .func.ok .fst{color:var(--green);}
+  .func.miss{border-color:#4d3d14;}
+  .func.miss .fst{color:var(--amber);}
+  .func.opt{opacity:.45;}
+  .func.opt .fst{color:var(--faint);}
   #canvasFoot{display:flex;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--hair2);
     font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;flex-wrap:wrap;gap:8px;}
 
@@ -184,6 +194,8 @@
     <aside id="insights">
       <h3>Layer coverage</h3>
       <div id="layerCov"></div>
+      <h3>Functional coverage</h3>
+      <div id="funcCov"></div>
       <h3>AI use cases</h3>
       <div id="useCases"></div>
       <h3>Governance check</h3>
@@ -214,6 +226,7 @@ const CATS=[
  {id:'twin',lay:'experience',name:'Digital twin'},
  {id:'report',lay:'experience',name:'Portfolio reporting'},
  {id:'dataprod',lay:'experience',name:'Data products & portals'},
+ {id:'evm',lay:'experience',name:'EVM & performance KPIs'},
  {id:'pred',lay:'intelligence',name:'Predictive risk & delay'},
  {id:'sched',lay:'intelligence',name:'Schedule intelligence'},
  {id:'cv',lay:'intelligence',name:'CV progress tracking'},
@@ -235,6 +248,11 @@ const CATS=[
  {id:'contract',lay:'systems',name:'Contracts & claims'},
  {id:'crm',lay:'systems',name:'Sales & leasing (CRM)'},
  {id:'epm',lay:'systems',name:'FP&A / EPM'},
+ {id:'hse',lay:'systems',name:'HSE management'},
+ {id:'risk',lay:'systems',name:'Risk management'},
+ {id:'sem',lay:'fabric',name:'Semantic layer'},
+ {id:'context',lay:'fabric',name:'Context layer'},
+ {id:'memory',lay:'fabric',name:'AI memory'},
  {id:'iot',lay:'capture',name:'IoT sensors'},
  {id:'drones',lay:'capture',name:'Drones'},
  {id:'scan',lay:'capture',name:'Laser scanning'},
@@ -285,6 +303,12 @@ const PRODUCTS=[
  {n:'Microsoft Fabric',d:'microsoft.com',c:'dataprod'},{n:'Power Apps',d:'powerapps.microsoft.com',c:'dataprod'},{n:'Palantir Foundry',d:'palantir.com',c:'dataprod'},{n:'Retool',d:'retool.com',c:'dataprod'},
  {n:'Salesforce',d:'salesforce.com',c:'crm'},{n:'Dynamics 365',d:'microsoft.com',c:'crm'},{n:'Yardi Voyager',d:'yardi.com',c:'crm'},{n:'MRI Software',d:'mrisoftware.com',c:'crm'},
  {n:'Oracle EPM',d:'oracle.com',c:'epm'},{n:'Anaplan',d:'anaplan.com',c:'epm'},{n:'SAP Analytics Cloud',d:'sap.com',c:'epm'},
+ {n:'Deltek Cobra',d:'deltek.com',c:'evm'},{n:'Hexagon EcoSys',d:'hexagon.com',c:'evm'},{n:'Power BI Semantic',d:'powerbi.microsoft.com',c:'evm'},
+ {n:'HammerTech',d:'hammertech.com',c:'hse'},{n:'Intelex',d:'intelex.com',c:'hse'},{n:'SafetyCulture',d:'safetyculture.com',c:'hse'},{n:'Cority',d:'cority.com',c:'hse'},
+ {n:'Safran Risk',d:'safran.com',c:'risk'},{n:'Riskonnect',d:'riskonnect.com',c:'risk'},{n:'Primavera Risk',d:'oracle.com',c:'risk'},
+ {n:'dbt Semantic Layer',d:'getdbt.com',c:'sem'},{n:'Power BI Semantic',d:'powerbi.microsoft.com',c:'sem'},{n:'Cube',d:'cube.dev',c:'sem'},{n:'AtScale',d:'atscale.com',c:'sem'},
+ {n:'MCP connectors',d:'anthropic.com',c:'context'},{n:'Palantir Ontology',d:'palantir.com',c:'context'},{n:'Microsoft Graph',d:'microsoft.com',c:'context'},{n:'Glean',d:'glean.com',c:'context'},
+ {n:'pgvector',d:'postgresql.org',c:'memory'},{n:'Pinecone',d:'pinecone.io',c:'memory'},{n:'Zep',d:'getzep.com',c:'memory'},{n:'Mem0',d:'mem0.ai',c:'memory'},
 ];
 
 const FLOWS=[
@@ -295,6 +319,7 @@ const FLOWS=[
  ['pred','dash'],['sched','dash'],['cv','dash'],['gen','report'],['reason','dash'],['lake','report'],['lake','dash'],
  ['mdm','p6',1],['mdm','cost',1],['std','bim',1],['dq','lake',1],['cat','lake',1],['docs','gen'],
  ['crm','api'],['epm','api'],['lake','dataprod'],['dq','dataprod',1],['mdm','crm',1],
+ ['hse','api'],['risk','api'],['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],
 ];
 
 const USECASES=[
@@ -320,35 +345,40 @@ const USECASES=[
   desc:'Mine closed projects for what actually went wrong and surface it at the next stage gate.'},
  {name:'Feasibility-to-actuals reconciliation',needs:['epm','cost','lake'],p:['dev'],
   desc:'Track investment-case assumptions against delivered cost and schedule, continuously instead of at close-out.'},
+ {name:'Portfolio EVM early warning',needs:['cost','p6','sem','evm'],p:['dev','gc','epc'],
+  desc:'CPI/SPI defined once in the semantic layer and monitored continuously — trends flagged before month-end.'},
+ {name:'HSE leading-indicator analytics',needs:['hse','forms','lake'],p:['dev','gc','epc'],
+  desc:'Correlate observations, near-misses and site conditions to predict where the next incident is brewing.'},
 ];
 
 const PERSONAS={
  any:{name:'Any role',expected:['experience','intelligence','platform','integration','systems','capture','governance'],core:null,note:''},
  dev:{name:'Developer / Owner',
   note:'MASTER DEVELOPERS RUN PORTFOLIOS: THEY CONSOLIDATE CONTRACTOR DATA RATHER THAN CAPTURE IT. CORE = PORTFOLIO SYSTEMS, MASTER DATA, A DATA PLATFORM AND DECISION PRODUCTS. SITE CAPTURE USUALLY ARRIVES VIA CONTRACTORS.',
-  core:['dash','report','dataprod','twin','pred','sched','gen','reason','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm'],
-  expected:['experience','intelligence','platform','integration','systems','governance'],
+  core:['dash','report','dataprod','evm','twin','pred','sched','gen','reason','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm','hse','risk','sem','context'],
+  expected:['experience','intelligence','platform','integration','systems','governance','fabric'],
   example:['Power BI|dash','Microsoft Fabric|dataprod','nPlan|pred','SmartPM|sched','Databricks|lake','MS Purview|cat','Great Expectations|dq','Informatica MDM|mdm','Azure Integration|api','Primavera P6|p6','Hexagon EcoSys|cost','Oracle Aconex|docs','Salesforce|crm','Oracle EPM|epm']},
  gc:{name:'General Contractor',
   note:'GENERAL CONTRACTORS LIVE AT THE POINT OF PRODUCTION: FIELD CAPTURE, COORDINATION AND COST/SCHEDULE CONTROL ARE CORE. FIELD-TO-OFFICE INTEGRATION MATTERS BEFORE ANY DATA PLATFORM DOES.',
-  core:['forms','cams','drones','scan','bim','p6','cost','docs','erp','api','mdm','dq','cv','sched','gen','dash'],
+  core:['forms','cams','drones','scan','bim','p6','cost','docs','erp','api','mdm','dq','cv','sched','gen','dash','hse','evm','risk'],
   expected:['capture','systems','integration','experience','governance'],
   example:['Procore|forms','OpenSpace|cv','DroneDeploy|drones','Primavera P6|p6','InEight|cost','Autodesk ACC|bim','Oracle Aconex|docs','Azure Integration|api','Power BI|dash']},
  epc:{name:'EPC',
   note:'EPCS SPAN ENGINEERING, PROCUREMENT AND CONSTRUCTION: DOCUMENT CONTROL, ENGINEERING STANDARDS, TAG/ASSET MASTER DATA AND ERP INTEGRATION DOMINATE. DIGITAL HANDOVER IS A CONTRACTUAL DELIVERABLE, NOT AN AFTERTHOUGHT.',
-  core:['bim','docs','p6','cost','erp','contract','std','mdm','api','dq','scan','iot','twin','dash','gen'],
+  core:['bim','docs','p6','cost','erp','contract','std','mdm','api','dq','scan','iot','twin','dash','gen','hse','evm','risk'],
   expected:['capture','systems','integration','experience','governance'],
   example:['ProjectWise|bim','Oracle Aconex|docs','Primavera P6|p6','Hexagon EcoSys|cost','SAP S/4HANA|erp','CEMAR|contract','Solibri|std','Leica|scan','Bentley iTwin|twin','Power BI|dash']},
  sub:{name:'Subcontractor',
   note:'SUBCONTRACTORS NEED LEAN STACKS: FIELD APPS, SIMPLE SCHEDULING, DOCUMENT COMPLIANCE AND GETTING PAID. CLEAN, STRUCTURED FIELD DATA PAYS OFF FASTER THAN ANY PLATFORM.',
-  core:['forms','p6','docs','cost','gen','dash'],
+  core:['forms','p6','docs','cost','gen','dash','hse'],
   expected:['capture','systems'],
   example:['Fieldwire|forms','Powerproject|p6','SharePoint|docs','Power BI|dash']},
 };
 let persona=localStorage.getItem('ctaPersona')||'any';
 
 const GOVGROUP={id:'governance',idx:'✦',name:'DATA GOVERNANCE — ALL LAYERS'};
-const GROUPS=[...LAYERS,GOVGROUP];
+const FABGROUP={id:'fabric',idx:'◈',name:'CONTEXT · SEMANTICS · MEMORY — ALL LAYERS'};
+const GROUPS=[...LAYERS,GOVGROUP,FABGROUP];
 const svgNS='http://www.w3.org/2000/svg';
 let picked=new Set(JSON.parse(localStorage.getItem('ctaStack')||'[]'));
 
@@ -428,24 +458,34 @@ function render(){
     });
   });
 
-  /* governance rail — products live on the frame, not in a band */
+  /* rail — governance + context fabric live on the frame, not in a band */
+  const railChip=(p,ny,cls)=>{
+    const w=railW-10,h=28,x=railX+5;
+    const g=el('g',{class:'snode '+cls},nodesG);
+    el('rect',{x,y:ny,width:w,height:h},g);
+    el('image',{href:ico(p.d),x:x+6,y:ny+6,width:15,height:15},g);
+    const tx=el('text',{x:x+26,y:ny+18.5},g);
+    tx.textContent=p.n.length>14?p.n.slice(0,13)+'…':p.n;
+    if(!anchors[p.c])anchors[p.c]=[];
+    anchors[p.c].push({x,xL:x,yTop:ny,yBot:ny+h,rail:true,cy:ny+h/2});
+  };
   const govSel=PRODUCTS.filter(p=>picked.has(pid(p))&&CATS.find(c=>c.id===p.c).lay==='governance');
-  if(!govSel.length){
-    ['SELECT','GOVERNANCE','PRODUCTS'].forEach((w,i)=>{
-      const t=el('text',{x:railCx,y:H/2-14+i*14,class:'empty-hint','text-anchor':'middle'},bandsG);t.textContent=w;
+  const fabSel=PRODUCTS.filter(p=>picked.has(pid(p))&&CATS.find(c=>c.id===p.c).lay==='fabric');
+  if(!govSel.length&&!fabSel.length){
+    ['SELECT','GOVERNANCE','& FABRIC','PRODUCTS'].forEach((w,i)=>{
+      const t=el('text',{x:railCx,y:H/2-21+i*14,class:'empty-hint','text-anchor':'middle'},bandsG);t.textContent=w;
     });
   }else{
-    govSel.forEach((p,j)=>{
-      const w=railW-10,h=28;
-      const x=railX+5,ny=54+j*38;
-      const g=el('g',{class:'snode gov'},nodesG);
-      el('rect',{x,y:ny,width:w,height:h},g);
-      el('image',{href:ico(p.d),x:x+6,y:ny+6,width:15,height:15},g);
-      const tx=el('text',{x:x+26,y:ny+18.5},g);
-      tx.textContent=p.n.length>14?p.n.slice(0,13)+'…':p.n;
-      if(!anchors[p.c])anchors[p.c]=[];
-      anchors[p.c].push({x,xL:x,yTop:ny,yBot:ny+h,rail:true,cy:ny+h/2});
-    });
+    let ny=54;
+    govSel.forEach(p=>{railChip(p,ny,'gov');ny+=38;});
+    if(fabSel.length){
+      ny+=8;
+      const fh=el('text',{x:railCx,y:ny+2,class:'gov-title','text-anchor':'middle'},bandsG);
+      fh.textContent='◈ CONTEXT FABRIC';
+      fh.setAttribute('style','fill:#37c8dd');
+      ny+=12;
+      fabSel.forEach(p=>{railChip(p,ny,'fab');ny+=38;});
+    }
   }
 
   FLOWS.forEach(f=>{
@@ -525,8 +565,36 @@ function renderLayerCoverage(){
     lc.appendChild(d);
   });
 }
+const FUNCS=[
+ {n:'Schedule control',cats:['p6','sched']},
+ {n:'Cost control & EVM',cats:['cost','evm']},
+ {n:'HSE',cats:['hse']},
+ {n:'Risk',cats:['risk']},
+ {n:'Claims & contracts',cats:['contract']},
+ {n:'Quality & inspections',cats:['forms']},
+ {n:'Design coordination',cats:['bim']},
+ {n:'Progress verification',cats:['cv','cams','drones']},
+ {n:'Document control',cats:['docs']},
+ {n:'Procurement & finance',cats:['erp']},
+ {n:'Commercial (sales/leasing)',cats:['crm']},
+ {n:'Investment & feasibility',cats:['epm']},
+];
+function renderFuncCoverage(){
+  const fc=document.getElementById('funcCov');fc.innerHTML='';
+  if(picked.size===0){fc.innerHTML='<div class="okmsg">Functional coverage — schedule, cost, HSE, risk, claims and more — appears once you select products.</div>';return;}
+  const core=PERSONAS[persona].core;
+  FUNCS.forEach(f=>{
+    const ok=f.cats.some(catPicked);
+    const relevant=!core||f.cats.some(c=>core.includes(c));
+    const d=document.createElement('div');
+    d.className='func '+(ok?'ok':relevant?'miss':'opt');
+    d.innerHTML='<b>'+f.n+'</b><span class="fst">'+(ok?'✓ COVERED':relevant?'⚠ GAP':'OPTIONAL')+'</span>';
+    fc.appendChild(d);
+  });
+}
 function renderInsights(){
   renderLayerCoverage();
+  renderFuncCoverage();
   const uc=document.getElementById('useCases');uc.innerHTML='';
   const relevant=u=>persona==='any'||!u.p||u.p.includes(persona);
   [...USECASES].sort((a,b)=>relevant(b)-relevant(a)).forEach(u=>{
