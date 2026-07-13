@@ -36,6 +36,10 @@
   .titlebar{padding:44px 0 8px;}
   .titlebar h1{font-size:clamp(28px,3.6vw,44px);letter-spacing:-.02em;font-weight:800;margin-top:14px;}
   .titlebar p{color:var(--dim);font-size:15px;line-height:1.6;max-width:720px;margin-top:12px;}
+  .answers{display:flex;flex-direction:column;gap:5px;margin-top:16px;max-width:760px;}
+  .alabel{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);margin-bottom:3px;}
+  .aq{font-family:var(--mono);font-size:12px;color:#aab3c2;line-height:1.5;}
+  .aq::before{content:'→ ';color:var(--faint);}
 
   .controls{display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;margin:30px 0 0;border-bottom:1px solid var(--hair2);}
   .tab{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
@@ -111,6 +115,12 @@
     #panel{width:100%;flex:1 1 auto;position:static;}
     nav.links{display:none;}
   }
+  .menu-btn{display:none;background:none;border:1px solid var(--hair2);color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:.14em;padding:8px 14px;cursor:pointer;}
+  @media(max-width:1000px){
+    .menu-btn{display:block;}
+    nav.links.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:#08090cfa;border-bottom:1px solid var(--hair2);padding:8px 0;z-index:70;gap:0;}
+    nav.links.open a{padding:13px 32px;}
+  }
 </style>
 </head>
 <body>
@@ -126,16 +136,24 @@
       <a href="article-data-governance.html">Data Governance</a>
       <a href="index.html#about">About</a>
     </nav>
+    <button class="menu-btn" onclick="document.querySelector('nav.links').classList.toggle('open')">MENU</button>
   </div>
 </header>
 
 <div class="container">
   <div class="titlebar">
-    <div class="kicker">Interactive map · v0.2</div>
+    <div class="kicker">The reference model · v0.3</div>
     <h1>The construction technology stack.</h1>
-    <p>Six layers, six lifecycle phases, and the data flows that connect them. Filter by phase to see which
-       technologies are active, select any node for detail, or apply the governance lens to expose where
-       decision authority actually lives.</p>
+    <p>The Atlas is a reference model — a shared map for reasoning about construction technology, the way
+       network engineers use the OSI model. It is not a product catalog; it is the structure the products fit into.</p>
+    <div class="answers">
+      <span class="alabel">USE IT TO ANSWER</span>
+      <span class="aq">What does a complete stack contain — and what is my organization missing?</span>
+      <span class="aq">How should two systems connect: API, files, webhooks, or a hub?</span>
+      <span class="aq">Where does each lifecycle process live, and which systems does it touch?</span>
+      <span class="aq">Where do governance and decision authority actually sit?</span>
+      <span class="aq">Where does AI plug in — what feeds it, who verifies it, who answers for it?</span>
+    </div>
   </div>
 
   <div class="controls" id="phaseBar">
@@ -149,7 +167,10 @@
     <button class="lens" id="govLens">&#9678; Governance lens</button>
   </div>
   <div class="gov-note" id="govBanner">DATA GOVERNANCE IS NOT ABOUT DATA — IT IS ABOUT WHO CONTROLS DECISIONS.
-    HIGHLIGHTED NODES HOLD DECISION AUTHORITY: MASTER DATA, STANDARDS, QUALITY, LINEAGE, RECORDS.</div>
+    HIGHLIGHTED NODES HOLD DECISION AUTHORITY: MASTER DATA, STANDARDS, QUALITY, LINEAGE, RECORDS.<br><br>
+    FOR EVERY AI NODE, GOVERNANCE MEANS ANSWERING SIX QUESTIONS:
+    WHO IS USING IT (AND IN WHICH PHASE)? · WHAT DOCUMENTS IS IT REVIEWING? · WHAT DATA IS BEING FED IN? ·
+    WHAT RISKS IS IT FLAGGING — AND MISSING? · WHO VERIFIES THE OUTPUT? · WHO OWNS THE LIABILITY WHEN IT IS WRONG?</div>
   <div class="proc-strip" id="procStrip"></div>
 
   <div class="stage">
@@ -574,6 +595,10 @@ function select(id){
   if(n.products)html+=`<div class="prods"><b>Example products</b>${n.products.map(p=>`<span class="chip">${p}</span>`).join('')}</div>`;
   if(CONN[n.id])html+=`<div class="conn" style="margin-top:14px;"><b>How it connects</b><span style="font-family:var(--sans);font-size:12px;color:#b7bdc8;letter-spacing:0;line-height:1.6;display:block;">${CONN[n.id]}</span></div>`;
   html+=`<div class="gov"><b>Governance</b>${n.gov}</div>`;
+  if(n.ai)html+=`<div class="gov" style="border-color:#1e5560;background:#37c8dd0a;color:#8fd8e6;"><b style="color:#8fd8e6;">AI accountability — six questions</b>
+    Who is using it, and in which phase? · What documents is it reviewing? · What data is fed in? ·
+    What risks does it flag — and miss? · Who verifies the output? · Who owns the liability when it is wrong?
+    An AI node without written answers to these is an ungoverned decision-maker.</div>`;
   html+=`<div class="conn"><b>Data flows</b>${conns.join('<br>')}</div>`;
   document.getElementById('panelContent').innerHTML=html;
 }

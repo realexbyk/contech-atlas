@@ -131,7 +131,13 @@
   footer{border-top:1px solid var(--hair2);padding:26px 0 38px;}
   footer .inner{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--faint);}
   footer a:hover{color:var(--txt);}
-  @media(max-width:1180px){.workbench{grid-template-columns:1fr;}#catalog,#insights{position:static;max-height:none;}}
+  @media(max-width:1180px){.workbench{grid-template-columns:1fr;}#catalog,#insights{position:static;max-height:none;}nav.links{display:none;}}
+  .menu-btn{display:none;background:none;border:1px solid var(--hair2);color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:.14em;padding:8px 14px;cursor:pointer;}
+  @media(max-width:1180px){
+    .menu-btn{display:block;}
+    nav.links.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:#08090cfa;border-bottom:1px solid var(--hair2);padding:8px 0;z-index:70;gap:0;}
+    nav.links.open a{padding:13px 32px;}
+  }
 </style>
 </head>
 <body>
@@ -146,6 +152,7 @@
       <a href="articles.html">Briefings</a>
       <a href="index.html#about">About</a>
     </nav>
+    <button class="menu-btn" onclick="document.querySelector('nav.links').classList.toggle('open')">MENU</button>
   </div>
 </header>
 
