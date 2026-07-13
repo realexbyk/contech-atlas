@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stack Builder — ConTech Atlas</title>
+<title>Tech Stack Builder — ConTech Atlas</title>
 <meta name="description" content="Build your construction technology stack: pick products, see how they connect, and which AI use cases they unlock.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,6 +49,7 @@
   .pnote{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.7;padding:10px 0 14px;max-width:900px;min-height:18px;}
   .coretag{color:var(--accent2);margin-left:7px;font-size:8.5px;letter-spacing:.16em;}
   .category.dimmed{opacity:.4;}
+  .category.flash{outline:1px solid var(--accent);outline-offset:4px;background:#5b76ff0a;}
   .gap.opt b{color:var(--faint);}
   .usecase.dim{opacity:.38;}
 
@@ -147,7 +148,7 @@
     <a class="wordmark" href="index.html">CONTECH<span>ATLAS</span><small>CONSTRUCTION · TECHNOLOGY · DATA</small></a>
     <nav class="links">
       <a href="atlas.html">The Atlas</a>
-      <a href="builder.html" class="on">Stack Builder</a>
+      <a href="builder.html" class="on">Tech Stack Builder</a>
       <a href="skills.html">Skills</a>
       <a href="articles.html">Briefings</a>
       <a href="index.html#about">About</a>
@@ -159,14 +160,16 @@
 <div class="container">
   <div class="titlebar">
     <div>
-      <div class="kicker">Stack Builder · beta</div>
+      <div class="kicker">Tech Stack Builder · beta</div>
       <h1>Build your construction tech stack.</h1>
-      <p>Pick the products you use — or plan to use — from the catalog. The canvas shows how they should connect,
-         and the panel shows which AI use cases your stack unlocks and where the governance gaps are.</p>
+      <p>The build mode of <a href="atlas.html" style="border-bottom:1px solid var(--accent);">the Atlas reference model</a>:
+         pick the products you use — or plan to use — and see how they should connect, which AI use cases your stack
+         unlocks, and where the functional and governance gaps are.</p>
     </div>
     <div class="actions">
       <button class="abtn" id="autoFill">&#10022; Auto-complete stack</button>
       <button class="abtn" id="loadExample">Load example stack</button>
+      <button class="abtn" id="shareStack">Share stack</button>
       <button class="abtn" id="clearAll">Clear</button>
     </div>
   </div>
@@ -213,7 +216,7 @@
 
 <footer>
   <div class="container inner">
-    <div>© 2026 CONTECH ATLAS · STACK BUILDER BETA · LOGOS ARE VENDOR FAVICONS, TRADEMARKS OF THEIR OWNERS</div>
+    <div>© 2026 CONTECH ATLAS · TECH STACK BUILDER BETA · BUILT ON REFERENCE MODEL v0.3 · LOGOS ARE VENDOR FAVICONS, TRADEMARKS OF THEIR OWNERS</div>
     <div><a href="atlas.html">ATLAS</a> &nbsp;·&nbsp; <a href="index.html">HOME</a></div>
   </div>
 </footer>
@@ -272,14 +275,14 @@ const PRODUCTS=[
  {n:'Bentley iTwin',d:'bentley.com',c:'twin'},{n:'Matterport',d:'matterport.com',c:'twin'},{n:'Autodesk Tandem',d:'autodesk.com',c:'twin'},{n:'Cesium',d:'cesium.com',c:'twin'},
  {n:'Palantir Foundry',d:'palantir.com',c:'report'},{n:'Procore Analytics',d:'procore.com',c:'report'},{n:'Qlik',d:'qlik.com',c:'report'},
  {n:'nPlan',d:'nplan.io',c:'pred'},{n:'InEight Schedule',d:'ineight.com',c:'pred'},{n:'Primavera Cloud',d:'oracle.com',c:'pred'},
- {n:'ALICE',d:'alicetechnologies.com',c:'sched'},{n:'SmartPM',d:'smartpm.com',c:'sched'},{n:'Aphex',d:'aphex.co',c:'sched'},
+ {n:'ALICE',d:'alicetechnologies.com',c:'sched'},{n:'SmartPM',d:'smartpm.com',c:'sched'},{n:'Acumen Fuse',d:'deltek.com',c:'sched'},{n:'Aphex',d:'aphex.co',c:'sched'},
  {n:'OpenSpace',d:'openspace.ai',c:'cv'},{n:'Buildots',d:'buildots.com',c:'cv'},{n:'Track3D',d:'track3d.ai',c:'cv'},{n:'Disperse',d:'disperse.io',c:'cv'},{n:'AI Clearing',d:'aiclearing.com',c:'cv'},
  {n:'Document Crunch',d:'documentcrunch.com',c:'gen'},{n:'M365 Copilot',d:'microsoft.com',c:'gen'},{n:'Anthropic Claude',d:'anthropic.com',c:'gen'},
  {n:'Palantir AIP',d:'palantir.com',c:'reason'},{n:'Trunk Tools',d:'trunk.tools',c:'reason'},{n:'OpenAI',d:'openai.com',c:'reason'},
  {n:'Databricks',d:'databricks.com',c:'lake'},{n:'Snowflake',d:'snowflake.com',c:'lake'},{n:'MS Fabric',d:'microsoft.com',c:'lake'},{n:'BigQuery',d:'cloud.google.com',c:'lake'},
  {n:'Neo4j',d:'neo4j.com',c:'kg'},{n:'Stardog',d:'stardog.com',c:'kg'},{n:'Neptune',d:'aws.amazon.com',c:'kg'},
  {n:'Esri ArcGIS',d:'esri.com',c:'gis'},{n:'QGIS',d:'qgis.org',c:'gis'},{n:'Google Earth Engine',d:'earthengine.google.com',c:'gis'},
- {n:'Azure Integration',d:'azure.microsoft.com',c:'api'},{n:'Toric',d:'toric.com',c:'api'},{n:'MuleSoft',d:'mulesoft.com',c:'api'},{n:'Boomi',d:'boomi.com',c:'api'},{n:'Workato',d:'workato.com',c:'api'},
+ {n:'Azure Integration',d:'azure.microsoft.com',c:'api'},{n:'Toric',d:'toric.com',c:'api'},{n:'Microsoft Excel',d:'microsoft.com',c:'api'},{n:'MuleSoft',d:'mulesoft.com',c:'api'},{n:'Boomi',d:'boomi.com',c:'api'},{n:'Workato',d:'workato.com',c:'api'},
  {n:'Informatica MDM',d:'informatica.com',c:'mdm'},{n:'Profisee',d:'profisee.com',c:'mdm'},{n:'Semarchy',d:'semarchy.com',c:'mdm'},
  {n:'Great Expectations',d:'greatexpectations.io',c:'dq'},{n:'Monte Carlo',d:'montecarlodata.com',c:'dq'},{n:'Soda',d:'soda.io',c:'dq'},
  {n:'Solibri',d:'solibri.com',c:'std'},{n:'Plannerly',d:'plannerly.com',c:'std'},{n:'Morta',d:'morta.io',c:'std'},
@@ -388,6 +391,12 @@ const FABGROUP={id:'fabric',idx:'◈',name:'CONTEXT · SEMANTICS · MEMORY — A
 const GROUPS=[...LAYERS,GOVGROUP,FABGROUP];
 const svgNS='http://www.w3.org/2000/svg';
 let picked=new Set(JSON.parse(localStorage.getItem('ctaStack')||'[]'));
+/* shared stack via URL */
+const QP=new URLSearchParams(location.search);
+if(QP.get('stack')){
+  try{picked=new Set(JSON.parse(atob(decodeURIComponent(QP.get('stack')))));
+      localStorage.setItem('ctaStack',JSON.stringify([...picked]));}catch(e){}
+}
 
 function pid(p){return p.n+'|'+p.c;}
 function ico(d){return 'https://www.google.com/s2/favicons?domain='+d+'&sz=64';}
@@ -657,6 +666,14 @@ document.getElementById('autoFill').onclick=()=>{
   render();
 };
 
+document.getElementById('shareStack').onclick=e=>{
+  const url=location.origin+location.pathname+'?stack='+encodeURIComponent(btoa(JSON.stringify([...picked])));
+  navigator.clipboard.writeText(url).then(()=>{
+    const b=e.target;const t=b.textContent;b.textContent='✓ Link copied';
+    setTimeout(()=>b.textContent=t,2000);
+  });
+};
+
 /* persona wiring */
 function applyPersona(){
   localStorage.setItem('ctaPersona',persona);
@@ -680,6 +697,16 @@ document.getElementById('personaBar').addEventListener('click',e=>{
   applyPersona();
 });
 applyPersona();
+
+/* deep link from the Atlas: ?focus=<category> */
+if(QP.get('focus')){
+  const el=document.querySelector('.category[data-cat="'+QP.get('focus')+'"]');
+  if(el){
+    el.classList.add('flash');
+    setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center'}),300);
+    setTimeout(()=>el.classList.remove('flash'),6000);
+  }
+}
 </script>
 </body>
 </html>

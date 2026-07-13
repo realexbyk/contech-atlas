@@ -87,6 +87,20 @@
   .proc:hover{color:var(--txt);border-color:var(--faint);}
   .proc.active{color:#dff8ff;border-color:var(--accent2);background:#37c8dd12;}
 
+  .viewas{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 0 0;}
+  .vlabel{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--faint);}
+  .vchip{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);
+    background:none;border:1px solid var(--hair2);padding:7px 12px;cursor:pointer;transition:.15s;}
+  .vchip:hover{color:var(--txt);border-color:var(--faint);}
+  .vchip.active{color:#fff;border-color:var(--accent);background:#5b76ff14;}
+  #atlasSearch{margin-left:auto;background:#11141a;border:1px solid var(--hair2);color:var(--txt);
+    font-family:var(--mono);font-size:11px;padding:8px 12px;outline:none;width:300px;max-width:100%;}
+  #atlasSearch:focus{border-color:var(--accent);}
+  #atlasSearch::placeholder{color:var(--faint);}
+  .tob{display:block;margin-top:16px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+    color:var(--accent);border:1px solid var(--hair2);padding:10px 12px;text-align:center;transition:.15s;}
+  .tob:hover{border-color:var(--accent);background:#5b76ff10;}
+
   #panel{width:340px;flex:0 0 340px;border:1px solid var(--hair2);background:#0b0d11f2;padding:24px;position:sticky;top:84px;min-height:430px;}
   #panel .layer-tag{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;}
   #panel h2{font-size:19px;letter-spacing:-.01em;margin:6px 0 4px;}
@@ -130,10 +144,9 @@
     <a class="wordmark" href="index.html">CONTECH<span>ATLAS</span><small>CONSTRUCTION · TECHNOLOGY · DATA</small></a>
     <nav class="links">
       <a href="atlas.html" class="on">The Atlas</a>
-      <a href="builder.html">Stack Builder</a>
+      <a href="builder.html">Tech Stack Builder</a>
       <a href="skills.html">Skills</a>
       <a href="articles.html">Briefings</a>
-      <a href="article-data-governance.html">Data Governance</a>
       <a href="index.html#about">About</a>
     </nav>
     <button class="menu-btn" onclick="document.querySelector('nav.links').classList.toggle('open')">MENU</button>
@@ -165,6 +178,15 @@
     <button class="tab" data-phase="handover">05 Handover</button>
     <button class="tab" data-phase="operate">06 Operations</button>
     <button class="lens" id="govLens">&#9678; Governance lens</button>
+  </div>
+  <div class="viewas" id="viewAs">
+    <span class="vlabel">VIEW AS</span>
+    <button class="vchip" data-p="any">All roles</button>
+    <button class="vchip" data-p="dev">Developer / Owner</button>
+    <button class="vchip" data-p="gc">General Contractor</button>
+    <button class="vchip" data-p="epc">EPC</button>
+    <button class="vchip" data-p="sub">Subcontractor</button>
+    <input type="search" id="atlasSearch" placeholder="Search the atlas… CDE, snagging, XER, EVM" autocomplete="off">
   </div>
   <div class="gov-note" id="govBanner">DATA GOVERNANCE IS NOT ABOUT DATA — IT IS ABOUT WHO CONTROLS DECISIONS.
     HIGHLIGHTED NODES HOLD DECISION AUTHORITY: MASTER DATA, STANDARDS, QUALITY, LINEAGE, RECORDS.<br><br>
@@ -214,7 +236,7 @@
 
 <footer>
   <div class="container inner">
-    <div>© 2026 CONTECH ATLAS · PROTOTYPE V0.2</div>
+    <div>© 2026 CONTECH ATLAS · REFERENCE MODEL v0.3 · LAST UPDATED JUL 2026</div>
     <div><a href="index.html">HOME</a> &nbsp;·&nbsp; <a href="articles.html">BRIEFINGS</a></div>
   </div>
 </footer>
@@ -260,7 +282,7 @@ const NODES = [
  {id:'sched', layer:'intelligence', u:.38, v:.26, name:'SCHEDULE INTELLIGENCE', ai:'Predictive', phases:['plan','procure','construct'],
   desc:'AI-driven WBS normalization and portfolio schedule aggregation — comparing and benchmarking schedules across projects.',
   gov:'Depends on a governed WBS/activity master library to map contractor schedules to a common structure.',
-  products:['ALICE Technologies','nPlan','Aphex','SmartPM']},
+  products:['ALICE Technologies','nPlan','Deltek Acumen Fuse','Aphex','SmartPM']},
  {id:'cv', layer:'intelligence', u:.52, v:.62, name:'CV PROGRESS', ai:'Predictive', phases:['construct'],
   desc:'Computer vision on camera and drone imagery to measure physical progress and detect safety issues.',
   gov:'Needs governed baselines (BIM, schedule) to compare observed against planned.',
@@ -288,7 +310,7 @@ const NODES = [
  {id:'api', layer:'integration', u:.45, v:.42, name:'INTEGRATION HUB', phases:['plan','design','procure','construct','handover','operate'],
   desc:'iPaaS / API layer moving data between systems of record and the platform. Replaces spreadsheet exports.',
   gov:'Every integration is a contract: schemas, ownership and change control must be managed.', isGov:true,
-  products:['Azure Integration Services','Toric','MuleSoft','Boomi','Workato']},
+  products:['Azure Integration Services','Toric','MuleSoft','Boomi','Microsoft Excel (the honest default)']},
  {id:'mdm', layer:'governance', gi:0, u:0, v:0, name:'MASTER DATA · WBS/CBS', phases:['plan','design','procure','construct','handover'],
   desc:'Master libraries: WBS/CBS structures, activity codes, asset classifications, organization registers.',
   gov:'The core governance asset — enables comparison across projects and contractors.', isGov:true,
@@ -459,10 +481,51 @@ NODES.forEach(n=>{
 
 let currentPhase='all',govOn=false;
 
+const ATLAS_P={
+ any:null,
+ dev:['dash','report','dataprod','evm','twin','pred','sched','gen','reason','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm','hse','risk','sem','context'],
+ gc:['forms','cams','drones','scan','bim','p6','cost','docs','erp','api','mdm','dq','cv','sched','gen','dash','hse','evm','risk'],
+ epc:['bim','docs','p6','cost','erp','contract','std','mdm','api','dq','scan','iot','twin','dash','gen','hse','evm','risk'],
+ sub:['forms','p6','docs','cost','gen','dash','hse'],
+};
+const SYN={
+ bim:'cde common data environment revit model coordination',
+ forms:'snagging punch list inspection quality checklist field app',
+ cv:'progress tracking site photos computer vision',
+ api:'ipaas middleware integration excel etl',
+ p6:'primavera schedule xer planning programme baseline',
+ docs:'aconex correspondence rfi submittal transmittal document control',
+ lake:'warehouse data platform databricks snowflake fabric',
+ dataprod:'dashboard app portal data product',
+ mdm:'wbs cbs master data reference codes',
+ sem:'metric kpi definitions semantic',
+ gis:'map esri geospatial arcgis',
+ scan:'point cloud lidar laser as-built',
+ drones:'uav photogrammetry aerial survey',
+ evm:'earned value cpi spi eac etc performance',
+ contract:'claims eot variation dispute fidic notice',
+ hse:'safety health environment incident permit',
+ risk:'qsra contingency risk register',
+ gen:'copilot chatbot llm assistant genai',
+ reason:'agent agentic mcp',
+ memory:'vector recall lessons',
+ context:'mcp ontology graph context',
+ epm:'feasibility forecast fp&a business case cashflow',
+ crm:'sales leasing tenants units salesforce yardi',
+};
+let atlasPersona=localStorage.getItem('ctaPersona')||'any';
+let searchQ='';
 function visible(n){
   const inPhase=currentPhase==='all'||n.phases.includes(currentPhase);
   const inProc=!selectedProc||selectedProc.ids.includes(n.id);
-  return inPhase&&inProc;
+  const core=ATLAS_P[atlasPersona];
+  const inPersona=!core||core.includes(n.id);
+  let inSearch=true;
+  if(searchQ){
+    const hay=(n.name+' '+n.desc+' '+(n.products||[]).join(' ')+' '+(SYN[n.id]||'')).toLowerCase();
+    inSearch=hay.includes(searchQ);
+  }
+  return inPhase&&inProc&&inPersona&&inSearch;
 }
 function applyState(){
   NODES.forEach(n=>{
@@ -600,6 +663,7 @@ function select(id){
     What risks does it flag — and miss? · Who verifies the output? · Who owns the liability when it is wrong?
     An AI node without written answers to these is an ungoverned decision-maker.</div>`;
   html+=`<div class="conn"><b>Data flows</b>${conns.join('<br>')}</div>`;
+  html+=`<a class="tob" href="builder.html?focus=${n.id}">COMPARE PRODUCTS IN THE TECH STACK BUILDER →</a>`;
   document.getElementById('panelContent').innerHTML=html;
 }
 
@@ -617,6 +681,23 @@ document.getElementById('govLens').addEventListener('click',e=>{
   document.getElementById('govBanner').classList.toggle('show',govOn);
   applyState();
 });
+document.getElementById('viewAs').addEventListener('click',e=>{
+  const b=e.target.closest('.vchip');if(!b)return;
+  atlasPersona=b.dataset.p;
+  localStorage.setItem('ctaPersona',atlasPersona);
+  syncChips();
+  applyState();
+});
+function syncChips(){
+  document.querySelectorAll('.vchip').forEach(x=>x.classList.toggle('active',x.dataset.p===atlasPersona));
+}
+document.getElementById('atlasSearch').addEventListener('input',e=>{
+  searchQ=e.target.value.trim().toLowerCase();
+  applyState();
+});
+const qp=new URLSearchParams(location.search);
+if(qp.get('node')&&nodeById[qp.get('node')]){select(qp.get('node'));}
+syncChips();
 applyState();
 </script>
 </body>
