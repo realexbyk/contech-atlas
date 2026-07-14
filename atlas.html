@@ -101,6 +101,30 @@
     color:var(--accent);border:1px solid var(--hair2);padding:10px 12px;text-align:center;transition:.15s;}
   .tob:hover{border-color:var(--accent);background:#5b76ff10;}
 
+  /* technology landscape */
+  .landscape{border-top:1px solid var(--hair2);padding:56px 0 30px;}
+  .land-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;}
+  .land-head h2{font-size:clamp(22px,2.6vw,32px);letter-spacing:-.02em;font-weight:800;}
+  .land-count{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--accent2);}
+  .land-sub{color:var(--dim);font-size:14px;line-height:1.6;max-width:720px;margin-top:10px;}
+  .lgroup{margin-top:34px;}
+  .lgroup>h3{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;
+    border-bottom:1px solid var(--hair2);padding-bottom:8px;}
+  .lgroup.gov>h3{color:var(--amber);}
+  .lgroup.fab>h3{color:var(--accent2);}
+  .lcat{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--hair);}
+  .lcat-name{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;
+    width:210px;flex:0 0 210px;cursor:pointer;}
+  .lcat-name:hover{color:var(--txt);}
+  .lchips{display:flex;gap:6px;flex-wrap:wrap;flex:1;}
+  .lchip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;color:#c3cad4;
+    border:1px solid var(--hair2);background:#11141a;padding:5px 10px 5px 6px;cursor:pointer;transition:.15s;}
+  .lchip img{width:14px;height:14px;display:block;}
+  .lchip:hover{border-color:var(--accent);color:#fff;}
+  .lchip.dim{opacity:.35;}
+  .lcat.hidden,.lgroup.hidden{display:none;}
+  @media(max-width:760px){.lcat{flex-direction:column;gap:6px;}.lcat-name{width:auto;flex:1;}}
+
   #panel{width:340px;flex:0 0 340px;border:1px solid var(--hair2);background:#0b0d11f2;padding:24px;position:sticky;top:84px;min-height:430px;}
   #panel .layer-tag{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;}
   #panel h2{font-size:19px;letter-spacing:-.01em;margin:6px 0 4px;}
@@ -166,6 +190,7 @@
       <span class="aq">Where does each lifecycle process live, and which systems does it touch?</span>
       <span class="aq">Where do governance and decision authority actually sit?</span>
       <span class="aq">Where does AI plug in — what feeds it, who verifies it, who answers for it?</span>
+      <a class="aq" href="#landscape" style="color:var(--accent2);border-bottom:none;">Browse every mapped technology ↓</a>
     </div>
   </div>
 
@@ -224,6 +249,17 @@
         </p>
       </div>
     </aside>
+  </div>
+
+  <div class="landscape" id="landscape">
+    <div class="land-head">
+      <h2>The technology landscape.</h2>
+      <span class="land-count" id="landCount"></span>
+    </div>
+    <p class="land-sub">Every technology currently mapped in the reference model, grouped by domain.
+       The search box and role view above filter this list too. Click any product to see where it sits in the
+       stack — or its domain name to open the full category.</p>
+    <div id="landBody"></div>
   </div>
 
   <div class="legend">
@@ -519,7 +555,7 @@ function visible(n){
   const inPhase=currentPhase==='all'||n.phases.includes(currentPhase);
   const inProc=!selectedProc||selectedProc.ids.includes(n.id);
   const core=ATLAS_P[atlasPersona];
-  const inPersona=!core||core.includes(n.id);
+  const inPersona=!core||core.includes(n.id)||!!searchQ; /* search overrides role dimming */
   let inSearch=true;
   if(searchQ){
     const hay=(n.name+' '+n.desc+' '+(n.products||[]).join(' ')+' '+(SYN[n.id]||'')).toLowerCase();
@@ -538,6 +574,7 @@ function applyState(){
   edgeEls.forEach(e=>{
     e.elm.classList.toggle('off',!(visible(nodeById[e.a])&&visible(nodeById[e.b])));
   });
+  if(typeof applyLandscape==='function')applyLandscape();
 }
 function hover(id,on){
   edgeEls.forEach(e=>{
@@ -695,6 +732,100 @@ document.getElementById('atlasSearch').addEventListener('input',e=>{
   searchQ=e.target.value.trim().toLowerCase();
   applyState();
 });
+/* ---------- technology landscape ---------- */
+const TECH=[
+ {n:'Power BI',d:'powerbi.microsoft.com',c:'dash'},{n:'Tableau',d:'tableau.com',c:'dash'},{n:'Mastt',d:'mastt.com',c:'dash'},{n:'Looker',d:'cloud.google.com',c:'dash'},{n:'Grafana',d:'grafana.com',c:'dash'},
+ {n:'Bentley iTwin',d:'bentley.com',c:'twin'},{n:'Matterport',d:'matterport.com',c:'twin'},{n:'Autodesk Tandem',d:'autodesk.com',c:'twin'},{n:'Cesium',d:'cesium.com',c:'twin'},{n:'Nvidia Omniverse',d:'nvidia.com',c:'twin'},
+ {n:'Palantir Foundry',d:'palantir.com',c:'report'},{n:'Procore Analytics',d:'procore.com',c:'report'},{n:'Qlik',d:'qlik.com',c:'report'},
+ {n:'Microsoft Fabric',d:'microsoft.com',c:'dataprod'},{n:'Power Apps',d:'powerapps.microsoft.com',c:'dataprod'},{n:'Retool',d:'retool.com',c:'dataprod'},
+ {n:'Deltek Cobra',d:'deltek.com',c:'evm'},{n:'Hexagon EcoSys',d:'hexagon.com',c:'evm'},{n:'Power BI Semantic',d:'powerbi.microsoft.com',c:'evm'},
+ {n:'nPlan',d:'nplan.io',c:'pred'},{n:'InEight Schedule',d:'ineight.com',c:'pred'},{n:'Primavera Cloud',d:'oracle.com',c:'pred'},{n:'Foresight',d:'foresight.works',c:'pred'},
+ {n:'ALICE',d:'alicetechnologies.com',c:'sched'},{n:'SmartPM',d:'smartpm.com',c:'sched'},{n:'Acumen Fuse',d:'deltek.com',c:'sched'},{n:'Aphex',d:'aphex.co',c:'sched'},{n:'Nodes & Links',d:'nodeslinks.com',c:'sched'},
+ {n:'OpenSpace',d:'openspace.ai',c:'cv'},{n:'Buildots',d:'buildots.com',c:'cv'},{n:'Track3D',d:'track3d.ai',c:'cv'},{n:'Disperse',d:'disperse.io',c:'cv'},{n:'AI Clearing',d:'aiclearing.com',c:'cv'},
+ {n:'Document Crunch',d:'documentcrunch.com',c:'gen'},{n:'M365 Copilot',d:'microsoft.com',c:'gen'},{n:'Anthropic Claude',d:'anthropic.com',c:'gen'},{n:'Procore Copilot',d:'procore.com',c:'gen'},{n:'Google Gemini',d:'gemini.google.com',c:'gen'},{n:'Fabric Data Agents',d:'microsoft.com',c:'gen'},
+ {n:'Palantir AIP',d:'palantir.com',c:'reason'},{n:'Trunk Tools',d:'trunk.tools',c:'reason'},{n:'OpenAI',d:'openai.com',c:'reason'},
+ {n:'Databricks',d:'databricks.com',c:'lake'},{n:'Snowflake',d:'snowflake.com',c:'lake'},{n:'MS Fabric',d:'microsoft.com',c:'lake'},{n:'BigQuery',d:'cloud.google.com',c:'lake'},
+ {n:'Neo4j',d:'neo4j.com',c:'kg'},{n:'Stardog',d:'stardog.com',c:'kg'},{n:'Neptune',d:'aws.amazon.com',c:'kg'},
+ {n:'Esri ArcGIS',d:'esri.com',c:'gis'},{n:'QGIS',d:'qgis.org',c:'gis'},{n:'Google Earth Engine',d:'earthengine.google.com',c:'gis'},
+ {n:'Azure Integration',d:'azure.microsoft.com',c:'api'},{n:'Toric',d:'toric.com',c:'api'},{n:'Microsoft Excel',d:'microsoft.com',c:'api'},{n:'MuleSoft',d:'mulesoft.com',c:'api'},{n:'Boomi',d:'boomi.com',c:'api'},{n:'Workato',d:'workato.com',c:'api'},
+ {n:'Informatica MDM',d:'informatica.com',c:'mdm'},{n:'Profisee',d:'profisee.com',c:'mdm'},{n:'Semarchy',d:'semarchy.com',c:'mdm'},
+ {n:'Great Expectations',d:'greatexpectations.io',c:'dq'},{n:'Monte Carlo',d:'montecarlodata.com',c:'dq'},{n:'Soda',d:'soda.io',c:'dq'},
+ {n:'Solibri',d:'solibri.com',c:'std'},{n:'Plannerly',d:'plannerly.com',c:'std'},{n:'Morta',d:'morta.io',c:'std'},
+ {n:'MS Purview',d:'microsoft.com',c:'cat'},{n:'Collibra',d:'collibra.com',c:'cat'},{n:'Atlan',d:'atlan.com',c:'cat'},
+ {n:'dbt Semantic Layer',d:'getdbt.com',c:'sem'},{n:'Cube',d:'cube.dev',c:'sem'},{n:'AtScale',d:'atscale.com',c:'sem'},
+ {n:'MCP connectors',d:'anthropic.com',c:'context'},{n:'Palantir Ontology',d:'palantir.com',c:'context'},{n:'Microsoft Graph',d:'microsoft.com',c:'context'},{n:'Glean',d:'glean.com',c:'context'},
+ {n:'pgvector',d:'postgresql.org',c:'memory'},{n:'Pinecone',d:'pinecone.io',c:'memory'},{n:'Zep',d:'getzep.com',c:'memory'},{n:'Mem0',d:'mem0.ai',c:'memory'},
+ {n:'Autodesk ACC',d:'autodesk.com',c:'bim'},{n:'ProjectWise',d:'bentley.com',c:'bim'},{n:'Trimble Connect',d:'trimble.com',c:'bim'},{n:'Dalux',d:'dalux.com',c:'bim'},{n:'Revizto',d:'revizto.com',c:'bim'},{n:'Catenda',d:'catenda.com',c:'bim'},
+ {n:'Primavera P6',d:'oracle.com',c:'p6'},{n:'MS Project',d:'microsoft.com',c:'p6'},{n:'Powerproject',d:'elecosoft.com',c:'p6'},
+ {n:'Hexagon EcoSys',d:'hexagon.com',c:'cost'},{n:'ARES Prism',d:'aresprism.com',c:'cost'},{n:'InEight',d:'ineight.com',c:'cost'},{n:'RIB CostX',d:'rib-software.com',c:'cost'},{n:'Kahua',d:'kahua.com',c:'cost'},
+ {n:'SAP S/4HANA',d:'sap.com',c:'erp'},{n:'Oracle Fusion',d:'oracle.com',c:'erp'},{n:'Dynamics 365',d:'microsoft.com',c:'erp'},{n:'Trimble Viewpoint',d:'viewpoint.com',c:'erp'},{n:'CMiC',d:'cmicglobal.com',c:'erp'},
+ {n:'Oracle Aconex',d:'oracle.com',c:'docs'},{n:'Asite',d:'asite.com',c:'docs'},{n:'Newforma',d:'newforma.com',c:'docs'},{n:'SharePoint',d:'microsoft.com',c:'docs'},
+ {n:'CEMAR',d:'thinkproject.com',c:'contract'},{n:'Ironclad',d:'ironcladapp.com',c:'contract'},{n:'Document Crunch',d:'documentcrunch.com',c:'contract'},
+ {n:'Salesforce',d:'salesforce.com',c:'crm'},{n:'Dynamics 365',d:'microsoft.com',c:'crm'},{n:'Yardi Voyager',d:'yardi.com',c:'crm'},{n:'MRI Software',d:'mrisoftware.com',c:'crm'},
+ {n:'Oracle EPM',d:'oracle.com',c:'epm'},{n:'Anaplan',d:'anaplan.com',c:'epm'},{n:'Briq',d:'briq.com',c:'epm'},{n:'SAP Analytics Cloud',d:'sap.com',c:'epm'},
+ {n:'HammerTech',d:'hammertech.com',c:'hse'},{n:'Intelex',d:'intelex.com',c:'hse'},{n:'SafetyCulture',d:'safetyculture.com',c:'hse'},{n:'Cority',d:'cority.com',c:'hse'},
+ {n:'Safran Risk',d:'safran.com',c:'risk'},{n:'Riskonnect',d:'riskonnect.com',c:'risk'},{n:'Primavera Risk',d:'oracle.com',c:'risk'},
+ {n:'Siemens',d:'siemens.com',c:'iot'},{n:'Schneider',d:'se.com',c:'iot'},{n:'Honeywell',d:'honeywell.com',c:'iot'},{n:'Milesight',d:'milesight.com',c:'iot'},
+ {n:'DJI Enterprise',d:'dji.com',c:'drones'},{n:'DroneDeploy',d:'dronedeploy.com',c:'drones'},{n:'Pix4D',d:'pix4d.com',c:'drones'},{n:'Propeller',d:'propelleraero.com',c:'drones'},
+ {n:'Leica',d:'leica-geosystems.com',c:'scan'},{n:'FARO',d:'faro.com',c:'scan'},{n:'NavVis',d:'navvis.com',c:'scan'},{n:'Trimble X9',d:'trimble.com',c:'scan'},
+ {n:'EarthCam',d:'earthcam.net',c:'cams'},{n:'TrueLook',d:'truelook.com',c:'cams'},{n:'Multivista',d:'multivista.com',c:'cams'},{n:'Sensera',d:'senserasystems.com',c:'cams'},
+ {n:'Procore',d:'procore.com',c:'forms'},{n:'Fieldwire',d:'fieldwire.com',c:'forms'},{n:'Autodesk Build',d:'autodesk.com',c:'forms'},{n:'Dalux Field',d:'dalux.com',c:'forms'},{n:'PlanRadar',d:'planradar.com',c:'forms'},{n:'Novade',d:'novade.net',c:'forms'},
+];
+const tico=d=>'https://www.google.com/s2/favicons?domain='+d+'&sz=64';
+const LGROUPS=[...LAYERS.map(l=>({id:l.id,name:l.idx+' · '+l.name,cls:''})),
+ {id:'governance',name:'✦ · DATA GOVERNANCE — CROSS-CUTTING',cls:'gov'},
+ {id:'fabric',name:'◈ · CONTEXT · SEMANTICS · MEMORY — CROSS-CUTTING',cls:'fab'}];
+function buildLandscape(){
+  const body=document.getElementById('landBody');
+  LGROUPS.forEach(g=>{
+    const cats=NODES.filter(n=>n.layer===g.id);
+    if(!cats.length)return;
+    const gd=document.createElement('div');gd.className='lgroup '+g.cls;gd.dataset.g=g.id;
+    gd.innerHTML='<h3>'+g.name+'</h3>';
+    cats.forEach(n=>{
+      const prods=TECH.filter(p=>p.c===n.id);
+      if(!prods.length)return;
+      const row=document.createElement('div');row.className='lcat';row.dataset.cat=n.id;
+      const nm=document.createElement('div');nm.className='lcat-name';nm.textContent=n.name;
+      nm.onclick=()=>{select(n.id);document.getElementById('mapbox').scrollIntoView({behavior:'smooth'});};
+      row.appendChild(nm);
+      const ch=document.createElement('div');ch.className='lchips';
+      prods.forEach(p=>{
+        const b=document.createElement('button');b.className='lchip';b.dataset.cat=n.id;b.dataset.n=p.n.toLowerCase();
+        b.innerHTML='<img src="'+tico(p.d)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">'+p.n;
+        b.onclick=()=>{select(n.id);document.getElementById('mapbox').scrollIntoView({behavior:'smooth'});};
+        ch.appendChild(b);
+      });
+      row.appendChild(ch);
+      gd.appendChild(row);
+    });
+    body.appendChild(gd);
+  });
+  document.getElementById('landCount').textContent=TECH.length+'+ TECHNOLOGIES MAPPED · MODEL v0.3';
+}
+function applyLandscape(){
+  const core=ATLAS_P[atlasPersona];
+  document.querySelectorAll('.lchip').forEach(b=>{
+    const n=nodeById[b.dataset.cat];
+    let show=true;
+    if(searchQ){
+      const hay=(b.dataset.n+' '+n.name+' '+(SYN[n.id]||'')).toLowerCase();
+      show=hay.includes(searchQ);
+    }
+    b.style.display=show?'':'none';
+    b.classList.toggle('dim',!searchQ&&core&&!core.includes(b.dataset.cat));
+  });
+  document.querySelectorAll('.lcat').forEach(row=>{
+    const any=[...row.querySelectorAll('.lchip')].some(b=>b.style.display!=='none');
+    row.classList.toggle('hidden',!any);
+  });
+  document.querySelectorAll('.lgroup').forEach(g=>{
+    const any=[...g.querySelectorAll('.lcat')].some(r=>!r.classList.contains('hidden'));
+    g.classList.toggle('hidden',!any);
+  });
+}
+buildLandscape();
+
 const qp=new URLSearchParams(location.search);
 if(qp.get('node')&&nodeById[qp.get('node')]){select(qp.get('node'));}
 syncChips();
