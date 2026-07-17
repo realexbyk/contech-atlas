@@ -239,6 +239,7 @@ const CATS=[
  {id:'dataprod',lay:'experience',name:'Data products & portals'},
  {id:'evm',lay:'experience',name:'EVM & performance KPIs'},
  {id:'pred',lay:'intelligence',name:'Predictive risk & delay'},
+ {id:'gendesign',lay:'intelligence',name:'Generative design & feasibility'},
  {id:'sched',lay:'intelligence',name:'Schedule intelligence'},
  {id:'cv',lay:'intelligence',name:'CV progress tracking'},
  {id:'gen',lay:'intelligence',name:'GenAI copilots'},
@@ -280,6 +281,7 @@ const PRODUCTS=[
  {n:'OpenSpace',d:'openspace.ai',c:'cv'},{n:'Buildots',d:'buildots.com',c:'cv'},{n:'Track3D',d:'track3d.ai',c:'cv'},{n:'Disperse',d:'disperse.io',c:'cv'},{n:'AI Clearing',d:'aiclearing.com',c:'cv'},
  {n:'Document Crunch',d:'documentcrunch.com',c:'gen'},{n:'M365 Copilot',d:'microsoft.com',c:'gen'},{n:'Anthropic Claude',d:'anthropic.com',c:'gen'},
  {n:'Palantir AIP',d:'palantir.com',c:'reason'},{n:'Trunk Tools',d:'trunk.tools',c:'reason'},{n:'OpenAI',d:'openai.com',c:'reason'},
+ {n:'TestFit',d:'testfit.io',c:'gendesign'},{n:'Autodesk Forma',d:'autodesk.com',c:'gendesign'},{n:'Higharc',d:'higharc.com',c:'gendesign'},{n:'Finch',d:'finch3d.com',c:'gendesign'},
  {n:'Databricks',d:'databricks.com',c:'lake'},{n:'Snowflake',d:'snowflake.com',c:'lake'},{n:'MS Fabric',d:'microsoft.com',c:'lake'},{n:'BigQuery',d:'cloud.google.com',c:'lake'},
  {n:'Neo4j',d:'neo4j.com',c:'kg'},{n:'Stardog',d:'stardog.com',c:'kg'},{n:'Neptune',d:'aws.amazon.com',c:'kg'},
  {n:'Esri ArcGIS',d:'esri.com',c:'gis'},{n:'QGIS',d:'qgis.org',c:'gis'},{n:'Google Earth Engine',d:'earthengine.google.com',c:'gis'},
@@ -331,6 +333,7 @@ const FLOWS=[
  ['mdm','p6',1],['mdm','cost',1],['std','bim',1],['dq','lake',1],['cat','lake',1],['docs','gen'],
  ['crm','api'],['epm','api'],['lake','dataprod'],['dq','dataprod',1],['mdm','crm',1],
  ['hse','api'],['risk','api'],['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],
+ ['gis','gendesign'],['gendesign','epm'],
 ];
 
 const USECASES=[
@@ -366,7 +369,7 @@ const PERSONAS={
  any:{name:'Any role',expected:['experience','intelligence','platform','integration','systems','capture','governance'],core:null,note:''},
  dev:{name:'Developer / Owner',
   note:'MASTER DEVELOPERS RUN PORTFOLIOS: THEY CONSOLIDATE CONTRACTOR DATA RATHER THAN CAPTURE IT. CORE = PORTFOLIO SYSTEMS, MASTER DATA, A DATA PLATFORM AND DECISION PRODUCTS. SITE CAPTURE USUALLY ARRIVES VIA CONTRACTORS.',
-  core:['dash','report','dataprod','evm','twin','pred','sched','gen','reason','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm','hse','risk','sem','context'],
+  core:['dash','report','dataprod','evm','twin','pred','sched','gen','reason','gendesign','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm','hse','risk','sem','context'],
   expected:['experience','intelligence','platform','integration','systems','governance','fabric'],
   example:['Power BI|dash','Microsoft Fabric|dataprod','nPlan|pred','SmartPM|sched','Databricks|lake','MS Purview|cat','Great Expectations|dq','Informatica MDM|mdm','Azure Integration|api','Primavera P6|p6','Hexagon EcoSys|cost','Oracle Aconex|docs','Salesforce|crm','Oracle EPM|epm']},
  gc:{name:'General Contractor',

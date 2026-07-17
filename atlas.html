@@ -54,9 +54,13 @@
   .gov-note{display:none;font-family:var(--mono);font-size:11.5px;color:#d9b56b;padding:12px 0 0;line-height:1.6;}
   .gov-note.show{display:block;}
 
-  .stage{display:flex;align-items:flex-start;gap:36px;padding:26px 0 40px;}
-  #mapbox{flex:1 1 auto;min-width:0;}
-  svg{display:block;width:100%;height:auto;}
+  .stage{display:flex;align-items:flex-start;gap:28px;padding:26px 0 40px;}
+  #mapbox{flex:1 1 auto;min-width:0;position:relative;height:80vh;min-height:640px;
+    border:1px solid var(--hair2);background:#0a0c10;overflow:hidden;}
+  #map{width:100%;height:100%;display:block;cursor:grab;touch-action:none;}
+  #map.grabbing{cursor:grabbing;}
+  .maphint{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.14em;color:var(--faint);pointer-events:none;}
 
   .layer-plane{fill:#0c0e13d9;stroke:var(--hair2);stroke-width:1;}
   .layer-label{fill:var(--txt);font-family:var(--mono);font-size:11px;letter-spacing:.14em;font-weight:500;}
@@ -93,8 +97,11 @@
     background:none;border:1px solid var(--hair2);padding:7px 12px;cursor:pointer;transition:.15s;}
   .vchip:hover{color:var(--txt);border-color:var(--faint);}
   .vchip.active{color:#fff;border-color:var(--accent);background:#5b76ff14;}
-  #atlasSearch{margin-left:auto;background:#11141a;border:1px solid var(--hair2);color:var(--txt);
-    font-family:var(--mono);font-size:11px;padding:8px 12px;outline:none;width:300px;max-width:100%;}
+  #ucSel{margin-left:auto;background:#11141a;border:1px solid var(--hair2);color:var(--dim);
+    font-family:var(--mono);font-size:10.5px;padding:8px 10px;outline:none;max-width:280px;cursor:pointer;}
+  #ucSel:focus{border-color:var(--accent2);}
+  #atlasSearch{background:#11141a;border:1px solid var(--hair2);color:var(--txt);
+    font-family:var(--mono);font-size:11px;padding:8px 12px;outline:none;width:260px;max-width:100%;}
   #atlasSearch:focus{border-color:var(--accent);}
   #atlasSearch::placeholder{color:var(--faint);}
   .tob{display:block;margin-top:16px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
@@ -212,7 +219,8 @@
     <button class="vchip" data-p="gc">General Contractor</button>
     <button class="vchip" data-p="epc">EPC</button>
     <button class="vchip" data-p="sub">Subcontractor</button>
-    <input type="search" id="atlasSearch" placeholder="Search the atlas… CDE, snagging, XER, EVM" autocomplete="off">
+    <select id="ucSel"></select>
+    <input type="search" id="atlasSearch" placeholder="Search… CDE, snagging, XER, EVM" autocomplete="off">
   </div>
   <div class="gov-note" id="govBanner">DATA GOVERNANCE IS NOT ABOUT DATA — IT IS ABOUT WHO CONTROLS DECISIONS.
     HIGHLIGHTED NODES HOLD DECISION AUTHORITY: MASTER DATA, STANDARDS, QUALITY, LINEAGE, RECORDS.<br><br>
@@ -223,19 +231,8 @@
 
   <div class="stage">
     <div id="mapbox">
-      <svg id="map" viewBox="-95 0 1180 940" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto">
-            <path d="M0,0 L8,4 L0,8 z" fill="#39414f"/>
-          </marker>
-          <marker id="arrowHot" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto">
-            <path d="M0,0 L8,4 L0,8 z" fill="#5b76ff"/>
-          </marker>
-        </defs>
-        <g id="planes"></g>
-        <g id="edges"></g>
-        <g id="nodes"></g>
-      </svg>
+      <canvas id="map"></canvas>
+      <div class="maphint">DRAG NODES · SCROLL TO ZOOM · DRAG BACKGROUND TO PAN · CLICK A NODE FOR DETAIL</div>
     </div>
 
     <aside id="panel">
@@ -312,6 +309,10 @@ const NODES = [
   desc:'Packaged, reusable data assets — dashboards, portals, apps and APIs — each with a named owner, a defined consumer, quality rules and an SLA. Run-and-maintain plus continuous enhancement, so they scale across a portfolio instead of dying as one-off reports.',
   gov:'A data product without an owner and a quality SLA is just another dashboard. Productization is governance made operational.',
   products:['Microsoft Fabric','Power Apps','Palantir Foundry','Retool']},
+ {id:'gendesign', layer:'intelligence', u:.02, v:.72, name:'GENERATIVE DESIGN', ai:'Generative', phases:['plan','design'],
+  desc:'Generative site and building configuration: feed in a plot and its constraints, get scored feasibility options in minutes — massing, unit mix, parking, yield.',
+  gov:'Options are only comparable if constraints and cost assumptions are governed inputs, not per-run guesses.',
+  products:['TestFit','Autodesk Forma','Higharc','Finch']},
  {id:'pred', layer:'intelligence', u:.16, v:.42, name:'PREDICTIVE RISK', ai:'Predictive', phases:['plan','design','procure','construct'],
   desc:'ML models forecasting delay probability, cost overrun and claims exposure from historical and live project data.',
   gov:'Models trained on ungoverned data amplify errors — training-data lineage is essential.',
@@ -445,82 +446,205 @@ const EDGES = [
  ['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],['evm','report'],
  ['mdm','p6'],['mdm','cost'],['std','bim'],['dq','lake'],['cat','lake'],
  ['api','lake'],['lake','kg'],['lake','pred'],['lake','gen'],['kg','reason'],['lake','sched'],
- ['gis','twin'],['kg','twin'],
+ ['gis','twin'],['kg','twin'],['gis','gendesign'],['gendesign','epm'],
  ['pred','dash'],['sched','dash'],['cv','dash'],['gen','report'],['reason','dash'],['lake','report'],
 ];
 
-const CX=470, TOPY=36, GAP=146, HW=350, HH=72;
-const GOVX=CX+HW+150, GOVTOP=TOPY+114, GOVGAP=112, FABTOP=GOVTOP+4*GOVGAP+56;
-function layerY(i){return TOPY + i*GAP;}
-function pos(node){
-  if(node.layer==='governance'){
-    return {x:GOVX, y:GOVTOP + node.gi*GOVGAP};
-  }
-  if(node.layer==='fabric'){
-    return {x:GOVX, y:FABTOP + node.gi*GOVGAP};
-  }
-  const i = LAYERS.findIndex(l=>l.id===node.layer);
-  const y = layerY(i);
-  return {x: CX + HW*node.u - HW*node.v, y: y + HH*node.u + HH*node.v};
-}
-const svgNS='http://www.w3.org/2000/svg';
-function el(tag,attrs,parent){const e=document.createElementNS(svgNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
-
-const planes=document.getElementById('planes');
-LAYERS.forEach((l,i)=>{
-  const y=layerY(i);
-  el('path',{d:`M ${CX} ${y} L ${CX+HW} ${y+HH} L ${CX} ${y+2*HH} L ${CX-HW} ${y+HH} Z`,class:'layer-plane'},planes);
-  const ix=el('text',{x:CX-HW-8,y:y+HH-24,class:'layer-idx','text-anchor':'end'},planes); ix.textContent=l.idx;
-  const t=el('text',{x:CX-HW-8,y:y+HH-8,class:'layer-label','text-anchor':'end'},planes); t.textContent=l.name;
-  const s=el('text',{x:CX-HW-8,y:y+HH+8,class:'layer-sub','text-anchor':'end'},planes); s.textContent=l.sub;
-});
-
-/* governance frame — cross-cutting, wraps the whole stack */
-const govBottom=layerY(5)+2*HH+22;
-el('rect',{x:CX-HW-16,y:TOPY-18,width:(GOVX+92)-(CX-HW-16),height:govBottom-TOPY+18,
-  fill:'none',stroke:'#6b5518','stroke-width':1.2,'stroke-dasharray':'6 5'},planes);
-const gt1=el('text',{x:GOVX,y:TOPY+8,class:'layer-label','text-anchor':'middle',fill:'#d9a53f'},planes);
-gt1.textContent='DATA GOVERNANCE';
-gt1.setAttribute('style','fill:#d9a53f');
-const gt2=el('text',{x:GOVX,y:TOPY+24,class:'layer-sub','text-anchor':'middle'},planes);
-gt2.textContent='✦ cross-cutting · every layer';
-const ft1=el('text',{x:GOVX,y:FABTOP-34,class:'layer-label','text-anchor':'middle'},planes);
-ft1.textContent='CONTEXT · SEMANTICS · MEMORY';
-ft1.setAttribute('style','fill:#37c8dd');
-const ft2=el('text',{x:GOVX,y:FABTOP-20,class:'layer-sub','text-anchor':'middle'},planes);
-ft2.textContent='◈ shared across applications';
-
-const edgesG=document.getElementById('edges');
+/* geometry now handled by the living-map canvas engine below */
+/* ---------- THE LIVING MAP — canvas physics engine ---------- */
 const nodeById={};NODES.forEach(n=>nodeById[n.id]=n);
-const edgeEls=[];
-EDGES.forEach(([a,b])=>{
-  const A=pos(nodeById[a]),B=pos(nodeById[b]);
-  const dy=B.y-A.y;
-  const d=`M ${A.x} ${A.y} C ${A.x} ${A.y+dy*0.4}, ${B.x} ${B.y-dy*0.4}, ${B.x} ${B.y}`;
-  const p=el('path',{d,class:'edge','marker-end':'url(#arrow)'},edgesG);
-  edgeEls.push({a,b,elm:p});
-});
+const canvas=document.getElementById('map');
+const ctx=canvas.getContext('2d');
+const MONO='"IBM Plex Mono",monospace';
+let W=0,H=0,DPR=1,T=0;
+let cam={s:1,x:0,y:0};
+let visMap={},selectedNode=null,hoverNode=null;
+let dragN=null,panOn=false,lastX=0,lastY=0,movedPx=0;
 
-const nodesG=document.getElementById('nodes');
-const nodeEls={};
-NODES.forEach(n=>{
-  const p=pos(n);
-  const g=el('g',{class:'node'+(n.layer==='fabric'?' fab':''),'data-id':n.id},nodesG);
-  const w=Math.max(80,n.name.length*6.4+18);
-  el('rect',{x:p.x-w/2,y:p.y-13,width:w,height:26},g);
-  const t=el('text',{x:p.x,y:p.y+3.5},g);t.textContent=n.name;
-  if(n.ai){const a=el('circle',{cx:p.x-w/2+7,cy:p.y-6,r:2.2,fill:'#37c8dd'},g);}
-  g.addEventListener('click',()=>select(n.id));
-  g.addEventListener('mouseenter',()=>hover(n.id,true));
-  g.addEventListener('mouseleave',()=>hover(n.id,false));
-  nodeEls[n.id]=g;
-});
+const sim=NODES.map(n=>({id:n.id,n,x:0,y:0,vx:0,vy:0,ax:0,ay:0,w:0,ph:Math.random()*6.28}));
+const simById={};sim.forEach(s=>simById[s.id]=s);
+const springs=EDGES.map(([a,b])=>({a:simById[a],b:simById[b],ka:a,kb:b}));
+
+function layout(){
+  DPR=window.devicePixelRatio||1;
+  W=canvas.clientWidth;H=canvas.clientHeight;
+  canvas.width=W*DPR;canvas.height=H*DPR;
+}
+const railX=()=>W-140;
+const bandY=i=>{const top=92,bot=H-56;return top+(bot-top)*(i+0.5)/6;};
+const railSlot=i=>92+(i+0.5)*(H-170)/7;
+function setTargets(){
+  for(const s of sim){
+    const n=s.n;
+    if(n.layer==='governance'){s.tx=railX();s.ty=railSlot(n.gi);s.strong=true;}
+    else if(n.layer==='fabric'){s.tx=railX();s.ty=railSlot(n.gi+4);s.strong=true;}
+    else{
+      const i=LAYERS.findIndex(l=>l.id===n.layer);
+      const left=250,right=railX()-190;
+      s.tx=left+((n.u+(1-n.v))/2)*(right-left);
+      s.ty=bandY(i);s.strong=false;
+    }
+  }
+}
+function initPos(){setTargets();for(const s of sim){s.x=s.tx+(Math.random()-.5)*70;s.y=s.ty+(Math.random()-.5)*46;}}
+function tick(){
+  T+=0.016;setTargets();
+  for(const s of sim){
+    if(s===dragN)continue;
+    s.ax=(s.tx-s.x)*(s.strong?0.03:0.006)+Math.sin(T*0.7+s.ph)*0.014;
+    s.ay=(s.ty-s.y)*(s.strong?0.03:0.02)+Math.cos(T*0.55+s.ph)*0.012;
+    for(const o of sim){
+      if(o===s)continue;
+      const dx=s.x-o.x,dy=(s.y-o.y)*1.7,d2=dx*dx+dy*dy+60;
+      if(d2<30000){const f=18/d2;s.ax+=dx*f;s.ay+=dy*f;}
+    }
+  }
+  for(const sp of springs){
+    const a=sp.a,b=sp.b;
+    const dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    const f=(d-170)*0.0011;
+    if(a!==dragN){a.ax+=dx/d*f;a.ay+=dy/d*f;}
+    if(b!==dragN){b.ax-=dx/d*f;b.ay-=dy/d*f;}
+  }
+  for(const s of sim){
+    if(s===dragN){s.vx=0;s.vy=0;continue;}
+    s.vx=(s.vx+s.ax)*0.86;s.vy=(s.vy+s.ay)*0.86;
+    s.x+=s.vx;s.y+=s.vy;
+  }
+}
+function alphaOf(n){
+  if(visMap[n.id]===false)return 0.08;
+  if(govOn&&!n.isGov)return 0.3;
+  return 1;
+}
+function nodeW(s){
+  if(!s.w){ctx.font='600 12.5px '+MONO;s.w=Math.max(96,ctx.measureText(s.n.name).width+34);}
+  return s.w;
+}
+function rr(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function draw(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle='#0a0c10';ctx.fillRect(0,0,W,H);
+  ctx.translate(cam.x,cam.y);ctx.scale(cam.s,cam.s);
+  /* layer planes — glowing bands */
+  for(let i=0;i<6;i++){
+    const l=LAYERS[i],y=bandY(i),bx=236,bw=railX()-190-bx+140;
+    const g=ctx.createLinearGradient(0,y-48,0,y+48);
+    g.addColorStop(0,'rgba(91,118,255,0.07)');g.addColorStop(.5,'rgba(14,17,24,0.35)');g.addColorStop(1,'rgba(91,118,255,0.03)');
+    ctx.fillStyle=g;ctx.fillRect(bx,y-48,bw,96);
+    ctx.strokeStyle='rgba(91,118,255,0.28)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(bx,y-48);ctx.lineTo(bx+bw,y-48);ctx.stroke();
+    ctx.strokeStyle='rgba(60,70,95,0.25)';
+    ctx.beginPath();ctx.moveTo(bx,y+48);ctx.lineTo(bx+bw,y+48);ctx.stroke();
+    ctx.textAlign='right';
+    ctx.fillStyle='#565e6b';ctx.font='10.5px '+MONO;ctx.fillText(l.idx,222,y-22);
+    ctx.fillStyle='#e8eaee';ctx.font='600 13.5px '+MONO;ctx.fillText(l.name,222,y-4);
+    ctx.fillStyle='#565e6b';ctx.font='10px '+MONO;ctx.fillText(l.sub,222,y+14);
+  }
+  /* governance + fabric rail */
+  ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(217,165,63,0.45)';ctx.lineWidth=1.2;
+  ctx.strokeRect(railX()-88,54,176,H-108);
+  ctx.setLineDash([]);
+  ctx.textAlign='center';
+  ctx.fillStyle='#d9a53f';ctx.font='600 11px '+MONO;ctx.fillText('DATA GOVERNANCE',railX(),46);
+  ctx.fillStyle='#37c8dd';ctx.font='600 10.5px '+MONO;
+  ctx.fillText('CONTEXT · MEMORY',railX(),railSlot(3.6)+8);
+  /* edges */
+  for(const sp of springs){
+    const al=Math.min(alphaOf(sp.a.n),alphaOf(sp.b.n));
+    const act=(hoverNode===sp.ka||hoverNode===sp.kb||selectedNode===sp.ka||selectedNode===sp.kb)&&al>0.2;
+    ctx.strokeStyle=act?'#5b76ff':'#39414f';
+    ctx.globalAlpha=act?0.95:al*0.4;
+    ctx.lineWidth=act?1.7:1;
+    const mx=(sp.a.x+sp.b.x)/2,my=(sp.a.y+sp.b.y)/2;
+    const dx=sp.b.x-sp.a.x,dy=sp.b.y-sp.a.y;
+    ctx.beginPath();ctx.moveTo(sp.a.x,sp.a.y);
+    ctx.quadraticCurveTo(mx-dy*0.07,my+dx*0.07,sp.b.x,sp.b.y);
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  /* nodes */
+  ctx.font='600 12.5px '+MONO;
+  for(const s of sim){
+    const n=s.n,w=nodeW(s),h=32,x=s.x-w/2,y=s.y-h/2;
+    ctx.globalAlpha=alphaOf(n);
+    let border=n.layer==='governance'?'#8a6d28':n.layer==='fabric'?'#1e5560':'#4a5566';
+    if(govOn&&n.isGov)border='#d9a53f';
+    const hot=selectedNode===n.id||hoverNode===n.id;
+    if(hot)border=n.layer==='fabric'?'#37c8dd':n.layer==='governance'?'#d9a53f':'#5b76ff';
+    ctx.fillStyle='#0e1116';
+    if(hot){ctx.shadowColor=border;ctx.shadowBlur=18;}
+    rr(x,y,w,h,7);ctx.fill();ctx.shadowBlur=0;
+    ctx.strokeStyle=border;ctx.lineWidth=hot?1.8:1.1;
+    rr(x,y,w,h,7);ctx.stroke();
+    ctx.fillStyle='#dfe3ea';ctx.textAlign='center';
+    ctx.font='600 12.5px '+MONO;ctx.fillText(n.name,s.x,s.y+4.5);
+    if(n.ai){ctx.fillStyle='#37c8dd';ctx.beginPath();ctx.arc(x+10,y+10,2.6,0,6.29);ctx.fill();}
+  }
+  ctx.globalAlpha=1;
+}
+function frame(){tick();draw();requestAnimationFrame(frame);}
+function toWorld(mx,my){return {x:(mx-cam.x)/cam.s,y:(my-cam.y)/cam.s};}
+function nodeAt(mx,my){
+  const p=toWorld(mx,my);
+  for(let i=sim.length-1;i>=0;i--){
+    const s=sim[i],w=nodeW(s);
+    if(Math.abs(p.x-s.x)<w/2+4&&Math.abs(p.y-s.y)<20)return s;
+  }
+  return null;
+}
+function evPos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return {mx:t.clientX-r.left,my:t.clientY-r.top};}
+function pDown(e){
+  const {mx,my}=evPos(e);
+  lastX=mx;lastY=my;movedPx=0;
+  const s=nodeAt(mx,my);
+  if(s){dragN=s;}else{panOn=true;}
+  canvas.classList.add('grabbing');
+  if(e.touches)e.preventDefault();
+}
+function pMove(e){
+  const {mx,my}=evPos(e);
+  const dx=mx-lastX,dy=my-lastY;movedPx+=Math.abs(dx)+Math.abs(dy);
+  if(dragN){const p=toWorld(mx,my);dragN.x=p.x;dragN.y=p.y;}
+  else if(panOn){cam.x+=dx;cam.y+=dy;}
+  else{const s=nodeAt(mx,my);hoverNode=s?s.id:null;canvas.style.cursor=s?'pointer':'grab';}
+  lastX=mx;lastY=my;
+  if(e.touches)e.preventDefault();
+}
+function pUp(e){
+  if(movedPx<6){
+    const s=dragN||nodeAt(lastX,lastY);
+    if(s)select(s.id);
+  }
+  dragN=null;panOn=false;canvas.classList.remove('grabbing');
+}
+canvas.addEventListener('mousedown',pDown);
+canvas.addEventListener('mousemove',pMove);
+window.addEventListener('mouseup',pUp);
+canvas.addEventListener('touchstart',pDown,{passive:false});
+canvas.addEventListener('touchmove',pMove,{passive:false});
+canvas.addEventListener('touchend',pUp);
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const {mx,my}=evPos(e);
+  const k=e.deltaY<0?1.1:0.9;
+  const ns=Math.min(2.6,Math.max(0.45,cam.s*k));
+  cam.x=mx-(mx-cam.x)*(ns/cam.s);
+  cam.y=my-(my-cam.y)*(ns/cam.s);
+  cam.s=ns;
+},{passive:false});
+window.addEventListener('resize',()=>{layout();});
+layout();initPos();requestAnimationFrame(frame);
 
 let currentPhase='all',govOn=false;
 
 const ATLAS_P={
  any:null,
- dev:['dash','report','dataprod','evm','twin','pred','sched','gen','reason','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm','hse','risk','sem','context'],
+ dev:['dash','report','dataprod','evm','twin','pred','sched','gen','reason','gendesign','lake','kg','gis','api','mdm','dq','cat','p6','cost','erp','docs','contract','crm','epm','hse','risk','sem','context'],
  gc:['forms','cams','drones','scan','bim','p6','cost','docs','erp','api','mdm','dq','cv','sched','gen','dash','hse','evm','risk'],
  epc:['bim','docs','p6','cost','erp','contract','std','mdm','api','dq','scan','iot','twin','dash','gen','hse','evm','risk'],
  sub:['forms','p6','docs','cost','gen','dash','hse'],
@@ -544,6 +668,7 @@ const SYN={
  hse:'safety health environment incident permit',
  risk:'qsra contingency risk register',
  gen:'copilot chatbot llm assistant genai',
+ gendesign:'testfit massing site solver feasibility options yield forma',
  reason:'agent agentic mcp',
  memory:'vector recall lessons',
  context:'mcp ontology graph context',
@@ -552,6 +677,20 @@ const SYN={
 };
 let atlasPersona=localStorage.getItem('ctaPersona')||'any';
 let searchQ='';
+let selectedUC=null;
+const ATLAS_UC=[
+ {n:'✧ Explore by use case…',ids:null},
+ {n:'Forecast delay & cost overruns',ids:['p6','cost','lake','pred','dash']},
+ {n:'Aggregate schedules across a portfolio',ids:['p6','mdm','lake','sched','report']},
+ {n:'Verify progress with AI',ids:['cams','drones','bim','p6','cv','dash']},
+ {n:'Ask questions across project documents',ids:['docs','lake','context','gen']},
+ {n:'Run a living digital twin',ids:['bim','gis','iot','twin']},
+ {n:'Automate the monthly report',ids:['cost','p6','lake','sem','report','dataprod']},
+ {n:'Be ready for claims & disputes',ids:['docs','contract','p6','forms','gen']},
+ {n:'Watch margin continuously (EVM)',ids:['cost','p6','sem','evm','dash']},
+ {n:'Test site feasibility generatively',ids:['gis','gendesign','epm']},
+ {n:'Predict HSE incidents',ids:['hse','forms','lake','pred']},
+];
 function visible(n){
   const inPhase=currentPhase==='all'||n.phases.includes(currentPhase);
   const inProc=!selectedProc||selectedProc.ids.includes(n.id);
@@ -562,28 +701,12 @@ function visible(n){
     const hay=(n.name+' '+n.desc+' '+(n.products||[]).join(' ')+' '+(SYN[n.id]||'')).toLowerCase();
     inSearch=hay.includes(searchQ);
   }
-  return inPhase&&inProc&&inPersona&&inSearch;
+  const inUC=!selectedUC||selectedUC.includes(n.id);
+  return inPhase&&inProc&&inPersona&&inSearch&&inUC;
 }
 function applyState(){
-  NODES.forEach(n=>{
-    const g=nodeEls[n.id];
-    const v=visible(n);
-    g.classList.toggle('off',!v);
-    g.classList.toggle('govhot',govOn&&!!n.isGov&&v);
-    g.classList.toggle('govdim',govOn&&!n.isGov&&v);
-  });
-  edgeEls.forEach(e=>{
-    e.elm.classList.toggle('off',!(visible(nodeById[e.a])&&visible(nodeById[e.b])));
-  });
+  NODES.forEach(n=>{visMap[n.id]=visible(n);});
   if(typeof applyLandscape==='function')applyLandscape();
-}
-function hover(id,on){
-  edgeEls.forEach(e=>{
-    if(e.a===id||e.b===id){
-      e.elm.classList.toggle('hot',on);
-      e.elm.setAttribute('marker-end',on?'url(#arrowHot)':'url(#arrow)');
-    }
-  });
 }
 const CONN={
  dash:'Native BI connectors to the warehouse/semantic layer (DirectQuery/Import); REST APIs of source systems for near-real-time tiles.',
@@ -620,6 +743,7 @@ const CONN={
  sem:'Sits over the lakehouse; queried via SQL/DAX/MDX and APIs; one definition of CPI/SPI reused by every consumer.',
  context:'Exposed through MCP servers and APIs over governed sources; assembled at query time with the caller’s permissions.',
  memory:'Read/write via agent frameworks; scoped per project and role; retention and deletion governed like project records.',
+ gendesign:'Plot geometry and controls in via GIS/CAD; options out as massing models and yield tables feeding feasibility (EPM) and design tools.',
  hse:'REST APIs + mobile capture; incidents and observations streamed to the lakehouse for leading-indicator analytics.',
  risk:'API/exports of the register; QSRA results linked to schedule activities via activity IDs.',
 };
@@ -682,7 +806,7 @@ function renderProcs(){
   });
 }
 function select(id){
-  document.querySelectorAll('.node').forEach(g=>g.classList.toggle('sel',g.dataset.id===id));
+  selectedNode=id;
   const n=nodeById[id];
   const layer=LAYERS.find(l=>l.id===n.layer)||(n.layer==='fabric'
     ?{idx:'◈',name:'CONTEXT FABRIC — CROSS-CUTTING'}
@@ -733,6 +857,12 @@ document.getElementById('atlasSearch').addEventListener('input',e=>{
   searchQ=e.target.value.trim().toLowerCase();
   applyState();
 });
+const ucSel=document.getElementById('ucSel');
+ATLAS_UC.forEach((u,i)=>{const o=document.createElement('option');o.value=i;o.textContent=u.n;ucSel.appendChild(o);});
+ucSel.addEventListener('change',e=>{
+  selectedUC=ATLAS_UC[e.target.value].ids;
+  applyState();
+});
 /* ---------- technology landscape ---------- */
 const TECH=[
  {n:'Power BI',d:'powerbi.microsoft.com',c:'dash'},{n:'Tableau',d:'tableau.com',c:'dash'},{n:'Mastt',d:'mastt.com',c:'dash'},{n:'Looker',d:'cloud.google.com',c:'dash'},{n:'Grafana',d:'grafana.com',c:'dash'},
@@ -745,6 +875,7 @@ const TECH=[
  {n:'OpenSpace',d:'openspace.ai',c:'cv'},{n:'Buildots',d:'buildots.com',c:'cv'},{n:'Track3D',d:'track3d.ai',c:'cv'},{n:'Disperse',d:'disperse.io',c:'cv'},{n:'AI Clearing',d:'aiclearing.com',c:'cv'},
  {n:'Document Crunch',d:'documentcrunch.com',c:'gen'},{n:'M365 Copilot',d:'microsoft.com',c:'gen'},{n:'Anthropic Claude',d:'anthropic.com',c:'gen'},{n:'Procore Copilot',d:'procore.com',c:'gen'},{n:'Google Gemini',d:'gemini.google.com',c:'gen'},{n:'Fabric Data Agents',d:'microsoft.com',c:'gen'},
  {n:'Palantir AIP',d:'palantir.com',c:'reason'},{n:'Trunk Tools',d:'trunk.tools',c:'reason'},{n:'OpenAI',d:'openai.com',c:'reason'},
+ {n:'TestFit',d:'testfit.io',c:'gendesign'},{n:'Autodesk Forma',d:'autodesk.com',c:'gendesign'},{n:'Higharc',d:'higharc.com',c:'gendesign'},{n:'Finch',d:'finch3d.com',c:'gendesign'},
  {n:'Databricks',d:'databricks.com',c:'lake'},{n:'Snowflake',d:'snowflake.com',c:'lake'},{n:'MS Fabric',d:'microsoft.com',c:'lake'},{n:'BigQuery',d:'cloud.google.com',c:'lake'},
  {n:'Neo4j',d:'neo4j.com',c:'kg'},{n:'Stardog',d:'stardog.com',c:'kg'},{n:'Neptune',d:'aws.amazon.com',c:'kg'},
  {n:'Esri ArcGIS',d:'esri.com',c:'gis'},{n:'QGIS',d:'qgis.org',c:'gis'},{n:'Google Earth Engine',d:'earthengine.google.com',c:'gis'},
