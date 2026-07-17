@@ -54,9 +54,23 @@
   .gov-note{display:none;font-family:var(--mono);font-size:11.5px;color:#d9b56b;padding:12px 0 0;line-height:1.6;}
   .gov-note.show{display:block;}
 
-  .stage{display:flex;align-items:flex-start;gap:28px;padding:26px 0 40px;}
-  #mapbox{flex:1 1 auto;min-width:0;position:relative;height:80vh;min-height:640px;
+  .stage{display:block;padding:12px 0 34px;}
+  #mapbox{position:relative;height:calc(100dvh - 205px);min-height:600px;
     border:1px solid var(--hair2);background:#0a0c10;overflow:hidden;}
+  #mapbox:fullscreen{border:none;}
+  .ovbar{position:absolute;top:14px;left:14px;display:flex;gap:8px;z-index:15;}
+  .ovbtn{width:38px;height:38px;border:1px solid var(--hair2);background:#0b0d11e6;color:var(--dim);
+    font-family:var(--mono);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .ovbtn:hover{color:var(--txt);border-color:var(--faint);}
+  #infoPop{position:absolute;top:60px;left:14px;width:min(440px,calc(100% - 28px));border:1px solid var(--hair2);
+    background:#0b0d11f6;backdrop-filter:blur(8px);padding:20px;z-index:19;display:none;}
+  #infoPop.open{display:block;}
+  .layerjump{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;display:flex;gap:6px;z-index:15;}
+  .layerjump button{border:1px solid var(--hair2);background:#0b0d11e6;color:var(--dim);font-family:var(--mono);
+    font-size:10px;letter-spacing:.08em;padding:8px 11px;cursor:pointer;transition:.15s;}
+  .layerjump button:hover{color:#fff;border-color:var(--accent);}
+  .pclose{position:sticky;top:0;float:right;background:none;border:none;color:var(--dim);font-size:16px;cursor:pointer;z-index:2;}
+  .pclose:hover{color:#fff;}
   #map{width:100%;height:100%;display:block;cursor:grab;touch-action:none;}
   #map.grabbing{cursor:grabbing;}
   .maphint{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:9.5px;
@@ -148,7 +162,10 @@
   .lcat.hidden,.lgroup.hidden{display:none;}
   @media(max-width:760px){.lcat{flex-direction:column;gap:6px;}.lcat-name{width:auto;flex:1;}}
 
-  #panel{width:340px;flex:0 0 340px;border:1px solid var(--hair2);background:#0b0d11f2;padding:24px;position:sticky;top:84px;min-height:430px;}
+  #panel{position:absolute;top:14px;right:14px;width:min(375px,calc(100% - 28px));max-height:calc(100% - 28px);
+    overflow-y:auto;border:1px solid var(--hair2);background:#0b0d11f6;backdrop-filter:blur(10px);padding:22px;
+    display:none;z-index:20;}
+  #panel.open{display:block;}
   #panel .layer-tag{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;}
   #panel h2{font-size:19px;letter-spacing:-.01em;margin:6px 0 4px;}
   #panel .badge{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
@@ -177,13 +194,14 @@
   .pnbar button:hover{color:var(--txt);border-color:var(--accent);}
   .pnbar span{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.14em;}
   @media(max-width:1000px){
-    .stage{flex-direction:column;}
-    #mapbox{height:calc(100dvh - 130px);min-height:520px;}
-    #panel{position:fixed;left:0;right:0;bottom:0;width:auto;flex:none;max-height:62dvh;overflow-y:auto;z-index:90;
+    #mapbox{height:calc(100dvh - 150px);min-height:480px;}
+    #panel{display:block;position:fixed;left:0;right:0;top:auto;bottom:0;width:auto;max-height:62dvh;overflow-y:auto;z-index:90;
       border:none;border-top:1px solid var(--hair2);background:#0b0d11fa;backdrop-filter:blur(10px);
       transform:translateY(106%);transition:transform .28s ease;border-radius:14px 14px 0 0;}
     #panel.open{transform:none;}
     .sheethandle{display:block;}
+    .pclose{display:none;}
+    .layerjump{bottom:8px;}
     nav.links{display:none;}
   }
   .menu-btn{display:none;background:none;border:1px solid var(--hair2);color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:.14em;padding:8px 14px;cursor:pointer;}
@@ -232,21 +250,6 @@ function dClose(){document.getElementById('drawer').classList.remove('on');docum
 </script>
 
 <div class="container">
-  <div class="titlebar">
-    <div class="kicker">The reference model · v0.3</div>
-    <h1>The construction technology stack.</h1>
-    <p>The Atlas is a reference model — a shared map for reasoning about construction technology, the way
-       network engineers use the OSI model. It is not a product catalog; it is the structure the products fit into.</p>
-    <div class="answers">
-      <span class="alabel">USE IT TO ANSWER</span>
-      <span class="aq">What does a complete stack contain — and what is my organization missing?</span>
-      <span class="aq">How should two systems connect: API, files, webhooks, or a hub?</span>
-      <span class="aq">Where does each lifecycle process live, and which systems does it touch?</span>
-      <span class="aq">Where do governance and decision authority actually sit?</span>
-      <span class="aq">Where does AI plug in — what feeds it, who verifies it, who answers for it?</span>
-      <a class="aq" href="#landscape" style="color:var(--accent2);border-bottom:none;">Browse every mapped technology ↓</a>
-    </div>
-  </div>
 
   <div class="controls" id="phaseBar">
     <button class="tab active" data-phase="all">Full lifecycle</button>
@@ -278,11 +281,37 @@ function dClose(){document.getElementById('drawer').classList.remove('on');docum
   <div class="stage">
     <div id="mapbox">
       <canvas id="map"></canvas>
-      <div class="maphint">DRAG NODES · SCROLL TO ZOOM · DRAG BACKGROUND TO PAN · CLICK A NODE FOR DETAIL</div>
-    </div>
+      <div class="maphint">DRAG · ZOOM · CLICK A NODE</div>
+
+      <div class="ovbar">
+        <button class="ovbtn" onclick="document.getElementById('infoPop').classList.toggle('open')" title="About the Atlas">i</button>
+        <button class="ovbtn" onclick="fsToggle()" title="Fullscreen">⛶</button>
+      </div>
+
+      <div id="infoPop">
+        <div class="kicker" style="color:var(--accent);">THE REFERENCE MODEL · v0.4</div>
+        <h2 style="font-size:20px;letter-spacing:-.01em;margin:10px 0;">The construction technology stack.</h2>
+        <p style="font-size:13px;color:var(--dim);line-height:1.65;">A shared map for reasoning about construction
+           technology, the way network engineers use the OSI model. Use it to answer: what a complete stack contains;
+           how systems should connect; where each process lives; where governance sits; and where AI plugs in —
+           and who answers for it.</p>
+        <a href="#landscape" style="display:block;margin-top:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--accent2);">BROWSE EVERY MAPPED TECHNOLOGY ↓</a>
+      </div>
+
+      <div class="layerjump">
+        <button onclick="flyLayer(0)">06</button>
+        <button onclick="flyLayer(1)">05</button>
+        <button onclick="flyLayer(2)">04</button>
+        <button onclick="flyLayer(3)">03</button>
+        <button onclick="flyLayer(4)">02</button>
+        <button onclick="flyLayer(5)">01</button>
+        <button onclick="flyLayer('gov')" style="color:#d9a53f;">✦</button>
+        <button onclick="flyLayer('fab')" style="color:#37c8dd;">◈</button>
+      </div>
 
     <aside id="panel">
-      <div class="sheethandle" onclick="document.getElementById('panel').classList.remove('open')"></div>
+      <button class="pclose" onclick="closePanel()">✕</button>
+      <div class="sheethandle" onclick="closePanel()"></div>
       <div id="panelContent">
         <div class="layer-tag">Node inspector</div>
         <h2>Select a technology</h2>
@@ -294,6 +323,7 @@ function dClose(){document.getElementById('drawer').classList.remove('on');docum
         </p>
       </div>
     </aside>
+    </div>
   </div>
 
   <div class="landscape" id="landscape">
@@ -517,9 +547,10 @@ function layout(){
   W=canvas.clientWidth;H=canvas.clientHeight;
   canvas.width=W*DPR;canvas.height=H*DPR;
 }
-const railX=()=>W-140;
-const bandY=i=>{const top=92,bot=H-56;return top+(bot-top)*(i+0.5)/6;};
-const railSlot=i=>92+(i+0.5)*(H-170)/7;
+const isMob=()=>W<720;
+const railX=()=>isMob()?W-48:W-140;
+const bandY=i=>{const top=isMob()?70:92,bot=H-(isMob()?46:56);return top+(bot-top)*(i+0.5)/6;};
+const railSlot=i=>(isMob()?70:92)+(i+0.5)*(H-(isMob()?130:170))/7;
 const LSLOT={};
 LAYERS.forEach(l=>{
   const list=NODES.filter(n=>n.layer===l.id);
@@ -532,9 +563,9 @@ function setTargets(){
     else if(n.layer==='fabric'){s.tx=railX();s.ty=railSlot(n.gi+4);s.strong=true;}
     else{
       const sl=LSLOT[n.id];
-      const left=260,right=railX()-200;
+      const left=isMob()?24:260,right=railX()-(isMob()?56:200);
       s.tx=left+((sl.i+0.5)/sl.c)*(right-left);
-      s.ty=bandY(sl.li)+((sl.i%2)?16:-16);
+      s.ty=bandY(sl.li)+((sl.i%2)?14:-14);
       s.strong=false;
     }
   }
@@ -543,25 +574,36 @@ function initPos(){setTargets();for(const s of sim){s.x=s.tx+(Math.random()-.5)*
 function tick(){
   T+=0.016;setTargets();
   for(const s of sim){
-    if(s===dragN)continue;
-    s.ax=(s.tx-s.x)*(s.strong?0.03:0.012)+Math.sin(T*0.7+s.ph)*0.014;
-    s.ay=(s.ty-s.y)*(s.strong?0.03:0.022)+Math.cos(T*0.55+s.ph)*0.012;
-    for(const o of sim){
-      if(o===s)continue;
-      const dx=s.x-o.x,dy=(s.y-o.y)*2.2,d2=dx*dx+dy*dy+60;
-      if(d2<52000){const f=55/d2;s.ax+=dx*f;s.ay+=dy*f;}
+    if(s===dragN){s.ax=0;s.ay=0;continue;}
+    s.ax=(s.tx-s.x)*(s.strong?0.03:0.008);
+    s.ay=(s.ty-s.y)*(s.strong?0.03:0.02);
+  }
+  /* soft separation only when actually close — no far-field buzz */
+  for(let i=0;i<sim.length;i++){
+    for(let j=i+1;j<sim.length;j++){
+      const a=sim[i],b=sim[j];
+      const dx=b.x-a.x,dy=(b.y-a.y)*1.5;
+      const rr=nodeR(a)+nodeR(b)+26;
+      const d2=dx*dx+dy*dy;
+      if(d2<rr*rr&&d2>0.5){
+        const d=Math.sqrt(d2),f=Math.min(0.5,(rr-d)/d*0.045);
+        if(a!==dragN){a.ax-=dx*f;a.ay-=dy*f;}
+        if(b!==dragN){b.ax+=dx*f;b.ay+=dy*f;}
+      }
     }
   }
   for(const sp of springs){
     const a=sp.a,b=sp.b;
     const dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-    const f=(d-170)*0.0011;
+    const f=(d-170)*0.0007;
     if(a!==dragN){a.ax+=dx/d*f;a.ay+=dy/d*f;}
     if(b!==dragN){b.ax-=dx/d*f;b.ay-=dy/d*f;}
   }
   for(const s of sim){
     if(s===dragN){s.vx=0;s.vy=0;continue;}
-    s.vx=(s.vx+s.ax)*0.86;s.vy=(s.vy+s.ay)*0.86;
+    s.vx=(s.vx+s.ax)*0.90;s.vy=(s.vy+s.ay)*0.90;
+    if(Math.abs(s.vx)<0.02)s.vx=0;
+    if(Math.abs(s.vy)<0.02)s.vy=0;
     s.x+=s.vx;s.y+=s.vy;
   }
 }
@@ -573,12 +615,12 @@ function alphaOf(n){
 const DEG={};EDGES.forEach(([a,b])=>{DEG[a]=(DEG[a]||0)+1;DEG[b]=(DEG[b]||0)+1;});
 springs.forEach(sp=>{sp.off=Math.random();});
 function nodeR(s){
-  if(!s.r){
+  if(!s.r0){
     const d=DEG[s.id]||1;
-    const base=(s.n.layer==='governance'||s.n.layer==='fabric')?12:14;
-    s.r=Math.min(30,base+d*1.7);
+    const base=(s.n.layer==='governance'||s.n.layer==='fabric')?10:11;
+    s.r0=Math.min(23,base+d*1.25);
   }
-  return s.r;
+  return s.r0*(isMob()?0.78:1);
 }
 function rr(x,y,w,h,r){
   ctx.beginPath();
@@ -590,28 +632,39 @@ function draw(){
   ctx.fillStyle='#0a0c10';ctx.fillRect(0,0,W,H);
   ctx.translate(cam.x,cam.y);ctx.scale(cam.s,cam.s);
   /* layer planes — glowing bands */
+  const mob=isMob();
+  const bh=mob?40:48;
   for(let i=0;i<6;i++){
-    const l=LAYERS[i],y=bandY(i),bx=236,bw=railX()-190-bx+140;
-    const g=ctx.createLinearGradient(0,y-48,0,y+48);
+    const l=LAYERS[i],y=bandY(i);
+    const bx=mob?8:236,bw=(railX()-(mob?32:90))-bx;
+    const g=ctx.createLinearGradient(0,y-bh,0,y+bh);
     g.addColorStop(0,'rgba(91,118,255,0.07)');g.addColorStop(.5,'rgba(14,17,24,0.35)');g.addColorStop(1,'rgba(91,118,255,0.03)');
-    ctx.fillStyle=g;ctx.fillRect(bx,y-48,bw,96);
+    ctx.fillStyle=g;ctx.fillRect(bx,y-bh,bw,bh*2);
     ctx.strokeStyle='rgba(91,118,255,0.28)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(bx,y-48);ctx.lineTo(bx+bw,y-48);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bx,y-bh);ctx.lineTo(bx+bw,y-bh);ctx.stroke();
     ctx.strokeStyle='rgba(60,70,95,0.25)';
-    ctx.beginPath();ctx.moveTo(bx,y+48);ctx.lineTo(bx+bw,y+48);ctx.stroke();
-    ctx.textAlign='right';
-    ctx.fillStyle='#565e6b';ctx.font='10.5px '+MONO;ctx.fillText(l.idx,222,y-22);
-    ctx.fillStyle='#e8eaee';ctx.font='600 13.5px '+MONO;ctx.fillText(l.name,222,y-4);
-    ctx.fillStyle='#565e6b';ctx.font='10px '+MONO;ctx.fillText(l.sub,222,y+14);
+    ctx.beginPath();ctx.moveTo(bx,y+bh);ctx.lineTo(bx+bw,y+bh);ctx.stroke();
+    if(mob){
+      ctx.textAlign='left';
+      ctx.fillStyle='#7e8797';ctx.font='600 9px '+MONO;
+      ctx.fillText(l.idx+' · '+l.name,bx+8,y-bh+13);
+    }else{
+      ctx.textAlign='right';
+      ctx.fillStyle='#565e6b';ctx.font='10.5px '+MONO;ctx.fillText(l.idx,222,y-22);
+      ctx.fillStyle='#e8eaee';ctx.font='600 13.5px '+MONO;ctx.fillText(l.name,222,y-4);
+      ctx.fillStyle='#565e6b';ctx.font='10px '+MONO;ctx.fillText(l.sub,222,y+14);
+    }
   }
   /* governance + fabric rail */
   ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(217,165,63,0.45)';ctx.lineWidth=1.2;
-  ctx.strokeRect(railX()-88,54,176,H-108);
+  const rw=mob?56:176;
+  ctx.strokeRect(railX()-rw/2,mob?40:54,rw,H-(mob?80:108));
   ctx.setLineDash([]);
   ctx.textAlign='center';
-  ctx.fillStyle='#d9a53f';ctx.font='600 11px '+MONO;ctx.fillText('DATA GOVERNANCE',railX(),46);
-  ctx.fillStyle='#37c8dd';ctx.font='600 10.5px '+MONO;
-  ctx.fillText('CONTEXT · MEMORY',railX(),railSlot(3.6)+8);
+  ctx.fillStyle='#d9a53f';ctx.font='600 '+(mob?'9px ':'11px ')+MONO;
+  ctx.fillText(mob?'✦ GOV':'DATA GOVERNANCE',railX(),mob?34:46);
+  ctx.fillStyle='#37c8dd';ctx.font='600 '+(mob?'9px ':'10.5px ')+MONO;
+  ctx.fillText(mob?'◈':'CONTEXT · MEMORY',railX(),railSlot(3.6)+8);
   /* edges */
   for(const sp of springs){
     const al=Math.min(alphaOf(sp.a.n),alphaOf(sp.b.n));
@@ -639,6 +692,7 @@ function draw(){
   }
   ctx.globalAlpha=1;
   /* nodes */
+  const placed=[];
   for(const s of sim){
     const n=s.n,r=nodeR(s);
     ctx.globalAlpha=alphaOf(n);
@@ -654,12 +708,23 @@ function draw(){
     ctx.strokeStyle=border;ctx.lineWidth=hot?2:1.2;
     ctx.beginPath();ctx.arc(s.x,s.y,r,0,6.29);ctx.stroke();
     if(n.ai){ctx.fillStyle='#37c8dd';ctx.beginPath();ctx.arc(s.x+r*0.64,s.y-r*0.64,2.7,0,6.29);ctx.fill();}
-    const showLbl=hot||r*cam.s>=17;
-    if(showLbl){
-      ctx.font=(hot?'600 12.5px ':'500 11px ')+MONO;
-      ctx.textAlign='center';
-      ctx.fillStyle=hot?'#ffffff':'#c6ccd6';
-      ctx.fillText(n.name,s.x,s.y-r-9);
+    const showLbl=hot||r*cam.s>=(isMob()?15:14);
+    if(showLbl&&alphaOf(n)>0.2){
+      const fs=isMob()?9.5:11;
+      const lw=n.name.length*fs*0.64,lh=fs+4,lx=s.x-lw/2,ly=s.y-r-6-lh;
+      let clash=false;
+      if(!hot){
+        for(const p of placed){
+          if(lx<p.x+p.w&&lx+lw>p.x&&ly<p.y+p.h&&ly+lh>p.y){clash=true;break;}
+        }
+      }
+      if(!clash){
+        placed.push({x:lx,y:ly,w:lw,h:lh});
+        ctx.font=(hot?'600 ':'500 ')+(hot?fs+1.5:fs)+'px '+MONO;
+        ctx.textAlign='center';
+        ctx.fillStyle=hot?'#ffffff':'#c6ccd6';
+        ctx.fillText(n.name,s.x,s.y-r-9);
+      }
     }
   }
   ctx.globalAlpha=1;
@@ -676,6 +741,25 @@ window.navNode=function(d){
   const j=(i+d+NODES.length)%NODES.length;
   select(NODES[j].id);
 };
+window.closePanel=function(){
+  selectedNode=null;
+  document.getElementById('panel').classList.remove('open');
+};
+window.flyLayer=function(i){
+  const ts=1.02;
+  let ty;
+  if(i==='gov')ty=railSlot(1.5);
+  else if(i==='fab')ty=railSlot(5);
+  else ty=bandY(i);
+  const cx=((isMob()?8:206)+railX())/2;
+  camT={s:ts,x:W*0.5-cx*ts,y:H*0.5-ty*ts};
+};
+window.fsToggle=function(){
+  const el=document.getElementById('mapbox');
+  if(document.fullscreenElement){document.exitFullscreen&&document.exitFullscreen();}
+  else if(el.requestFullscreen){el.requestFullscreen();}
+};
+document.addEventListener('fullscreenchange',()=>setTimeout(layout,120));
 function frame(){
   if(camT){
     cam.s+=(camT.s-cam.s)*0.12;
