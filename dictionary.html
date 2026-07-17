@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Construction Dictionary — ConTech Atlas</title>
+<meta name="description" content="The vocabulary of construction and real estate development, in plain English. From GDV to earned value to AI governance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0c0e;--muted:#66707d;--hair:#e6e8eb;--bg:#ffffff;--card:#f6f7f9;
+    --accent:#2545ff;--amber:#b07b1e;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'Inter',system-ui,sans-serif;
+  }
+  html[data-theme=dark]{
+    --ink:#e8eaee;--muted:#8b93a1;--hair:#242a34;--bg:#08090c;--card:#11141a;
+    --accent:#7b90ff;--amber:#d9a53f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--sans);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;transition:background .2s;}
+  a{color:inherit;text-decoration:none;}
+  .container{max-width:760px;margin:0 auto;padding:0 22px;}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+
+  header{border-bottom:1px solid var(--hair);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);z-index:50;}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px;}
+  .wordmark{font-weight:800;font-size:14px;white-space:nowrap;}
+  .wordmark span{color:var(--accent);}
+  .hbtns{display:flex;gap:8px;align-items:center;}
+  .hbtn{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);border:1px solid var(--hair);
+    background:none;padding:7px 12px;cursor:pointer;white-space:nowrap;}
+  .hbtn:hover{color:var(--ink);border-color:var(--muted);}
+
+  .hero{padding:54px 0 8px;}
+  .hero h1{font-size:clamp(30px,6vw,44px);letter-spacing:-.03em;line-height:1.05;margin:14px 0 14px;}
+  .hero p{font-size:16px;line-height:1.65;color:var(--muted);max-width:560px;}
+  #dictSearch{display:block;width:100%;margin:24px 0 6px;background:var(--card);border:1px solid var(--hair);color:var(--ink);
+    font-family:var(--mono);font-size:13px;padding:13px 16px;outline:none;border-radius:0;}
+  #dictSearch:focus{border-color:var(--accent);}
+  .count{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--muted);}
+  .toc{display:flex;flex-wrap:wrap;gap:6px;padding:18px 0 8px;}
+  .toc a{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);border:1px solid var(--hair);padding:6px 10px;}
+  .toc a:hover{color:var(--ink);border-color:var(--muted);}
+
+  .sec{padding:34px 0 6px;}
+  .sec h2{font-size:19px;letter-spacing:-.01em;border-bottom:2px solid var(--ink);padding-bottom:10px;}
+  .sec .secno{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.14em;margin-right:8px;}
+  .sec .secsub{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.55;}
+  .trm{display:block;padding:14px 0;border-bottom:1px solid var(--hair);font-size:15px;line-height:1.55;}
+  .trm b{font-weight:700;}
+  .trm span{color:var(--muted);}
+  .trm:hover b{color:var(--accent);}
+  .trm.hidden{display:none;}
+  .sec.hidden{display:none;}
+
+  /* term view */
+  #termView{display:none;padding:44px 0 20px;}
+  #termView.show{display:block;}
+  #indexWrap.hide{display:none;}
+  .back{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--muted);}
+  .back:hover{color:var(--accent);}
+  #termView h1{font-size:clamp(28px,5.5vw,40px);letter-spacing:-.03em;margin:16px 0 12px;}
+  .lead{font-size:18px;line-height:1.6;font-weight:600;letter-spacing:-.01em;}
+  .tbody{margin-top:18px;font-size:15.5px;line-height:1.75;color:var(--ink);}
+  .tbody p{margin-bottom:14px;}
+  .wrong{border-left:3px solid var(--amber);padding:10px 0 10px 16px;margin:16px 0;color:var(--muted);font-size:14.5px;line-height:1.65;}
+  .wrong b{color:var(--amber);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;}
+  .rel{margin-top:22px;}
+  .rel b{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--muted);display:block;margin-bottom:8px;}
+  .rel a{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--ink);border:1px solid var(--hair);padding:6px 10px;margin:0 6px 6px 0;}
+  .rel a:hover{border-color:var(--accent);color:var(--accent);}
+  .atlaslink{display:inline-block;margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--accent);
+    border:1px solid var(--hair);padding:9px 12px;}
+  .atlaslink:hover{border-color:var(--accent);}
+  .pn{display:flex;justify-content:space-between;gap:12px;margin-top:34px;border-top:1px solid var(--hair);padding-top:16px;}
+  .pn a{font-size:13.5px;color:var(--muted);max-width:47%;}
+  .pn a b{display:block;color:var(--ink);font-size:14px;margin-top:2px;}
+  .pn a:hover b{color:var(--accent);}
+  .cta{margin-top:38px;border:1px solid var(--hair);padding:18px;background:var(--card);}
+  .cta b{font-size:14.5px;}
+  .cta p{font-size:12.5px;color:var(--muted);margin:6px 0 10px;line-height:1.5;}
+  .cta form{display:flex;gap:8px;}
+  .cta input{flex:1;border:1px solid var(--hair);background:var(--bg);color:var(--ink);padding:10px 12px;font-size:13px;outline:none;min-width:0;}
+  .cta button{border:1px solid var(--ink);background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:600;padding:10px 16px;cursor:pointer;}
+
+  footer{border-top:1px solid var(--hair);padding:30px 0 44px;margin-top:50px;}
+  footer .inner{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--muted);}
+  footer a:hover{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a class="wordmark" href="index.html">CONTECH<span>ATLAS</span> / DICTIONARY</a>
+    <div class="hbtns">
+      <a class="hbtn" href="atlas.html">ATLAS ↗</a>
+      <button class="hbtn" id="themeBtn">◐ THEME</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div id="indexWrap">
+    <div class="hero">
+      <div class="kicker">The Construction Dictionary · v0.1</div>
+      <h1>The vocabulary of construction &amp; development, in plain English.</h1>
+      <p>Every term a sharp colleague would explain on a job walk — from GDV to earned value to AI governance.
+         One sentence first. Depth one tap away.</p>
+      <input type="search" id="dictSearch" placeholder="Search the dictionary…" autocomplete="off">
+      <span class="count" id="dictCount"></span>
+      <div class="toc" id="toc"></div>
+    </div>
+    <div id="dictBody"></div>
+  </div>
+
+  <div id="termView">
+    <a class="back" href="#" onclick="location.hash='';return false;">← ALL TERMS</a>
+    <div id="termContent"></div>
+  </div>
+
+  <div class="cta">
+    <b>One map, updated. Terms, monthly.</b>
+    <p>New entries and briefings from the ConTech Atlas — construction technology, data, and AI, in plain English.</p>
+    <form onsubmit="event.preventDefault();this.innerHTML='<b>Thanks — you are on the list.</b>';">
+      <input type="email" placeholder="you@company.com" required><button type="submit">Subscribe</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <div class="container inner">
+    <div>© 2026 CONTECH ATLAS · DICTIONARY v0.1</div>
+    <div><a href="atlas.html">ATLAS</a> · <a href="builder.html">TECH STACK BUILDER</a> · <a href="index.html">HOME</a></div>
+  </div>
+</footer>
+
+<script>
+const SECS=[
+ {id:'deal',no:'01',name:'The Deal & The Case',sub:'Development economics — the numbers that decide whether anything gets built.'},
+ {id:'design',no:'02',name:'Planning & Design',sub:'From land to buildable intent: controls, briefs, and models.'},
+ {id:'contract',no:'03',name:'The Contract',sub:'Where risk is allocated and margin is defended — or lost.'},
+ {id:'schedule',no:'04',name:'Schedule & Progress',sub:'Time, measured honestly.'},
+ {id:'cost',no:'05',name:'Cost & Margin',sub:'Where the money actually goes, and how profit leaks.'},
+ {id:'field',no:'06',name:'Site & Field',sub:'The paperwork and capture that construction actually runs on.'},
+ {id:'data',no:'07',name:'Data & Systems',sub:'The stack beneath the reports — the Atlas’s home turf.'},
+ {id:'ai',no:'08',name:'AI on the Project',sub:'What the new tools are, and who answers for them.'},
+];
+
+const TERMS=[
+/* 01 THE DEAL */
+{id:'gdv',s:'deal',n:'GDV (Gross Development Value)',one:'The total market value of the completed development. The number every other number must justify.',
+ body:'GDV minus total development cost is your gross profit — residential developers typically target profit around 15–20% of GDV. Everything in a feasibility model exists to protect that spread.',
+ wrong:'Quoting GDV from asking prices instead of achievable prices at your actual absorption rate. The market buys at its own speed, not your model’s.',rel:['tdc','residual','absorption','feasibility']},
+{id:'tdc',s:'deal',n:'TDC (Total Development Cost)',one:'Everything it costs to deliver: land, construction, consultants, finance, contingency.',
+ body:'Hard construction cost is usually only 50–65% of TDC. The rest — land, soft costs, finance, marketing, contingency — is where inexperienced models fall apart.',
+ wrong:'Underestimating finance costs and fees, then calling the overrun "unforeseen". It was foreseeable; it just wasn’t in the model.',rel:['gdv','contingency','feasibility']},
+{id:'residual',s:'deal',n:'Residual Land Value',one:'What you can afford to pay for land: value minus costs minus required profit. Land price is an output, not an input.',
+ body:'The residual method runs the deal backwards: start from GDV, subtract TDC and your profit requirement — what remains is the most the land is worth to you.',
+ wrong:'Paying the market comp for land and then reverse-engineering the feasibility to justify it. The model should kill deals, not decorate them.',rel:['gdv','tdc','feasibility']},
+{id:'feasibility',s:'deal',n:'Feasibility Study',one:'The structured test of whether a project makes money: market, cost, schedule and funding assumptions in one model.',
+ body:'A good feasibility is a governed assumption register with a named owner per assumption — not a spreadsheet someone once built. It should be frozen at each stage gate and compared against delivery reality.',
+ wrong:'Treating it as a gate document that dies after approval. Almost nobody reconciles the approved case against actuals — which is why the same optimism bias survives portfolio after portfolio.',rel:['businesscase','gdv','irr'],atlas:'epm'},
+{id:'businesscase',s:'deal',n:'Business Case',one:'The argued case for investment — strategy, economics, commercial, financial and delivery — built on the feasibility numbers.',
+ body:'The five-case structure (strategic, economic, commercial, financial, management) is the internationally credible skeleton. The narrative should be generated from the assumptions, never written alongside them.',
+ wrong:'Sixty pages of prose with the actual assumptions living in someone’s personal spreadsheet. Committees approve narratives; they should approve assumption registers.',rel:['feasibility','irr','capstack']},
+{id:'irr',s:'deal',n:'IRR & NPV',one:'The two time-value measures investors judge projects by: the deal’s implied return, and its value in today’s money.',
+ body:'Development equity often hurdles at 15–20% IRR depending on market and risk. NPV answers "is this worth more than doing nothing" at your discount rate; IRR answers "how fast does money compound here".',
+ wrong:'Comparing IRRs across deals with different durations and risk. A high IRR on a short flip is not "better" than a lower IRR on a decade of income.',rel:['feasibility','capstack','gdv']},
+{id:'capstack',s:'deal',n:'Capital Stack',one:'Who funds the project in what order — senior debt, mezzanine, equity — and who gets paid back first.',
+ body:'Risk and return stack inversely: senior debt is cheapest and gets paid first; equity is most expensive and eats losses first. Finance cost in the TDC depends entirely on this structure.',
+ wrong:'Modelling one blended finance rate. The stack’s layers behave differently under delay — and delay is the normal case.',rel:['tdc','irr','cashflow']},
+{id:'absorption',s:'deal',n:'Absorption Rate',one:'How fast the market can actually buy or lease what you build — units or square metres per month.',
+ body:'Absorption drives revenue timing, which drives finance cost, which can quietly erase the margin a strong GDV promised. Phasing exists to match delivery to absorption.',
+ wrong:'Assuming sales velocity from a hot-market comparable. Absorption is the assumption most worth stress-testing in any sensitivity run.',rel:['gdv','cashflow','feasibility']},
+
+/* 02 PLANNING & DESIGN */
+{id:'masterplan',s:'design',n:'Masterplan',one:'The controlling plan for a large development: land uses, plots, infrastructure, phasing — the constitution every asset obeys.',
+ body:'On a master development, the masterplan’s plot schedule (uses, GFA, controls per plot) is master data — briefs, feasibilities and designs should all trace back to it, version by version.',
+ wrong:'Letting asset briefs drift from masterplan controls because the plot schedule lives in a dead PDF instead of a governed dataset.',rel:['devcontrols','far','assetbrief'],atlas:'gis'},
+{id:'devcontrols',s:'design',n:'Development Controls',one:'The per-plot rules of the game: FAR, height, setbacks, parking ratios, permitted uses.',
+ body:'Controls are the validation rules for every downstream document. A brief or concept that violates them isn’t a design choice; it’s a defect.',
+ wrong:'Checking compliance manually at review time instead of automatically at drafting time. Rules that live in software get followed.',rel:['masterplan','far','assetbrief']},
+{id:'far',s:'design',n:'FAR & GFA',one:'GFA is the buildable floor area; FAR is that area as a multiple of the plot. Together they are the plot’s economic envelope.',
+ body:'FAR × plot area = maximum GFA, and GFA × efficiency × achievable rate ≈ revenue. Which is why a 0.5 FAR argument with the planning authority is really a revenue argument.',
+ wrong:'Confusing gross and net areas. Efficiency ratios (net sellable / gross built, often 70–85%) decide whether a "big" building makes money.',rel:['devcontrols','gdv','masterplan']},
+{id:'assetbrief',s:'design',n:'Asset Brief',one:'The document that defines an asset before design begins: use mix, area, quality tier, budget envelope, schedule, constraints.',
+ body:'A good brief is assembled from governed parameters, not written from scratch — and every requirement carries an ID so it can be verified at design review and handover.',
+ wrong:'Briefs that contradict their own budget ("five-star finish, three-star envelope") because narrative and numbers were written by different people.',rel:['masterplan','devcontrols','feasibility']},
+{id:'bim',s:'design',n:'BIM',one:'Building information in models — geometry with data attached, so the design is queryable, not just drawable.',
+ body:'The value isn’t 3D; it’s that a wall knows it’s a wall, with a fire rating and a cost code. That’s what makes clash detection, quantities and digital handover possible.',
+ wrong:'Buying "BIM" as software. BIM is an information-management discipline (ISO 19650 formalizes it) — the software is the pencil.',rel:['cde','clash','lod'],atlas:'bim'},
+{id:'lod',s:'design',n:'LOD (Level of Development)',one:'How much you may trust a model element — from conceptual placeholder (LOD 100) to as-built record (LOD 500).',
+ body:'LOD is a contract about reliability. Quantities from a LOD 200 model are indicative; ordering steel from them is malpractice.',
+ wrong:'Treating visual detail as reliability. A photorealistic element can still be LOD 200 — pretty is not the same as dependable.',rel:['bim','clash','cde']},
+{id:'clash',s:'design',n:'Clash Detection',one:'Finding where designs collide with each other before the site finds out with concrete.',
+ body:'Run federated-model clash checks on a cadence, assign every clash an owner, and track closure like defects. A clash found in coordination costs an email; on site it costs a core drill.',
+ wrong:'Reporting "3,000 clashes found" as achievement. The metric that matters is clashes closed before the affected work packages start.',rel:['bim','lod','rfi']},
+
+/* 03 THE CONTRACT */
+{id:'fidic',s:'contract',n:'FIDIC',one:'The most-used family of international construction contracts; each "book" allocates design and ground risk differently.',
+ body:'Red Book: employer designs. Yellow: contractor designs. Silver: contractor carries most risk for a lump sum. Knowing which book you’re under tells you who owns which surprise.',
+ wrong:'Reading the unamended standard form. The particular conditions — the amendments — are where the actual risk allocation lives.',rel:['eot','claim','timebar']},
+{id:'eot',s:'contract',n:'EOT (Extension of Time)',one:'The contractual mechanism that moves the completion date — relief from delay damages, not automatic money.',
+ body:'Time and money are separate claims: an EOT protects you from liquidated damages; prolongation cost is argued separately. Both are won or lost on contemporaneous records.',
+ wrong:'Waiting to claim until the delay is undeniable. By then the notice window has usually closed and the records were never kept.',rel:['claim','timebar','ld','float']},
+{id:'variation',s:'contract',n:'Variation / Change Order',one:'An instructed change to the scope — and the single most common route by which margin quietly leaks.',
+ body:'Every variation needs three things captured at the time: the instruction, the cost and time effect, and the approval trail. Unpriced changed work done "to keep the job moving" is a gift to the other party.',
+ wrong:'Doing changed work on a verbal instruction and pricing it at month end. The change register should reconcile to the cost forecast weekly, not quarterly.',rel:['claim','margin','etc']},
+{id:'claim',s:'contract',n:'Claim',one:'A formal request for time or money under the contract. Claims are won on records, not on arguments.',
+ body:'A claim is an evidence chain: cause, effect, entitlement, quantum — each link supported by documents that existed at the time. The best claims teams are really records teams.',
+ wrong:'Treating claims as a relationship failure. Under most standard forms, notifying claims is an administrative duty — silence helps no one, including the employer.',rel:['eot','variation','timebar','dailyreport']},
+{id:'timebar',s:'contract',n:'Time-bar & Notices',one:'Contractual deadlines for notifying events — miss them and the entitlement can die, however good the merits.',
+ body:'FIDIC’s famous 28-day notice is the archetype. The operational answer is systematic: every event logged, every notice clock tracked, automatically — this is a data problem wearing a legal costume.',
+ wrong:'Relying on the project manager’s memory for notice deadlines across forty live events. That’s what registers and alerts are for.',rel:['claim','eot','docs-term']},
+{id:'ld',s:'contract',n:'Liquidated Damages (LDs)',one:'Pre-agreed damages per day of delay — certainty for both sides, and the number the EOT battle is really about.',
+ body:'LDs are usually capped (often 5–15% of contract value). The cap, the daily rate, and the EOT machinery together define the contractor’s true delay exposure.',
+ wrong:'Assuming LDs are the employer’s only remedy — or that they’re unenforceable "penalties" everywhere. Both depend on jurisdiction and drafting.',rel:['eot','retention','fidic']},
+{id:'retention',s:'contract',n:'Retention',one:'A percentage withheld from every payment until completion and defects are closed — a quality lever and a cashflow weapon.',
+ body:'Typically 5–10%, half released at taking-over, half after the defects period. Multiply across a subcontract chain and retention is often the difference between a solvent and insolvent trade.',
+ wrong:'Forgetting retention in cashflow models — on both sides. Its release milestones are as plannable as any activity.',rel:['cashflow','snag','ld']},
+
+/* 04 SCHEDULE & PROGRESS */
+{id:'wbs',s:'schedule',n:'WBS (Work Breakdown Structure)',one:'The hierarchical breakdown of scope into manageable pieces — the spine every schedule, cost report and claim hangs on.',
+ body:'Owner WBS, contractor WBS and cost breakdown rarely match; the mapping between them is the most valuable, least loved artifact in project controls. Without it, portfolio rollups are fiction.',
+ wrong:'Letting every contractor invent structure freely with no mapping obligation. Mandate a master library and a mapping table in the contract.',rel:['baseline','costcodes','ev'],atlas:'mdm'},
+{id:'baseline',s:'schedule',n:'Baseline',one:'The approved plan you measure against. Change it without control and every variance becomes meaningless.',
+ body:'A baseline is a governed object: approved once, re-baselined only through formal change. The current schedule tells you where you are; the baseline tells you what that means.',
+ wrong:'"Rolling" baselines that quietly absorb slippage each month. If the target moves with you, you are always on time and never in control.',rel:['wbs','ev','scurve'],atlas:'p6'},
+{id:'cpm',s:'schedule',n:'Critical Path',one:'The longest chain of dependent activities — the sequence with zero slack that sets the completion date.',
+ body:'Delay on the critical path delays the project one-for-one; delay elsewhere just eats float. EOT analysis is largely an argument about what the critical path really was at the time.',
+ wrong:'Managing to a single static critical path. It moves — near-critical paths within a week or two of float deserve the same attention.',rel:['float','baseline','eot']},
+{id:'float',s:'schedule',n:'Float',one:'The slack an activity has before it delays something else. Who owns it is one of construction’s oldest fights.',
+ body:'Total float is shared oxygen: contracts differ on whether it belongs to the contractor, the employer, or "the project". Know your clause before you rely on it.',
+ wrong:'Hiding float with soft logic and long lags to protect it. Schedule quality checks (excessive lags, constraints) exist precisely to catch this.',rel:['cpm','eot','baseline']},
+{id:'ev',s:'schedule',n:'Earned Value',one:'Progress measured in money: what the completed work was worth against what it cost and what was planned.',
+ body:'CPI = earned/actual cost; SPI = earned/planned. Below 1.0 is bad, and a CPI below ~0.9 at 20% complete almost never recovers — the research on this is brutally consistent.',
+ wrong:'Computing CPI on ungoverned progress data. If percent-complete is optimistic, earned value just formalizes the optimism.',rel:['baseline','etc','scurve','wbs'],atlas:'evm'},
+{id:'scurve',s:'schedule',n:'S-Curve',one:'Cumulative plan versus actual over time. The shape tells the story before any number does.',
+ body:'Early flatness = mobilization problems; a curve that never steepens = a project pretending its peak will arrive later. Plot planned, earned and actual together and most narratives write themselves.',
+ wrong:'Showing cost curves alone. The gap between the earned and actual curves is the margin story.',rel:['ev','baseline','cashflow']},
+{id:'lookahead',s:'schedule',n:'Look-ahead Plan',one:'The rolling two-to-six-week executable plan that bridges the master schedule and what crews actually do on Monday.',
+ body:'The look-ahead is where constraints get cleared: access, materials, drawings, permits. Percent of promised work completed (PPC) each week is the most honest productivity metric on site.',
+ wrong:'Treating it as a filtered view of the master schedule. A real look-ahead is made with the trades, constraint by constraint.',rel:['cpm','dailyreport','ptw']},
+
+/* 05 COST & MARGIN */
+{id:'boq',s:'cost',n:'BoQ (Bill of Quantities)',one:'The priced list of measured quantities — the estimate in its contractual clothes.',
+ body:'A good BoQ, coded to the CBS, is the skeleton for procurement packages, progress payment and variation pricing all at once.',
+ wrong:'Letting the BoQ’s structure diverge from the cost system’s. If the estimator, the buyer and the cost engineer code differently, nothing reconciles later.',rel:['costcodes','commitment','variation']},
+{id:'commitment',s:'cost',n:'Commitments',one:'Money legally promised — POs and subcontracts — before any invoice arrives. Overruns hide here first.',
+ body:'Budget minus commitments minus pending changes = what you actually have left. Cost reports that only show invoiced actuals are weeks behind the truth.',
+ wrong:'Watching actuals instead of commitments. By the time an overrun is invoiced, it happened two months ago.',rel:['etc','boq','margin'],atlas:'cost'},
+{id:'etc',s:'cost',n:'ETC & EAC',one:'Estimate to Complete and Estimate at Completion — what’s left to spend, and where you’ll land. There are five ways to compute them; the spread is the truth.',
+ body:'Formula-based EACs (BAC/CPI and friends), bottom-up ETCs from remaining quantities, and risk-adjusted versions should be computed in parallel. When the methods diverge, that divergence is your risk signal.',
+ wrong:'Publishing one confident EAC from one method. A single number hides exactly the uncertainty management needed to see.',rel:['ev','commitment','contingency'],atlas:'evm'},
+{id:'contingency',s:'cost',n:'Contingency',one:'Money for known-unknowns, held at defined levels with drawdown rules — not a slush fund.',
+ body:'Mature teams track contingency drawdown against risk register movement: money released when risks retire, not when someone shouts loudest.',
+ wrong:'Spreading contingency invisibly through line items. Hidden contingency gets spent twice — once by the line, once by the claim.',rel:['tdc','etc','riskterm']},
+{id:'costcodes',s:'cost',n:'CBS & Cost Codes',one:'Cost’s answer to the WBS. If cost codes and schedule activities don’t map, cost and time never reconcile.',
+ body:'The CBS-to-WBS mapping enables the reports that matter: earned value by area, forecast by package, productivity by trade. It’s master data and deserves an owner.',
+ wrong:'Making the mapping a one-off spreadsheet exercise every reporting cycle. It should persist and survive updates.',rel:['wbs','boq','ev'],atlas:'mdm'},
+{id:'cashflow',s:'cost',n:'Cashflow',one:'The timing of money in and out. Projects die of cash, not of profit.',
+ body:'Payment terms, retention, advance payments and certification lag together decide whether a profitable project is fundable. Model cash monthly and stress the receipts side.',
+ wrong:'Confusing profit with cash. A project can be comfortably in margin and fatally out of cash in the same month.',rel:['retention','capstack','scurve']},
+{id:'margin',s:'cost',n:'Margin Leakage',one:'The slow escape of profit through unclaimed changes, productivity drift, missed notices and payment terms — ten small holes, not one big one.',
+ body:'The leaks are detectable early: changed work never priced, commitments creeping past budget lines, labour hours drifting from tender allowances, notice windows expiring. Each has a data signature.',
+ wrong:'Looking for margin loss in the monthly report. By month end the leak is history; the detectors have to run on live data.',rel:['variation','commitment','timebar','etc']},
+
+/* 06 SITE & FIELD */
+{id:'rfi',s:'field',n:'RFI (Request for Information)',one:'The formal question from field to design team. Response time is schedule risk, measurable and manageable.',
+ body:'Track RFI aging like receivables: average turnaround, overdue count, and which packages they cluster on. RFI clusters predict claims months in advance.',
+ wrong:'Letting engineering questions travel by WhatsApp. If it’s not in the register, it can’t protect you later.',rel:['submittal','docs-term','claim'],atlas:'docs'},
+{id:'submittal',s:'field',n:'Submittal',one:'The contractor’s proof of intent — shop drawings, materials, method statements — needing approval before the work happens.',
+ body:'The submittal log is a leading indicator: late submittals now are late installations later. Approval cycles belong on the look-ahead’s constraint list.',
+ wrong:'Front-loading a thousand submittals at once "to be safe", drowning reviewers and randomizing priorities.',rel:['rfi','lookahead','lod']},
+{id:'snag',s:'field',n:'Snagging / Punch List',one:'The defects list standing between "finished" and "handed over". Structure beats free text.',
+ body:'Snags captured with location, trade, and category roll up into quality analytics; free-text lists roll up into nothing. Close-out rate per trade is the metric handover dates are made of.',
+ wrong:'Starting snagging at the end. Progressive snagging per completed area keeps the mountain small and the evidence fresh.',rel:['retention','forms-term','dailyreport']},
+{id:'dailyreport',s:'field',n:'Daily Report',one:'The site diary: labour, plant, weather, work done, instructions received. Boring every day, decisive in every dispute.',
+ body:'Years later, EOT and disruption claims are reconstructed from these. Structured daily reports — actual crews, actual hours, actual locations — are the cheapest claims insurance available.',
+ wrong:'Copy-pasting yesterday’s report. A diary that always says the same thing proves nothing except that nobody kept one.',rel:['claim','lookahead','snag'],atlas:'forms'},
+{id:'ptw',s:'field',n:'Permit to Work',one:'Formal authorization for high-risk activities — hot works, confined spaces, lifts. The sharp end of HSE control.',
+ body:'Permit data is also progress data: what was authorized where, when. Digital permits feed both safety analytics and the daily record.',
+ wrong:'Treating permits as paperwork friction. The permit conversation is the last check before the highest-consequence work on site.',rel:['dailyreport','hse-term','lookahead'],atlas:'hse'},
+{id:'realitycapture',s:'field',n:'Reality Capture',one:'Digitizing what the site actually looks like: photos, 360° walks, drone flights, laser scans.',
+ body:'Capture on a governed cadence — same routes, same intervals — and reality becomes comparable over time. That comparability is what progress AI feeds on.',
+ wrong:'Random heroic capture. One perfect scan is a souvenir; a weekly imperfect one is a dataset.',rel:['pointcloud','snag','dailyreport'],atlas:'cams'},
+{id:'pointcloud',s:'field',n:'Point Cloud',one:'Millions of measured 3D points from laser scanning — reality, at survey grade. One floor ≈ 2–10 GB.',
+ body:'Point clouds verify as-builts, feed scan-to-BIM, and settle "was it built where the model says" arguments with millimetres instead of meetings.',
+ wrong:'Scanning without survey control and tolerance rules agreed first. An unregistered point cloud is expensive noise.',rel:['realitycapture','bim','lod'],atlas:'scan'},
+
+/* 07 DATA & SYSTEMS */
+{id:'cde',s:'data',n:'CDE (Common Data Environment)',one:'The single agreed place where project information lives and moves. If it’s not in the CDE, it didn’t happen.',
+ body:'On paper it’s structured storage with workflows (ISO 19650 formalizes the states: work-in-progress, shared, published). In practice it’s the project’s memory and its courtroom.',
+ wrong:'Believing buying a CDE creates one. A CDE is a behaviour — everything goes in, nothing lives in email — enforced by contract, with software attached.',rel:['ssot','bim','docs-term'],atlas:'bim'},
+{id:'ssot',s:'data',n:'Single Source of Truth',one:'One agreed home for each fact. Everything else references it; nothing else re-types it.',
+ body:'The phrase is abused to sell platforms. Really it’s an assignment: each data domain gets exactly one owning system, and every other system subscribes.',
+ wrong:'Declaring the newest tool "the single source of truth" for everything. Truth is federated by domain; the sin is duplication, not plurality.',rel:['sor','cde','masterdata']},
+{id:'sor',s:'data',n:'System of Record',one:'The application that officially owns a data domain: P6 owns schedule, the ERP owns actuals, the CDE owns documents.',
+ body:'Naming systems of record — in writing — kills the most expensive argument in project IT: "whose number is right". The answer is decided per domain, in advance.',
+ wrong:'Letting the reporting tool quietly become the system of record because that’s where people fixed the numbers.',rel:['ssot','lakehouse','datagov'],atlas:'p6'},
+{id:'lakehouse',s:'data',n:'Lakehouse',one:'One analytical store for everything — structured cost rows and unstructured photos alike — that reports and AI both read from.',
+ body:'Systems of record keep running the business; the lakehouse is where their data meets for analysis. It’s also where quality rules and access control get physically enforced.',
+ wrong:'Piping garbage in and calling it a data strategy. A lakehouse without validation at ingestion is a swamp with better marketing.',rel:['sor','semantic','dataproduct'],atlas:'lake'},
+{id:'semantic',s:'data',n:'Semantic Layer',one:'Business definitions expressed once — what CPI means, what "complete" means — and reused by every dashboard and AI alike.',
+ body:'When CPI is defined in one governed place, finance, the PMO and the copilot all give the same answer. That’s the whole point, and it’s rarer than it sounds.',
+ wrong:'Defining metrics inside each dashboard. Twelve dashboards, twelve subtly different CPIs, one very long meeting.',rel:['lakehouse','ev','datagov'],atlas:'sem'},
+{id:'masterdata',s:'data',n:'Master Data',one:'The reference structures everything maps to: WBS and cost libraries, asset classifications, org registers.',
+ body:'Master data is what makes projects comparable. It’s unglamorous, needs an owner and a change process, and pays for itself the first time a portfolio report works.',
+ wrong:'Treating master data as an IT chore. It’s a governance asset — the codified agreement about how the business describes itself.',rel:['wbs','costcodes','datagov'],atlas:'mdm'},
+{id:'dataproduct',s:'data',n:'Data Product',one:'A governed, owned, consumable data asset with an SLA — a dashboard with a contract behind it.',
+ body:'Owner, definition, quality rules, refresh promise, named consumers. Productizing data is how one-off reports become portfolio infrastructure.',
+ wrong:'Calling every dashboard a data product. No owner + no SLA + no quality rules = just another dashboard.',rel:['semantic','lakehouse','datagov'],atlas:'dataprod'},
+{id:'datagov',s:'data',n:'Data Governance',one:'Not about data — about who controls decisions: who owns each definition, who may change it, who gets told.',
+ body:'Start from decision authority (who decides when this KPI changes?) and the tooling — catalogs, lineage, quality — becomes the machinery, not the pitch.',
+ wrong:'Leading with metadata tools and maturity frameworks. Executives fund protected decisions, not lineage diagrams.',rel:['ssot','masterdata','aigov'],atlas:'cat'},
+
+/* 08 AI ON THE PROJECT */
+{id:'copilot',s:'ai',n:'Copilot',one:'An AI assistant that drafts and answers inside your workflow. You keep the pen; it moves it faster.',
+ body:'On projects: drafting reports and RFI responses, querying documents in plain language, summarizing meetings. Grounding on governed data is what separates useful from dangerous.',
+ wrong:'Rolling out copilots over ungoverned document chaos. The AI answers from what it can see — including the four outdated versions.',rel:['rag','agent','hitl'],atlas:'gen'},
+{id:'agent',s:'ai',n:'AI Agent',one:'AI that takes actions, not just gives answers — querying systems, assembling documents, executing steps toward a goal.',
+ body:'Agents need what employees need: defined authority, audit trails, and someone accountable. The six governance questions apply with extra force.',
+ wrong:'Giving an agent broad system access "to see what it can do". Capability without decision boundaries is how incidents get named.',rel:['copilot','aigov','context'],atlas:'reason'},
+{id:'rag',s:'ai',n:'RAG (Retrieval-Augmented Generation)',one:'AI that answers from your documents: it retrieves the relevant records first, then writes — grounded and citable.',
+ body:'RAG is why the same model can be generic on the internet and expert on your project. Retrieval must respect permissions: the AI should never see more than its user.',
+ wrong:'Blaming "hallucination" when the real failure was retrieval — the truth wasn’t indexed, so the model improvised.',rel:['copilot','hallucination','context']},
+{id:'context',s:'ai',n:'Context Layer',one:'The shared project context AI can see — entities, state, relationships — assembled across applications at query time.',
+ body:'Context lives everywhere: the schedule, the cost system, the document register. A context layer (MCP connectors, ontologies) makes it addressable without copying everything everywhere.',
+ wrong:'Hard-wiring each AI tool to each system pairwise. That’s the spreadsheet-export era again, with tokens.',rel:['agent','aimemory','semantic'],atlas:'context'},
+{id:'aimemory',s:'ai',n:'AI Memory',one:'Durable memory for assistants: decisions taken, preferences, lessons — so each conversation doesn’t start from zero.',
+ body:'Memory turns an assistant into a colleague. It’s also a record: retention, correction and deletion rules apply to it like any project record.',
+ wrong:'Letting memory accumulate ungoverned. What the AI "remembers" about a dispute is discoverable, in every sense.',rel:['context','agent','datagov'],atlas:'memory'},
+{id:'hitl',s:'ai',n:'Human-in-the-Loop',one:'The design rule that a person owns the decision; AI does the legwork and drafts the option.',
+ body:'The loop must be real: named reviewer, genuine authority to reject, and time to exercise it. Rubber-stamp review is automation with extra steps and shared blame.',
+ wrong:'Measuring HITL by "a human clicked approve". If rejection never happens, the loop is decorative.',rel:['aigov','agent','copilot']},
+{id:'hallucination',s:'ai',n:'Hallucination',one:'Confidently wrong AI output — fluent, plausible, and unmoored from the record.',
+ body:'Mitigate with grounding (RAG over governed sources), citation requirements, and verification proportional to consequence. On contracts and claims: verify everything.',
+ wrong:'Treating hallucination as a model bug to wait out. It’s a system property you engineer around — with data quality and review, today.',rel:['rag','hitl','aigov']},
+{id:'aigov',s:'ai',n:'AI Governance',one:'Six questions with written answers: who uses it, on what documents, fed what data, flagging what, verified by whom, liable when wrong.',
+ body:'Any AI use on a project should be able to answer all six in one page. The sixth — who owns the liability when AI is wrong — is the one nobody writes down and everyone eventually asks.',
+ wrong:'Governing AI with a policy PDF nobody operationalized. Governance is answered questions per use case, not principles per company.',rel:['datagov','hitl','agent'],atlas:'gen'},
+];
+
+/* aliases used in rel that point to atlas-ish concepts */
+const REL_ALIAS={'docs-term':'rfi','forms-term':'snag','hse-term':'ptw','riskterm':'contingency'};
+
+const bySlug={};TERMS.forEach(t=>bySlug[t.id]=t);
+const ORDER=TERMS.map(t=>t.id);
+
+function esc(s){return s;}
+function buildIndex(){
+  const toc=document.getElementById('toc');
+  const body=document.getElementById('dictBody');
+  SECS.forEach(s=>{
+    const a=document.createElement('a');a.href='#sec-'+s.id;a.textContent=s.no+' '+s.name.toUpperCase();
+    a.onclick=ev=>{ev.preventDefault();location.hash='';setTimeout(()=>document.getElementById('sec-'+s.id).scrollIntoView({behavior:'smooth'}),50);};
+    toc.appendChild(a);
+    const sec=document.createElement('div');sec.className='sec';sec.id='sec-'+s.id;
+    sec.innerHTML='<h2><span class="secno">'+s.no+'</span>'+s.name+'</h2><div class="secsub">'+s.sub+'</div>';
+    TERMS.filter(t=>t.s===s.id).forEach(t=>{
+      const row=document.createElement('a');row.className='trm';row.href='#'+t.id;row.dataset.id=t.id;
+      row.innerHTML='<b>'+t.n+'</b> <span>— '+t.one+'</span>';
+      sec.appendChild(row);
+    });
+    body.appendChild(sec);
+  });
+  document.getElementById('dictCount').textContent=TERMS.length+' TERMS · '+SECS.length+' SECTIONS · PLAIN ENGLISH';
+}
+function renderTerm(id){
+  const t=bySlug[id];if(!t)return;
+  const s=SECS.find(x=>x.id===t.s);
+  const i=ORDER.indexOf(id);
+  const prev=ORDER[(i-1+ORDER.length)%ORDER.length],next=ORDER[(i+1)%ORDER.length];
+  const rels=(t.rel||[]).map(r=>REL_ALIAS[r]||r).filter(r=>bySlug[r]);
+  let html='<div class="kicker">'+s.no+' · '+s.name.toUpperCase()+'</div>';
+  html+='<h1>'+t.n+'</h1>';
+  html+='<p class="lead">'+t.one+'</p>';
+  html+='<div class="tbody"><p>'+t.body+'</p></div>';
+  if(t.wrong)html+='<div class="wrong"><b>WHAT PEOPLE GET WRONG</b><br>'+t.wrong+'</div>';
+  if(rels.length)html+='<div class="rel"><b>RELATED</b>'+rels.map(r=>'<a href="#'+r+'">'+bySlug[r].n+'</a>').join('')+'</div>';
+  if(t.atlas)html+='<a class="atlaslink" href="atlas.html?node='+t.atlas+'">SEE IT ON THE ATLAS →</a>';
+  html+='<div class="pn"><a href="#'+prev+'">← PREVIOUS<b>'+bySlug[prev].n+'</b></a><a href="#'+next+'" style="text-align:right;">NEXT →<b>'+bySlug[next].n+'</b></a></div>';
+  document.getElementById('termContent').innerHTML=html;
+}
+function route(){
+  const h=location.hash.replace('#','');
+  const tv=document.getElementById('termView'),iw=document.getElementById('indexWrap');
+  if(h&&bySlug[h]){
+    renderTerm(h);
+    tv.classList.add('show');iw.classList.add('hide');
+    window.scrollTo({top:0});
+  }else{
+    tv.classList.remove('show');iw.classList.remove('hide');
+  }
+}
+document.getElementById('dictSearch').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.trm').forEach(r=>{
+    const t=bySlug[r.dataset.id];
+    const hay=(t.n+' '+t.one+' '+t.body+' '+(t.wrong||'')).toLowerCase();
+    r.classList.toggle('hidden',!!q&&!hay.includes(q));
+  });
+  document.querySelectorAll('.sec').forEach(sec=>{
+    const any=[...sec.querySelectorAll('.trm')].some(r=>!r.classList.contains('hidden'));
+    sec.classList.toggle('hidden',!any);
+  });
+});
+document.getElementById('themeBtn').onclick=()=>{
+  const cur=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=cur;
+  localStorage.setItem('ctaTheme',cur);
+};
+if(localStorage.getItem('ctaTheme')==='dark')document.documentElement.dataset.theme='dark';
+buildIndex();
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
