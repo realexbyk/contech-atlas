@@ -101,6 +101,22 @@
   .gov-sub{fill:#8a6d28;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;}
   .snode.gov rect{stroke:#6b5518;}
   .snode.fab rect{stroke:#1e5560;}
+
+  /* mobile drawer */
+  .scrim{position:fixed;inset:0;background:rgba(4,5,8,.6);opacity:0;pointer-events:none;transition:opacity .25s;z-index:98;}
+  .scrim.on{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(340px,88vw);background:#0b0d11;border-left:1px solid var(--hair2);
+    z-index:99;transform:translateX(105%);transition:transform .28s ease;padding:16px 22px 22px;overflow-y:auto;
+    display:flex;flex-direction:column;}
+  .drawer.on{transform:none;}
+  .dclose{align-self:flex-end;background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:6px 2px;}
+  .dsec{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--faint);margin:20px 0 4px;}
+  .ditem{display:flex;align-items:center;gap:14px;padding:13px 2px;font-size:15.5px;font-weight:600;color:var(--txt);}
+  .ditem:hover{color:#fff;}
+  .dico{width:22px;text-align:center;color:var(--accent);font-size:14px;}
+  .dbadge{margin-left:auto;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--accent2);
+    border:1px solid #1e5560;padding:3px 8px;border-radius:10px;}
+  .dfoot{margin-top:auto;font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.12em;padding-top:26px;}
   .func{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--hair2);padding:9px 12px;margin-bottom:7px;}
   .func b{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;font-weight:500;color:#c3cad4;}
   .func .fst{font-family:var(--mono);font-size:9px;letter-spacing:.12em;}
@@ -154,9 +170,29 @@
       <a href="articles.html">Briefings</a>
       <a href="index.html#about">About</a>
     </nav>
-    <button class="menu-btn" onclick="document.querySelector('nav.links').classList.toggle('open')">MENU</button>
+    <button class="menu-btn" onclick="dOpen()">☰ MENU</button>
   </div>
 </header>
+
+<div class="scrim" id="scrim" onclick="dClose()"></div>
+<aside class="drawer" id="drawer">
+  <button class="dclose" onclick="dClose()">✕</button>
+  <a class="ditem" href="index.html#about"><span class="dico">✉</span>Newsletter</a>
+  <div class="dsec">EXPLORE</div>
+  <a class="ditem" href="atlas.html"><span class="dico">◈</span>The Atlas<span class="dbadge">LIVING MAP</span></a>
+  <a class="ditem" href="builder.html"><span class="dico">▦</span>Tech Stack Builder<span class="dbadge">150+ TOOLS</span></a>
+  <a class="ditem" href="dictionary.html"><span class="dico">✎</span>Dictionary<span class="dbadge">59 TERMS</span></a>
+  <a class="ditem" href="skills.html"><span class="dico">⌘</span>Skills<span class="dbadge">8 SKILLS</span></a>
+  <div class="dsec">READING</div>
+  <a class="ditem" href="articles.html"><span class="dico">☰</span>Briefings</a>
+  <a class="ditem" href="article-data-governance.html"><span class="dico">✦</span>Data governance</a>
+  <a class="ditem" href="index.html"><span class="dico">⌂</span>Home</a>
+  <div class="dfoot">CONTECH ATLAS · REFERENCE MODEL v0.3</div>
+</aside>
+<script>
+function dOpen(){document.getElementById('drawer').classList.add('on');document.getElementById('scrim').classList.add('on');}
+function dClose(){document.getElementById('drawer').classList.remove('on');document.getElementById('scrim').classList.remove('on');}
+</script>
 
 <div class="container">
   <div class="titlebar">

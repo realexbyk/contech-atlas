@@ -44,6 +44,21 @@
     nav.links.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:#fffffffa;border-bottom:1px solid var(--hair);padding:8px 0;z-index:70;gap:0;}
     nav.links.open a{padding:13px 32px;}
   }
+  /* mobile drawer */
+  .scrim{position:fixed;inset:0;background:rgba(10,12,20,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:98;}
+  .scrim.on{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(340px,88vw);background:#fff;border-left:1px solid var(--hair);
+    z-index:99;transform:translateX(105%);transition:transform .28s ease;padding:16px 22px 22px;overflow-y:auto;
+    display:flex;flex-direction:column;}
+  .drawer.on{transform:none;}
+  .dclose{align-self:flex-end;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:6px 2px;}
+  .dsec{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--muted);margin:20px 0 4px;}
+  .ditem{display:flex;align-items:center;gap:14px;padding:13px 2px;font-size:15.5px;font-weight:600;color:var(--ink);}
+  .ditem:hover{color:var(--accent);}
+  .dico{width:22px;text-align:center;color:var(--accent);font-size:14px;}
+  .dbadge{margin-left:auto;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--accent);
+    border:1px solid var(--hair);padding:3px 8px;border-radius:10px;}
+  .dfoot{margin-top:auto;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;padding-top:26px;}
 </style>
 </head>
 <body>
@@ -60,9 +75,29 @@
       <a href="index.html#about">About</a>
     </nav>
     <a class="btn" href="atlas.html">Explore the Atlas</a>
-    <button class="menu-btn" onclick="document.querySelector('nav.links').classList.toggle('open')">MENU</button>
+    <button class="menu-btn" onclick="dOpen()">☰ MENU</button>
   </div>
 </header>
+
+<div class="scrim" id="scrim" onclick="dClose()"></div>
+<aside class="drawer" id="drawer">
+  <button class="dclose" onclick="dClose()">✕</button>
+  <a class="ditem" href="index.html#about"><span class="dico">✉</span>Newsletter</a>
+  <div class="dsec">EXPLORE</div>
+  <a class="ditem" href="atlas.html"><span class="dico">◈</span>The Atlas<span class="dbadge">LIVING MAP</span></a>
+  <a class="ditem" href="builder.html"><span class="dico">▦</span>Tech Stack Builder<span class="dbadge">150+ TOOLS</span></a>
+  <a class="ditem" href="dictionary.html"><span class="dico">✎</span>Dictionary<span class="dbadge">59 TERMS</span></a>
+  <a class="ditem" href="skills.html"><span class="dico">⌘</span>Skills<span class="dbadge">8 SKILLS</span></a>
+  <div class="dsec">READING</div>
+  <a class="ditem" href="articles.html"><span class="dico">☰</span>Briefings</a>
+  <a class="ditem" href="article-data-governance.html"><span class="dico">✦</span>Data governance</a>
+  <a class="ditem" href="index.html"><span class="dico">⌂</span>Home</a>
+  <div class="dfoot">CONTECH ATLAS · REFERENCE MODEL v0.3</div>
+</aside>
+<script>
+function dOpen(){document.getElementById('drawer').classList.add('on');document.getElementById('scrim').classList.add('on');}
+function dClose(){document.getElementById('drawer').classList.remove('on');document.getElementById('scrim').classList.remove('on');}
+</script>
 
 <article>
   <div class="kicker">Briefing 001 · Data governance</div>

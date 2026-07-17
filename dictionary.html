@@ -86,6 +86,22 @@
   .cta input{flex:1;border:1px solid var(--hair);background:var(--bg);color:var(--ink);padding:10px 12px;font-size:13px;outline:none;min-width:0;}
   .cta button{border:1px solid var(--ink);background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:600;padding:10px 16px;cursor:pointer;}
 
+  /* mobile drawer */
+  .scrim{position:fixed;inset:0;background:rgba(10,12,20,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:98;}
+  .scrim.on{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(340px,88vw);background:var(--bg);border-left:1px solid var(--hair);
+    z-index:99;transform:translateX(105%);transition:transform .28s ease;padding:16px 22px 22px;overflow-y:auto;
+    display:flex;flex-direction:column;}
+  .drawer.on{transform:none;}
+  .dclose{align-self:flex-end;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:6px 2px;}
+  .dsec{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--muted);margin:20px 0 4px;}
+  .ditem{display:flex;align-items:center;gap:14px;padding:13px 2px;font-size:15.5px;font-weight:600;color:var(--ink);}
+  .ditem:hover{color:var(--accent);}
+  .dico{width:22px;text-align:center;color:var(--accent);font-size:14px;}
+  .dbadge{margin-left:auto;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--accent);
+    border:1px solid var(--hair);padding:3px 8px;border-radius:10px;}
+  .dfoot{margin-top:auto;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;padding-top:26px;}
+
   footer{border-top:1px solid var(--hair);padding:30px 0 44px;margin-top:50px;}
   footer .inner{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--muted);}
   footer a:hover{color:var(--ink);}
@@ -99,9 +115,30 @@
     <div class="hbtns">
       <a class="hbtn" href="atlas.html">ATLAS ↗</a>
       <button class="hbtn" id="themeBtn">◐ THEME</button>
+      <button class="hbtn" onclick="dOpen()">☰ MENU</button>
     </div>
   </div>
 </header>
+
+<div class="scrim" id="scrim" onclick="dClose()"></div>
+<aside class="drawer" id="drawer">
+  <button class="dclose" onclick="dClose()">✕</button>
+  <a class="ditem" href="index.html#about"><span class="dico">✉</span>Newsletter</a>
+  <div class="dsec">EXPLORE</div>
+  <a class="ditem" href="atlas.html"><span class="dico">◈</span>The Atlas<span class="dbadge">LIVING MAP</span></a>
+  <a class="ditem" href="builder.html"><span class="dico">▦</span>Tech Stack Builder<span class="dbadge">150+ TOOLS</span></a>
+  <a class="ditem" href="dictionary.html"><span class="dico">✎</span>Dictionary<span class="dbadge">59 TERMS</span></a>
+  <a class="ditem" href="skills.html"><span class="dico">⌘</span>Skills<span class="dbadge">8 SKILLS</span></a>
+  <div class="dsec">READING</div>
+  <a class="ditem" href="articles.html"><span class="dico">☰</span>Briefings</a>
+  <a class="ditem" href="article-data-governance.html"><span class="dico">✦</span>Data governance</a>
+  <a class="ditem" href="index.html"><span class="dico">⌂</span>Home</a>
+  <div class="dfoot">CONTECH ATLAS · REFERENCE MODEL v0.3</div>
+</aside>
+<script>
+function dOpen(){document.getElementById('drawer').classList.add('on');document.getElementById('scrim').classList.add('on');}
+function dClose(){document.getElementById('drawer').classList.remove('on');document.getElementById('scrim').classList.remove('on');}
+</script>
 
 <div class="container">
 
