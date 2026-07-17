@@ -473,16 +473,22 @@ function layout(){
 const railX=()=>W-140;
 const bandY=i=>{const top=92,bot=H-56;return top+(bot-top)*(i+0.5)/6;};
 const railSlot=i=>92+(i+0.5)*(H-170)/7;
+const LSLOT={};
+LAYERS.forEach(l=>{
+  const list=NODES.filter(n=>n.layer===l.id);
+  list.forEach((n,i)=>{LSLOT[n.id]={i,c:list.length,li:LAYERS.indexOf(l)};});
+});
 function setTargets(){
   for(const s of sim){
     const n=s.n;
     if(n.layer==='governance'){s.tx=railX();s.ty=railSlot(n.gi);s.strong=true;}
     else if(n.layer==='fabric'){s.tx=railX();s.ty=railSlot(n.gi+4);s.strong=true;}
     else{
-      const i=LAYERS.findIndex(l=>l.id===n.layer);
-      const left=250,right=railX()-190;
-      s.tx=left+((n.u+(1-n.v))/2)*(right-left);
-      s.ty=bandY(i);s.strong=false;
+      const sl=LSLOT[n.id];
+      const left=260,right=railX()-200;
+      s.tx=left+((sl.i+0.5)/sl.c)*(right-left);
+      s.ty=bandY(sl.li)+((sl.i%2)?16:-16);
+      s.strong=false;
     }
   }
 }
@@ -491,12 +497,12 @@ function tick(){
   T+=0.016;setTargets();
   for(const s of sim){
     if(s===dragN)continue;
-    s.ax=(s.tx-s.x)*(s.strong?0.03:0.006)+Math.sin(T*0.7+s.ph)*0.014;
-    s.ay=(s.ty-s.y)*(s.strong?0.03:0.02)+Math.cos(T*0.55+s.ph)*0.012;
+    s.ax=(s.tx-s.x)*(s.strong?0.03:0.012)+Math.sin(T*0.7+s.ph)*0.014;
+    s.ay=(s.ty-s.y)*(s.strong?0.03:0.022)+Math.cos(T*0.55+s.ph)*0.012;
     for(const o of sim){
       if(o===s)continue;
-      const dx=s.x-o.x,dy=(s.y-o.y)*1.7,d2=dx*dx+dy*dy+60;
-      if(d2<30000){const f=18/d2;s.ax+=dx*f;s.ay+=dy*f;}
+      const dx=s.x-o.x,dy=(s.y-o.y)*2.2,d2=dx*dx+dy*dy+60;
+      if(d2<52000){const f=55/d2;s.ax+=dx*f;s.ay+=dy*f;}
     }
   }
   for(const sp of springs){
