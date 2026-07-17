@@ -701,7 +701,7 @@ function visible(n){
   const inPhase=currentPhase==='all'||n.phases.includes(currentPhase);
   const inProc=!selectedProc||selectedProc.ids.includes(n.id);
   const core=ATLAS_P[atlasPersona];
-  const inPersona=!core||core.includes(n.id)||!!searchQ; /* search overrides role dimming */
+  const inPersona=!core||core.includes(n.id)||!!searchQ||!!selectedUC; /* search & use-case override role dimming */
   let inSearch=true;
   if(searchQ){
     const hay=(n.name+' '+n.desc+' '+(n.products||[]).join(' ')+' '+(SYN[n.id]||'')).toLowerCase();
