@@ -58,12 +58,17 @@
   .plate.dim{opacity:0;pointer-events:none;}
   /* billboarded children — stand upright facing the camera */
   .bb{transform-origin:0 100%;transform:rotateZ(calc(var(--rz)*-1)) rotateX(calc(var(--rx)*-1));}
-  .tag{position:absolute;left:-5%;top:42%;display:flex;align-items:center;gap:8px;white-space:nowrap;pointer-events:none;
-    background:rgba(10,12,17,.94);border:1px solid var(--hair);border-left:3px solid var(--pc);border-radius:8px;
-    padding:7px 11px;font-family:var(--mono);letter-spacing:.08em;}
-  .tag .tno{font-size:10px;color:var(--pc);}
-  .tag .tnm{font-size:10.5px;font-weight:600;color:var(--txt);letter-spacing:.1em;}
-  .tag .tct{font-size:9px;color:var(--faint);}
+  /* 2D HUD layer labels — always readable, track the plates */
+  .hud{position:absolute;z-index:6;display:flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;
+    background:rgba(10,12,17,.93);border:1px solid var(--hair);border-left:3px solid var(--hc);border-radius:8px;
+    padding:6px 11px;font-family:var(--mono);letter-spacing:.08em;
+    transition:top .5s cubic-bezier(.22,.9,.3,1),left .5s cubic-bezier(.22,.9,.3,1),border-color .15s;}
+  #ov.drag .hud{transition:border-color .15s;}
+  .hud:hover{border-color:var(--hc);}
+  .hud .tno{font-size:10px;color:var(--hc);}
+  .hud .tnm{font-size:10px;font-weight:600;color:var(--txt);letter-spacing:.1em;}
+  .hud .tct{font-size:9px;color:var(--faint);}
+  @media(max-width:720px){.hud{padding:4px 8px;gap:5px;}.hud .tnm{font-size:8.5px;}}
   .mini{position:absolute;display:flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;
     font-family:var(--mono);font-size:9px;letter-spacing:.02em;color:#dbe0e8;
     background:rgba(13,16,22,.92);border:1px solid color-mix(in srgb,var(--pc) 42%,#232936);
@@ -273,6 +278,7 @@ function applyView(){
   ov.style.setProperty('--rx',rx+'deg');
   ov.style.setProperty('--rz',vRz+'deg');
   ov.style.setProperty('--ty',vTy+'px');
+  if(typeof updateHud==='function')updateHud();
 }
 function buildOverview(){
   const ov=document.getElementById('ov');
@@ -296,7 +302,7 @@ function buildOverview(){
     plate.dataset.layer=l.id;
     plate.onclick=()=>{if(!dragMoved)flyIn(l.id,plate);};
     const nodes=N.filter(n=>n.l===l.id);
-    let h='<div class="tag bb"><span class="tno">'+l.no+'</span><span class="tnm">'+l.name+'</span><span class="tct">'+nodes.length+'</span></div>';
+    let h='';
     const cnt=nodes.length;
     const cols=cnt<=3?cnt:cnt<=8?Math.ceil(cnt/2):4;
     const rows=Math.ceil(cnt/cols);
@@ -307,11 +313,37 @@ function buildOverview(){
       h+='<button class="mini bb" style="left:'+x+'%;top:'+y+'%;" '+
         'onclick="event.stopPropagation();if(!dragMoved)flyNode(\''+l.id+'\',\''+n.id+'\');"><i></i>'+n.n+'</button>';
     });
-    if(i>0)h+='<div class="beam bb" style="left:15%;top:34%;"></div><div class="beam bb" style="left:82%;top:62%;animation-delay:1.2s;"></div>';
+    if(i>0)h+='<div class="beam bb" style="left:15%;top:34%;"></div><div class="beam bb" style="left:82%;top:62%;"></div>';
     plate.innerHTML=h;
     stack.appendChild(plate);
   });
+  /* 2D HUD labels */
+  LAYERS.forEach((l,i)=>{
+    const nodes=N.filter(n=>n.l===l.id);
+    const t=document.createElement('div');
+    t.className='hud';t.id='hud-'+l.id;
+    t.style.setProperty('--hc',l.c);
+    t.dataset.z=zs[i]-mid;
+    t.innerHTML='<span class="tno">'+l.no+'</span><span class="tnm">'+l.name+'</span><span class="tct">'+nodes.length+'</span>';
+    t.onclick=e=>{e.stopPropagation();if(!dragMoved)flyLayer(l.id);};
+    ov.appendChild(t);
+  });
   applyView();
+}
+function updateHud(){
+  const stack=document.getElementById('stack');
+  if(!stack)return;
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  const ps=stack.offsetWidth;
+  const rx=Math.max(46,Math.min(63,55-vTy*0.02))*Math.PI/180;
+  document.querySelectorAll('.hud').forEach(t=>{
+    const z=parseFloat(t.dataset.z);
+    const y=cy+vTy-z*Math.sin(rx)-t.offsetHeight/2;
+    const railX=cx-ps*0.74;
+    t.style.top=y+'px';
+    if(railX-10>t.offsetWidth){t.style.left=(railX-t.offsetWidth)+'px';}
+    else{t.style.left='10px';}
+  });
 }
 function flyIn(id,plate,selId){
   document.querySelectorAll('#stack .plate').forEach(p=>{if(p!==plate)p.classList.add('dim');});
@@ -532,7 +564,7 @@ document.getElementById('srchIn').addEventListener('input',e=>renderResults(e.ta
 
 /* ---------------- INIT ---------------- */
 buildOverview();buildSwitch();
-window.addEventListener('resize',()=>{if(curLayer)openLayer(curLayer,curSel);});
+window.addEventListener('resize',()=>{if(curLayer)openLayer(curLayer,curSel);else updateHud();});
 </script>
 </body>
 </html>
