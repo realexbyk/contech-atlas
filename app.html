@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#08090c">
+<title>Atlas — the map of construction technology</title>
+<meta name="description" content="Explore construction technology layer by layer. The ConTech Atlas app.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08090c;--card:#0e1116;--hair:#232936;--hair2:#2e3644;--txt:#e8eaee;--dim:#8b93a1;--faint:#565e6b;
+    --accent:#5b76ff;--accent2:#37c8dd;--amber:#d9a53f;--green:#4ecf8d;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'Inter',system-ui,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;}
+  body{background:var(--bg);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+
+  /* top bar */
+  .bar{position:fixed;top:0;left:0;right:0;height:58px;display:flex;align-items:center;gap:10px;
+    padding:0 14px;padding-top:env(safe-area-inset-top);z-index:50;
+    background:linear-gradient(180deg,#08090c 60%,transparent);}
+  .bar .brand{font-weight:800;font-size:13px;letter-spacing:.02em;white-space:nowrap;}
+  .bar .brand span{color:var(--accent);}
+  .bar .title{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;}
+  .bbtn{min-width:38px;height:38px;border:1px solid var(--hair);background:#0e1116e6;color:var(--dim);
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer;padding:0 12px;
+    display:flex;align-items:center;justify-content:center;border-radius:9px;transition:.15s;}
+  .bbtn:hover{color:var(--txt);border-color:var(--hair2);}
+
+  /* ============ SCENE 1 — OVERVIEW ============ */
+  #ov{position:fixed;inset:0;padding:64px 16px 16px;padding-top:calc(64px + env(safe-area-inset-top));
+    display:flex;flex-direction:column;gap:10px;transition:opacity .28s ease,transform .28s ease;}
+  #ov.hide{opacity:0;transform:scale(1.06);pointer-events:none;}
+  .ovhint{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--faint);text-align:center;padding-bottom:2px;}
+  .band{flex:1;position:relative;border:1px solid var(--hair);border-radius:14px;cursor:pointer;overflow:hidden;
+    background:linear-gradient(180deg,rgba(91,118,255,.09),rgba(14,17,22,.6) 55%,rgba(91,118,255,.03));
+    transition:transform .18s ease,border-color .18s ease;display:flex;align-items:center;padding:0 18px;gap:14px;}
+  .band:hover{transform:scale(1.012);border-color:var(--accent);}
+  .band .no{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.14em;}
+  .band .nm{font-family:var(--mono);font-weight:600;font-size:clamp(13px,2.6vw,17px);letter-spacing:.1em;}
+  .band .sub{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em;display:none;}
+  .band .cnt{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--accent2);
+    border:1px solid #1e5560;border-radius:10px;padding:4px 9px;white-space:nowrap;}
+  .band .dots{position:absolute;right:90px;top:0;bottom:0;left:45%;pointer-events:none;opacity:.85;}
+  .band .dots i{position:absolute;border-radius:50%;background:#3a4557;}
+  .band.gov{background:linear-gradient(180deg,rgba(217,165,63,.10),rgba(20,16,6,.6));}
+  .band.gov:hover{border-color:var(--amber);}
+  .band.gov .cnt{color:var(--amber);border-color:#6b5518;}
+  .band.fab{background:linear-gradient(180deg,rgba(55,200,221,.09),rgba(6,20,24,.6));}
+  .band.fab:hover{border-color:var(--accent2);}
+  @media(min-width:900px){.band .sub{display:block;}}
+
+  /* ============ SCENE 2 — LAYER ============ */
+  #ly{position:fixed;inset:0;padding-top:calc(58px + env(safe-area-inset-top));
+    opacity:0;pointer-events:none;transition:opacity .28s ease,transform .28s ease;transform:scale(.96);}
+  #ly.show{opacity:1;pointer-events:auto;transform:none;}
+  #lywrap{position:relative;width:100%;height:calc(100% - 64px);}
+  #lysvg{position:absolute;inset:0;width:100%;height:100%;}
+  .pill{position:absolute;transform:translate(-50%,-50%);border:1px solid var(--hair2);background:var(--card);
+    color:var(--txt);font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;
+    padding:13px 18px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    transition:transform .22s cubic-bezier(.2,.9,.3,1.4),border-color .18s,box-shadow .18s,opacity .3s;
+    display:flex;align-items:center;gap:8px;}
+  .pill:hover{transform:translate(-50%,-50%) scale(1.07);border-color:var(--accent);z-index:5;}
+  .pill.sel{border-color:var(--accent);box-shadow:0 0 26px #5b76ff55;z-index:6;}
+  .pill .ai{width:6px;height:6px;border-radius:50%;background:var(--accent2);}
+  .pill .fl{font-size:9px;color:var(--faint);font-weight:500;}
+  .pill.govp{border-color:#6b5518;background:#171206;}
+  .pill.govp.sel{border-color:var(--amber);box-shadow:0 0 26px #d9a53f44;}
+  .pill.fabp{border-color:#1e5560;background:#07161a;}
+  .pill.fabp.sel{border-color:var(--accent2);box-shadow:0 0 26px #37c8dd44;}
+  .edge{stroke:#39414f;stroke-width:1.2;fill:none;opacity:.5;transition:.2s;}
+  .edge.hot{stroke:var(--accent);opacity:1;stroke-width:1.8;}
+  @media(max-width:720px){.pill{font-size:10.5px;padding:11px 14px;}}
+
+  /* layer switcher */
+  .switch{position:fixed;bottom:0;left:0;right:0;display:flex;gap:6px;justify-content:center;align-items:center;
+    padding:10px 12px calc(12px + env(safe-area-inset-bottom));z-index:52;
+    background:linear-gradient(0deg,#08090c 55%,transparent);}
+  .switch button{border:1px solid var(--hair);background:#0e1116e6;color:var(--dim);font-family:var(--mono);
+    font-size:10.5px;letter-spacing:.06em;padding:9px 12px;border-radius:9px;cursor:pointer;transition:.15s;}
+  .switch button:hover{color:#fff;}
+  .switch button.on{color:#fff;border-color:var(--accent);background:#5b76ff18;}
+  .switch .g{color:var(--amber);}
+  .switch .f{color:var(--accent2);}
+
+  /* detail sheet */
+  #sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;max-height:66dvh;overflow-y:auto;
+    background:#0d1015fa;backdrop-filter:blur(14px);border-top:1px solid var(--hair2);
+    border-radius:16px 16px 0 0;padding:8px 20px calc(24px + env(safe-area-inset-bottom));
+    transform:translateY(104%);transition:transform .3s cubic-bezier(.2,.9,.25,1);}
+  #sheet.open{transform:none;}
+  .grab{width:44px;height:4px;border-radius:2px;background:var(--hair2);margin:6px auto 14px;}
+  #sheet .lk{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;}
+  #sheet h2{font-size:21px;letter-spacing:-.01em;margin:6px 0 8px;}
+  #sheet p{font-size:13.5px;line-height:1.65;color:#c3cad4;}
+  #sheet .gv{margin-top:12px;border-left:3px solid var(--amber);padding:2px 0 2px 12px;font-size:12px;color:#d9b56b;line-height:1.6;}
+  #sheet .sec{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--faint);margin:16px 0 8px;text-transform:uppercase;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-family:var(--mono);font-size:10px;color:#c3cad4;border:1px solid var(--hair);background:#12161e;
+    padding:6px 10px;border-radius:999px;}
+  .chip.link{cursor:pointer;color:var(--accent);border-color:#2c3a6e;}
+  .chip.link:hover{border-color:var(--accent);}
+  .conn-line{font-size:12px;color:var(--dim);line-height:1.7;}
+  @media(min-width:1001px){
+    #sheet{left:auto;right:18px;bottom:18px;width:400px;border:1px solid var(--hair2);border-radius:14px;
+      max-height:calc(100dvh - 110px);transform:translateX(115%);}
+    #sheet.open{transform:none;}
+    .grab{display:none;}
+  }
+  .shx{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--dim);font-size:16px;cursor:pointer;}
+  .shx:hover{color:#fff;}
+
+  /* search overlay */
+  #srch{position:fixed;inset:0;z-index:90;background:#08090cf2;backdrop-filter:blur(8px);display:none;
+    padding:calc(20px + env(safe-area-inset-top)) 16px 16px;}
+  #srch.open{display:block;}
+  #srch input{width:100%;max-width:640px;margin:0 auto;display:block;background:var(--card);border:1px solid var(--hair2);
+    color:var(--txt);font-family:var(--mono);font-size:15px;padding:15px 18px;border-radius:12px;outline:none;}
+  #srch input:focus{border-color:var(--accent);}
+  #srele{max-width:640px;margin:14px auto 0;display:flex;flex-direction:column;gap:6px;max-height:70dvh;overflow-y:auto;}
+  .sres{display:flex;align-items:center;gap:12px;border:1px solid var(--hair);background:var(--card);
+    border-radius:11px;padding:13px 16px;cursor:pointer;transition:.15s;}
+  .sres:hover{border-color:var(--accent);}
+  .sres b{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;}
+  .sres span{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.1em;margin-left:auto;white-space:nowrap;}
+  .sx{display:block;margin:16px auto 0;background:none;border:1px solid var(--hair);color:var(--dim);
+    font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:9px 16px;border-radius:9px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <button class="bbtn" id="backBtn" onclick="goOverview()" style="display:none;">←</button>
+  <a class="brand" href="index.html">ATLAS<span>APP</span></a>
+  <div class="title" id="barTitle">ALL LAYERS</div>
+  <button class="bbtn" onclick="openSearch()">⌕</button>
+</div>
+
+<div id="ov"></div>
+
+<div id="ly">
+  <div id="lywrap">
+    <svg id="lysvg"></svg>
+    <div id="pills"></div>
+  </div>
+</div>
+
+<div class="switch" id="switch"></div>
+
+<aside id="sheet">
+  <button class="shx" onclick="closeSheet()">✕</button>
+  <div class="grab"></div>
+  <div id="sheetBody"></div>
+</aside>
+
+<div id="srch">
+  <input type="search" id="srchIn" placeholder="Search 37 domains… CDE, EVM, snagging" autocomplete="off">
+  <div id="srele"></div>
+  <button class="sx" onclick="closeSearch()">CLOSE</button>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const LAYERS=[
+ {id:'experience',no:'06',name:'DECISION & EXPERIENCE',sub:'dashboards / twins / reporting'},
+ {id:'intelligence',no:'05',name:'INTELLIGENCE',sub:'predictive / generative / reasoning'},
+ {id:'platform',no:'04',name:'DATA PLATFORM',sub:'lakehouse / graph / geospatial'},
+ {id:'integration',no:'03',name:'INTEGRATION',sub:'apis / pipelines / exchange'},
+ {id:'systems',no:'02',name:'SYSTEMS OF RECORD',sub:'bim / schedule / cost / erp / docs'},
+ {id:'capture',no:'01',name:'SITE & FIELD CAPTURE',sub:'iot / drones / scans / cameras / forms'},
+ {id:'governance',no:'✦',name:'DATA GOVERNANCE',sub:'cross-cutting — every layer',cls:'gov'},
+ {id:'fabric',no:'◈',name:'CONTEXT · SEMANTICS · MEMORY',sub:'cross-cutting — shared by AI',cls:'fab'},
+];
+const N=[
+ {id:'dash',l:'experience',n:'Portfolio Cockpit',d:'Portfolio-level dashboards for cost, schedule, risk and progress — the single pane of glass for owners and PMO teams.',g:'Only as trustworthy as the governed data beneath it.',p:['Power BI','Tableau','Mastt','Looker','Grafana']},
+ {id:'twin',l:'experience',n:'Digital Twin',d:'3D/GIS visualization of the asset with live overlays — progress, sensor telemetry, simulation results.',g:'Requires governed model versioning: which version is “the truth” at handover?',p:['Bentley iTwin','Matterport','Autodesk Tandem','Cesium','Nvidia Omniverse']},
+ {id:'report',l:'experience',n:'Portfolio Reporting',d:'Automated periodic reporting: monthly packs, dashboards-to-slides, narrative generation.',g:'Consistent KPIs require enforced metric definitions.',p:['Power BI','Palantir Foundry','Procore Analytics','Qlik']},
+ {id:'evm',l:'experience',n:'EVM & KPIs · CPI/SPI',d:'Earned value and performance metrics — EV, CPI, SPI, EAC — calculated once in the semantic layer, not re-derived per spreadsheet.',g:'CPI is only comparable across projects if EV rules and WBS mapping are governed.',p:['Deltek Cobra','Hexagon EcoSys','Power BI Semantic']},
+ {id:'dataprod',l:'experience',n:'Data Products',d:'Packaged, reusable data assets — dashboards, portals, apps, APIs — each with an owner, quality rules and an SLA.',g:'A data product without an owner and SLA is just another dashboard.',p:['Microsoft Fabric','Power Apps','Retool']},
+ {id:'gendesign',l:'intelligence',n:'Generative Design',ai:1,d:'Generative site and building configuration: plot and constraints in, scored feasibility options out — massing, unit mix, parking, yield.',g:'Options are only comparable if constraints are governed inputs.',p:['TestFit','Autodesk Forma','Higharc','Finch']},
+ {id:'pred',l:'intelligence',n:'Predictive Risk',ai:1,d:'ML models forecasting delay probability, cost overrun and claims exposure from historical and live project data.',g:'Models trained on ungoverned data amplify errors.',p:['nPlan','InEight Schedule','Primavera Cloud','Foresight']},
+ {id:'sched',l:'intelligence',n:'Schedule Intelligence',ai:1,d:'AI-driven WBS normalization and portfolio schedule aggregation — comparing programmes across projects.',g:'Depends on a governed WBS master library.',p:['ALICE','SmartPM','Acumen Fuse','Aphex','Nodes & Links']},
+ {id:'cv',l:'intelligence',n:'CV Progress',ai:1,d:'Computer vision on camera and drone imagery to measure physical progress and detect safety issues.',g:'Needs governed baselines (BIM, schedule) to compare observed vs planned.',p:['OpenSpace','Buildots','Track3D','Disperse','AI Clearing']},
+ {id:'gen',l:'intelligence',n:'GenAI Copilots',ai:1,d:'Generative assistants drafting reports, specs and RFI responses; querying project data in natural language.',g:'Retrieval must respect permissions and the governed source of truth.',p:['Document Crunch','M365 Copilot','Anthropic Claude','Procore Copilot','Fabric Data Agents']},
+ {id:'reason',l:'intelligence',n:'Reasoning Agents',ai:1,d:'Agentic AI evaluating scenarios: procurement strategies, claims positions, resource trade-offs.',g:'Agents need explicit decision-authority boundaries.',p:['Palantir AIP','Trunk Tools','OpenAI']},
+ {id:'lake',l:'platform',n:'Lakehouse',d:'Unified analytical store for structured (cost, schedule) and unstructured (documents, imagery) project data.',g:'Where quality rules, access control and lineage are physically enforced.',p:['Databricks','Snowflake','MS Fabric','BigQuery']},
+ {id:'kg',l:'platform',n:'Knowledge Graph',d:'Graph of entities — assets, activities, contracts, organizations — connecting records across systems.',g:'Makes governance queryable: who owns what, what depends on what.',p:['Neo4j','Stardog','Neptune']},
+ {id:'gis',l:'platform',n:'Geospatial',d:'GIS data: terrain, utilities, logistics, land parcels — spatial context for infrastructure programmes.',g:'Coordinate systems and survey control are governance artifacts too.',p:['Esri ArcGIS','QGIS','Google Earth Engine']},
+ {id:'api',l:'integration',n:'Integration Hub',d:'iPaaS / API layer moving data between systems of record and the platform. Replaces spreadsheet exports.',g:'Every integration is a contract: schemas, ownership, change control.',p:['Azure Integration','Toric','Microsoft Excel','MuleSoft','Boomi','Workato']},
+ {id:'bim',l:'systems',n:'BIM / CDE',d:'Common Data Environment holding models and coordinated design information.',g:'Model status codes (WIP/Shared/Published) are governance states.',p:['Autodesk ACC','ProjectWise','Trimble Connect','Dalux','Revizto','Catenda']},
+ {id:'p6',l:'systems',n:'Schedule · P6',d:'Planning and scheduling systems — the source of baselines, updates and progress logic.',g:'Baseline change control is a governance process.',p:['Primavera P6','MS Project','Powerproject']},
+ {id:'cost',l:'systems',n:'Cost Management',d:'Budgets, commitments, actuals, forecasts and change orders.',g:'The CBS must reconcile with WBS master data.',p:['Hexagon EcoSys','ARES Prism','InEight','RIB CostX','Kahua']},
+ {id:'erp',l:'systems',n:'ERP / Finance',d:'Corporate finance, procurement and HR systems — actuals and payments.',g:'The finance-project reconciliation point.',p:['SAP S/4HANA','Oracle Fusion','Dynamics 365','Trimble Viewpoint','CMiC']},
+ {id:'docs',l:'systems',n:'Document Control',d:'Correspondence, transmittals, RFIs and submittals.',g:'The audit trail of decisions — retention rules are contractual.',p:['Oracle Aconex','Asite','Newforma','SharePoint']},
+ {id:'contract',l:'systems',n:'Contracts & Claims',d:'Contract administration, variations, claims and disputes management.',g:'Notices and time-bars demand governed dates and records.',p:['CEMAR','Ironclad','Document Crunch']},
+ {id:'crm',l:'systems',n:'Sales & Leasing',d:'Commercial systems for developers: sales pipeline, units, lease contracts, occupancy.',g:'Units and leases must reconcile with the same asset master data used in planning.',p:['Salesforce','Dynamics 365','Yardi Voyager','MRI Software']},
+ {id:'epm',l:'systems',n:'FP&A / EPM',d:'Enterprise planning: feasibility models, revenue and cashflow forecasts, CAPEX/OPEX.',g:'Forecasts must trace to governed cost and schedule actuals.',p:['Oracle EPM','Anaplan','Briq','SAP Analytics Cloud']},
+ {id:'hse',l:'systems',n:'HSE Management',d:'Incidents, observations, permits to work, audits and leading indicators.',g:'Incident classifications must be standardized or portfolio stats are meaningless.',p:['HammerTech','Intelex','SafetyCulture','Cority']},
+ {id:'risk',l:'systems',n:'Risk Management',d:'Risk registers, QSRA, mitigation tracking and contingency drawdown.',g:'Risk scoring needs a governed common scale to aggregate.',p:['Safran Risk','Riskonnect','Primavera Risk']},
+ {id:'iot',l:'capture',n:'IoT Sensors',d:'Environmental, structural and equipment sensors streaming site telemetry.',g:'Sensor registry and calibration keep telemetry trustworthy.',p:['Siemens','Schneider','Honeywell','Milesight']},
+ {id:'drones',l:'capture',n:'Drones',d:'Aerial capture for progress, earthworks volumes and logistics planning.',g:'Flight cadence and survey control governed for comparability.',p:['DJI Enterprise','DroneDeploy','Pix4D','Propeller']},
+ {id:'scan',l:'capture',n:'Laser Scanning',d:'Point clouds for existing conditions, verification and as-built capture.',g:'Scan-to-BIM tolerances defined in exchange requirements.',p:['Leica','FARO','NavVis','Trimble X9']},
+ {id:'cams',l:'capture',n:'Site Cameras',d:'Fixed and wearable cameras feeding CV progress and safety analytics.',g:'Privacy and retention policies apply.',p:['EarthCam','TrueLook','Multivista','Sensera']},
+ {id:'forms',l:'capture',n:'Field Apps',d:'Digital forms: inspections, quality checklists, daily reports, snagging.',g:'Structured forms beat free text — form design is governance at the source.',p:['Procore','Fieldwire','Autodesk Build','Dalux Field','PlanRadar','Novade']},
+ {id:'mdm',l:'governance',n:'Master Data · WBS/CBS',d:'Master libraries: WBS/CBS structures, activity codes, asset classifications.',g:'The core governance asset — enables comparison across projects.',p:['Informatica MDM','Profisee','Semarchy']},
+ {id:'dq',l:'governance',n:'Data Quality',d:'Automated validation: completeness, timeliness, conformity of schedules, cost data and models.',g:'Quality rules make decisions reliable. Flag at source.',p:['Great Expectations','Monte Carlo','Soda']},
+ {id:'std',l:'governance',n:'ISO 19650 / IFC',d:'Information standards: CDE workflows, IFC/COBie exchange, naming conventions.',g:'Standards are codified decision rights over information.',p:['Solibri','Plannerly','Morta']},
+ {id:'cat',l:'governance',n:'Catalog & Lineage',d:'What data exists, who owns it, where it came from, how fresh it is.',g:'Answers “who decides when this KPI changes?”',p:['MS Purview','Collibra','Atlan']},
+ {id:'sem',l:'fabric',n:'Semantic Layer',d:'Business definitions expressed once — what CPI means, what “complete” means — reused by every dashboard and AI.',g:'Where metric governance becomes executable.',p:['dbt Semantic Layer','Power BI Semantic','Cube','AtScale']},
+ {id:'context',l:'fabric',n:'Context Layer',d:'The shared project context AI can see — entities, state, relationships — assembled across applications at query time.',g:'Context assembly must respect source-system permissions.',p:['MCP connectors','Palantir Ontology','Microsoft Graph','Glean']},
+ {id:'memory',l:'fabric',n:'AI Memory',d:'Durable memory for assistants: decisions, preferences, lessons — so conversations don’t start from zero.',g:'Memory is a record: retention and deletion rules apply.',p:['pgvector','Pinecone','Zep','Mem0']},
+];
+const E=[['iot','lake'],['cams','cv'],['drones','cv'],['scan','bim'],['forms','docs'],
+ ['bim','api'],['p6','api'],['erp','api'],['cost','api'],['docs','api'],['contract','api'],['crm','api'],['epm','api'],['hse','api'],['risk','api'],
+ ['mdm','p6'],['mdm','cost'],['std','bim'],['dq','lake'],['cat','lake'],['api','lake'],['lake','kg'],
+ ['lake','pred'],['lake','gen'],['kg','reason'],['lake','sched'],['gis','twin'],['kg','twin'],['gis','gendesign'],['gendesign','epm'],
+ ['pred','dash'],['sched','dash'],['cv','dash'],['gen','report'],['reason','dash'],['lake','report'],['lake','dataprod'],['dq','dataprod'],
+ ['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],['evm','report']];
+
+const byId={};N.forEach(n=>byId[n.id]=n);
+const layerOf={};LAYERS.forEach(l=>layerOf[l.id]=l);
+function connsOf(id){
+  const out=[];
+  E.forEach(([a,b])=>{
+    if(a===id)out.push({dir:'→',id:b});
+    if(b===id)out.push({dir:'←',id:a});
+  });
+  return out;
+}
+
+/* ---------------- OVERVIEW ---------------- */
+let curLayer=null,curSel=null;
+function buildOverview(){
+  const ov=document.getElementById('ov');
+  ov.innerHTML='<div class="ovhint">THE MAP OF CONSTRUCTION TECHNOLOGY · TAP A LAYER TO EXPLORE</div>';
+  LAYERS.forEach(l=>{
+    const nodes=N.filter(n=>n.l===l.id);
+    const b=document.createElement('div');
+    b.className='band '+(l.cls||'');
+    b.onclick=()=>openLayer(l.id);
+    let dots='';
+    nodes.forEach((n,i)=>{
+      const sz=6+((n.p||[]).length);
+      dots+='<i style="width:'+sz+'px;height:'+sz+'px;left:'+(i*97/nodes.length+2)+'%;top:'+(18+(i%3)*24)+'%;"></i>';
+    });
+    b.innerHTML='<span class="no">'+l.no+'</span><span class="nm">'+l.name+'</span>'+
+      '<span class="sub">'+l.sub+'</span><div class="dots">'+dots+'</div>'+
+      '<span class="cnt">'+nodes.length+' DOMAINS</span>';
+    ov.appendChild(b);
+  });
+}
+
+/* ---------------- LAYER SCENE ---------------- */
+function slots(count,Wp,Hp){
+  /* airy organic layout: 2 staggered rows (3 rows if >8) */
+  const rows=count>8?3:count>3?2:1;
+  const per=Math.ceil(count/rows);
+  const pts=[];
+  for(let i=0;i<count;i++){
+    const r=Math.floor(i/per),c=i%per,inRow=Math.min(count-r*per,per);
+    const x=(c+0.5)/inRow*88+6+(r%2?3:-3);
+    const y=(r+0.5)/rows*70+12+((c%2)?4:-4);
+    pts.push({x,y});
+  }
+  return pts;
+}
+function openLayer(id,selId){
+  curLayer=id;
+  const l=layerOf[id];
+  document.getElementById('barTitle').textContent=l.no+' · '+l.name;
+  document.getElementById('backBtn').style.display='flex';
+  document.getElementById('ov').classList.add('hide');
+  const ly=document.getElementById('ly');
+  const pillsEl=document.getElementById('pills');
+  const svg=document.getElementById('lysvg');
+  pillsEl.innerHTML='';svg.innerHTML='';
+  const nodes=N.filter(n=>n.l===id);
+  const wrap=document.getElementById('lywrap');
+  const Wp=wrap.clientWidth,Hp=wrap.clientHeight;
+  const pts=slots(nodes.length,Wp,Hp);
+  const posById={};
+  nodes.forEach((n,i)=>{
+    const p=document.createElement('button');
+    p.className='pill'+(l.cls==='gov'?' govp':l.cls==='fab'?' fabp':'');
+    p.id='pill-'+n.id;
+    const conns=connsOf(n.id);
+    const inL=conns.filter(c=>byId[c.id].l===id).length;
+    const outL=conns.length-inL;
+    p.innerHTML=(n.ai?'<span class="ai"></span>':'')+n.n+'<span class="fl">⇅'+outL+'</span>';
+    p.style.left=pts[i].x+'%';p.style.top=pts[i].y+'%';
+    p.onclick=()=>selectNode(n.id);
+    pillsEl.appendChild(p);
+    posById[n.id]={x:pts[i].x*Wp/100,y:pts[i].y*Hp/100};
+  });
+  /* intra-layer edges */
+  const NS='http://www.w3.org/2000/svg';
+  E.forEach(([a,b])=>{
+    if(byId[a].l===id&&byId[b].l===id){
+      const A=posById[a],B=posById[b];
+      const path=document.createElementNS(NS,'path');
+      const mx=(A.x+B.x)/2,my=(A.y+B.y)/2-30;
+      path.setAttribute('d','M '+A.x+' '+A.y+' Q '+mx+' '+my+' '+B.x+' '+B.y);
+      path.setAttribute('class','edge');
+      path.dataset.a=a;path.dataset.b=b;
+      svg.appendChild(path);
+    }
+  });
+  ly.classList.add('show');
+  buildSwitch();
+  if(selId)setTimeout(()=>selectNode(selId),250);
+  else closeSheet();
+}
+function goOverview(){
+  curLayer=null;curSel=null;
+  document.getElementById('ly').classList.remove('show');
+  document.getElementById('ov').classList.remove('hide');
+  document.getElementById('backBtn').style.display='none';
+  document.getElementById('barTitle').textContent='ALL LAYERS';
+  closeSheet();buildSwitch();
+}
+function buildSwitch(){
+  const sw=document.getElementById('switch');
+  sw.innerHTML='';
+  LAYERS.forEach(l=>{
+    const b=document.createElement('button');
+    b.textContent=l.no;
+    if(l.cls==='gov')b.classList.add('g');
+    if(l.cls==='fab')b.classList.add('f');
+    if(curLayer===l.id)b.classList.add('on');
+    b.onclick=()=>openLayer(l.id);
+    sw.appendChild(b);
+  });
+}
+
+/* ---------------- SELECT + SHEET ---------------- */
+function selectNode(id){
+  curSel=id;
+  const n=byId[id],l=layerOf[n.l];
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('sel',p.id==='pill-'+id));
+  document.querySelectorAll('.edge').forEach(e=>e.classList.toggle('hot',e.dataset.a===id||e.dataset.b===id));
+  const conns=connsOf(id);
+  let h='<div class="lk">'+l.no+' · '+l.name+'</div><h2>'+n.n+'</h2><p>'+n.d+'</p>';
+  h+='<div class="gv">'+n.g+'</div>';
+  if(n.p&&n.p.length){
+    h+='<div class="sec">Products</div><div class="chips">'+n.p.map(x=>'<span class="chip">'+x+'</span>').join('')+'</div>';
+  }
+  if(conns.length){
+    h+='<div class="sec">Connected — tap to travel</div><div class="chips">';
+    conns.forEach(c=>{
+      const t=byId[c.id],tl=layerOf[t.l];
+      h+='<span class="chip link" onclick="travel(\''+c.id+'\')">'+c.dir+' '+t.n+' · '+tl.no+'</span>';
+    });
+    h+='</div>';
+  }
+  h+='<div class="sec" style="margin-top:18px;"><a href="builder.html?focus='+id+'" style="color:var(--accent);letter-spacing:.12em;">COMPARE IN THE TECH STACK BUILDER →</a></div>';
+  document.getElementById('sheetBody').innerHTML=h;
+  document.getElementById('sheet').classList.add('open');
+}
+window.travel=function(id){
+  const n=byId[id];
+  if(n.l===curLayer){selectNode(id);}
+  else{
+    document.getElementById('ly').classList.remove('show');
+    setTimeout(()=>openLayer(n.l,id),200);
+  }
+};
+function closeSheet(){
+  curSel=null;
+  document.getElementById('sheet').classList.remove('open');
+  document.querySelectorAll('.pill.sel').forEach(p=>p.classList.remove('sel'));
+  document.querySelectorAll('.edge.hot').forEach(e=>e.classList.remove('hot'));
+}
+/* drag-to-dismiss (the fix) */
+(function(){
+  const sh=document.getElementById('sheet');
+  let sy=null,dy=0;
+  sh.addEventListener('touchstart',e=>{
+    if(sh.scrollTop>2)return;
+    sy=e.touches[0].clientY;dy=0;
+    sh.style.transition='none';
+  },{passive:true});
+  sh.addEventListener('touchmove',e=>{
+    if(sy===null)return;
+    dy=e.touches[0].clientY-sy;
+    if(dy>0)sh.style.transform='translateY('+dy+'px)';
+  },{passive:true});
+  sh.addEventListener('touchend',()=>{
+    sh.style.transition='';sh.style.transform='';
+    if(dy>80)closeSheet();
+    sy=null;dy=0;
+  });
+})();
+
+/* ---------------- SEARCH ---------------- */
+function openSearch(){
+  document.getElementById('srch').classList.add('open');
+  document.getElementById('srchIn').focus();
+  renderResults('');
+}
+function closeSearch(){document.getElementById('srch').classList.remove('open');}
+function renderResults(q){
+  const el=document.getElementById('srele');el.innerHTML='';
+  N.filter(n=>{
+    if(!q)return true;
+    return (n.n+' '+n.d+' '+(n.p||[]).join(' ')).toLowerCase().includes(q);
+  }).slice(0,20).forEach(n=>{
+    const l=layerOf[n.l];
+    const d=document.createElement('div');d.className='sres';
+    d.innerHTML='<b>'+n.n+'</b><span>'+l.no+' · '+l.name+'</span>';
+    d.onclick=()=>{closeSearch();travel(n.id);};
+    el.appendChild(d);
+  });
+}
+document.getElementById('srchIn').addEventListener('input',e=>renderResults(e.target.value.trim().toLowerCase()));
+
+/* ---------------- INIT ---------------- */
+buildOverview();buildSwitch();
+window.addEventListener('resize',()=>{if(curLayer)openLayer(curLayer,curSel);});
+</script>
+</body>
+</html>

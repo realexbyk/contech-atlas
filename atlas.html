@@ -249,6 +249,7 @@
   <button class="dclose" onclick="dClose()">✕</button>
   <a class="ditem" href="index.html#about"><span class="dico">✉</span>Newsletter</a>
   <div class="dsec">EXPLORE</div>
+  <a class="ditem" href="app.html"><span class="dico">⇱</span>Atlas App<span class="dbadge">NEW</span></a>
   <a class="ditem" href="atlas.html"><span class="dico">◈</span>The Atlas<span class="dbadge">LIVING MAP</span></a>
   <a class="ditem" href="builder.html"><span class="dico">▦</span>Tech Stack Builder<span class="dbadge">150+ TOOLS</span></a>
   <a class="ditem" href="dictionary.html"><span class="dico">✎</span>Dictionary<span class="dbadge">59 TERMS</span></a>
@@ -305,6 +306,7 @@ function dClose(){document.getElementById('drawer').classList.remove('on');docum
 
       <div class="ovbar">
         <button class="ovbtn wide" onclick="document.getElementById('filterPanel').classList.toggle('open')" title="Filters & views">≔ FILTERS</button>
+        <a class="ovbtn wide" href="app.html" title="Open the Atlas App" style="text-decoration:none;color:var(--accent2);border-color:#1e5560;">⇱ APP</a>
         <button class="ovbtn" onclick="document.getElementById('infoPop').classList.toggle('open')" title="About the Atlas">i</button>
         <button class="ovbtn" onclick="resetView()" title="Reset view">⟲</button>
         <button class="ovbtn" onclick="fsToggle()" title="Fullscreen">⛶</button>
@@ -784,6 +786,26 @@ window.fsToggle=function(){
   else if(el.requestFullscreen){el.requestFullscreen();}
 };
 document.addEventListener('fullscreenchange',()=>setTimeout(layout,120));
+/* bottom-sheet drag-to-dismiss */
+(function(){
+  const p=document.getElementById('panel');
+  let sy=null,dy=0;
+  p.addEventListener('touchstart',e=>{
+    if(window.innerWidth>1000||p.scrollTop>2)return;
+    sy=e.touches[0].clientY;dy=0;
+    p.style.transition='none';
+  },{passive:true});
+  p.addEventListener('touchmove',e=>{
+    if(sy===null)return;
+    dy=e.touches[0].clientY-sy;
+    if(dy>0)p.style.transform='translateY('+dy+'px)';
+  },{passive:true});
+  p.addEventListener('touchend',()=>{
+    p.style.transition='';p.style.transform='';
+    if(dy>80)closePanel();
+    sy=null;dy=0;
+  });
+})();
 function frame(){
   if(camT){
     cam.s+=(camT.s-cam.s)*0.12;
