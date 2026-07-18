@@ -299,12 +299,12 @@ const E=[['iot','lake'],['cams','cv'],['drones','cv'],['scan','bim'],['forms','d
  ['p6','sched'],['mdm','sched'],['bim','twin'],['iot','twin'],['p6','risk'],['cv','hse'],['p6','contract'],['docs','contract']];
 
 const PHASES=[
- {id:'feas',n:'FEASIBILITY',d:'Site selection, massing options, business case and investment decision.',doms:['gendesign','gis','epm','risk','crm','reason']},
+ {id:'feas',n:'FEASIBILITY',img:1,d:'Site selection, massing options, business case and investment decision.',doms:['gendesign','gis','epm','risk','crm','reason']},
  {id:'design',n:'DESIGN',d:'Coordinated design development in the CDE under information standards.',doms:['bim','std','docs','gendesign','scan','contract']},
  {id:'procure',n:'PROCURE',d:'Packages, tendering, contracts and supply chain set-up.',doms:['contract','erp','cost','api','reason','risk']},
- {id:'construct',n:'CONSTRUCT',d:'Execution: schedule, field capture, progress AI, safety, cost, claims and earned value.',doms:['p6','sched','cv','iot','drones','scan','cams','forms','hse','cost','pred','docs','mdm','dq','evm','contract','risk']},
+ {id:'construct',n:'CONSTRUCT',img:1,d:'Execution: schedule, field capture, progress AI, safety, cost, claims and earned value.',doms:['p6','sched','cv','iot','drones','scan','cams','forms','hse','cost','pred','docs','mdm','dq','evm','contract','risk']},
  {id:'handover',n:'HANDOVER',d:'Commissioning, as-builts, COBie exchange and the birth of the twin.',doms:['std','dq','twin','docs','cat','scan','bim']},
- {id:'operate',n:'OPERATE',d:'Operations, maintenance, portfolio reporting and continuous decisions.',doms:['twin','iot','dash','report','evm','dataprod','sem','memory','cams','epm']},
+ {id:'operate',n:'OPERATE',img:1,d:'Operations, maintenance, portfolio reporting and continuous decisions.',doms:['twin','iot','dash','report','evm','dataprod','sem','memory','cams','epm']},
 ];
 let curPhase=-1;
 const byId={};N.forEach(n=>byId[n.id]=n);
@@ -570,7 +570,9 @@ window.phaseSheet=function(){
     const p=PHASES[curPhase];
     const doms=p.doms.map(id=>byId[id]).filter(Boolean);
     const prods=[...new Set(doms.flatMap(n=>n.p||[]))];
-    h='<div class="lk">PHASE '+(curPhase+1)+' / '+PHASES.length+'</div><h2>'+p.n.charAt(0)+p.n.slice(1).toLowerCase()+'</h2><p>'+p.d+'</p>';
+    h='<div class="lk">PHASE '+(curPhase+1)+' / '+PHASES.length+'</div><h2>'+p.n.charAt(0)+p.n.slice(1).toLowerCase()+'</h2>';
+    if(p.img)h+='<img src="phase-'+p.id+'.jpg" alt="" style="width:100%;border-radius:10px;margin:8px 0 10px;border:1px solid var(--hair);" onerror="this.remove()">';
+    h+='<p>'+p.d+'</p>';
     h+='<div class="sec">Active domains — tap to travel</div><div class="chips">'+
       doms.map(n=>{const l=layerOf[n.l];
         return '<span class="chip link" style="color:'+l.c+';border-color:'+l.c+'55;" onclick="travel(\''+n.id+'\')">'+n.n+' · '+l.no+'</span>';}).join('')+'</div>';
