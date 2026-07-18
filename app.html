@@ -33,7 +33,7 @@
 
   /* ============ SCENE 1 — OVERVIEW · ISOMETRIC STACK ============ */
   #ov{position:fixed;inset:0;overflow:hidden;transition:opacity .32s ease;cursor:grab;touch-action:none;
-    --rx:55deg;--rz:-45deg;--ty:0px;--ps:min(68vmin,460px);}
+    --rx:55deg;--rz:-45deg;--ty:0px;--sc:1;--ps:min(68vmin,460px);}
   #ov.drag{cursor:grabbing;}
   #ov.hide{opacity:0;pointer-events:none;}
   #ov::before{content:'';position:absolute;inset:0;pointer-events:none;
@@ -42,7 +42,7 @@
     font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--faint);pointer-events:none;}
   #stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1500px;}
   #stack{position:relative;width:var(--ps);height:var(--ps);transform-style:preserve-3d;
-    transform:translateY(var(--ty)) rotateX(var(--rx)) rotateZ(var(--rz));
+    transform:translateY(var(--ty)) scale(var(--sc)) rotateX(var(--rx)) rotateZ(var(--rz));
     transition:transform .5s cubic-bezier(.22,.9,.3,1);}
   #ov.drag #stack{transition:none;}
   .plate{position:absolute;inset:0;transform-style:preserve-3d;border-radius:18px;cursor:pointer;
@@ -60,22 +60,50 @@
   /* billboarded children — stand upright facing the camera */
   .bb{transform-origin:0 100%;transform:rotateZ(calc(var(--rz)*-1)) rotateX(calc(var(--rx)*-1));}
   /* 2D HUD layer labels — always readable, track the plates */
-  .hud{position:absolute;z-index:6;display:flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;
+  .hud{position:absolute;top:0;left:max(14px,env(safe-area-inset-left));z-index:6;display:flex;align-items:center;gap:8px;
+    white-space:nowrap;cursor:pointer;text-align:left;
     background:rgba(10,12,17,.93);border:1px solid var(--hair);border-left:3px solid var(--hc);border-radius:8px;
     padding:6px 11px;font-family:var(--mono);letter-spacing:.08em;
-    transition:top .5s cubic-bezier(.22,.9,.3,1),left .5s cubic-bezier(.22,.9,.3,1),border-color .15s;}
+    animation:hudin .5s ease backwards;
+    transition:transform .5s cubic-bezier(.22,.9,.3,1),border-color .15s;}
   #ov.drag .hud{transition:border-color .15s;}
+  @keyframes hudin{from{opacity:0;}}
+  @keyframes pop{from{transform:translate(-50%,-50%) scale(.72);opacity:0;}}
+  .pill{animation:pop .34s cubic-bezier(.2,.9,.3,1.35) backwards;}
   .hud:hover{border-color:var(--hc);}
-  .hud .tno{font-size:10px;color:var(--hc);}
-  .hud .tnm{font-size:10px;font-weight:600;color:var(--txt);letter-spacing:.1em;}
+  .hud .tno{font-size:10.5px;color:var(--hc);}
+  .hud .tnm{font-size:11px;font-weight:600;color:var(--txt);letter-spacing:.1em;}
   .hud .tct{font-size:9px;color:var(--faint);}
-  @media(max-width:720px){.hud{padding:4px 8px;gap:5px;}.hud .tnm{font-size:8.5px;}}
+  @media(max-width:720px){.hud{padding:4px 8px;gap:5px;}.hud .tnm{font-size:9px;}}
+  /* phase rail */
+  #phases{position:fixed;top:calc(82px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);
+    display:flex;align-items:center;gap:7px;z-index:48;}
+  .pbtn{width:32px;height:32px;border:1px solid var(--hair);background:#0e1116e6;color:var(--dim);border-radius:8px;
+    cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .pbtn:hover{color:#fff;border-color:var(--hair2);}
+  #pchip{display:flex;align-items:center;gap:9px;border:1px solid var(--hair);background:#0e1116ee;border-radius:9px;
+    padding:6px 13px;cursor:pointer;font-family:var(--mono);transition:border-color .15s;}
+  #pchip:hover{border-color:var(--accent);}
+  #pchip .pn{font-size:10.5px;font-weight:600;letter-spacing:.12em;color:var(--txt);}
+  #pchip .px{font-size:9px;color:var(--faint);letter-spacing:.08em;}
+  .mini.off{opacity:.12;pointer-events:none;}
+  .pill.off{opacity:.18;}
+  .mini,.pill{transition-property:opacity,transform,border-color,box-shadow,color;transition-duration:.3s;}
+  /* zoom controls */
+  #zoomctl{position:fixed;right:14px;bottom:calc(72px + env(safe-area-inset-bottom));display:flex;
+    flex-direction:column;gap:6px;z-index:52;}
+  #zoomctl button{width:36px;height:36px;border:1px solid var(--hair);background:#0e1116e6;color:var(--dim);
+    border-radius:9px;font-size:15px;cursor:pointer;transition:.15s;}
+  #zoomctl button:hover{color:#fff;border-color:var(--hair2);}
   .mini{position:absolute;display:flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;
     font-family:var(--mono);font-size:9px;letter-spacing:.02em;color:#dbe0e8;
     background:rgba(13,16,22,.92);border:1px solid color-mix(in srgb,var(--pc) 42%,#232936);
-    border-radius:999px;padding:4px 8px;transition:border-color .15s,color .15s;}
+    border-radius:999px;padding:4px 8px;transition:border-color .15s,color .15s,font-size .2s,padding .2s;}
+  .mini::after{content:'';position:absolute;inset:-9px;}
   .mini i{width:4px;height:4px;border-radius:50%;background:var(--pc);flex:none;}
   .mini:hover{border-color:var(--pc);color:#fff;z-index:9;}
+  #ov.far .mini{font-size:0;gap:0;padding:4px;}
+  #ov.far .mini i{width:6px;height:6px;}
   .beam{position:absolute;width:2px;height:70px;pointer-events:none;overflow:visible;
     background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--pc) 50%,transparent));}
   .beam::after{content:'';position:absolute;left:-2px;width:6px;height:6px;border-radius:50%;background:var(--pc);
@@ -83,9 +111,8 @@
   @keyframes rise{0%{top:100%;opacity:0;}15%{opacity:.85;}80%{opacity:.85;}100%{top:-4px;opacity:0;}}
   @media(max-width:720px){
     #ov{--ps:min(72vmin,460px);}
-    .mini{font-size:7.5px;padding:3px 6px;gap:4px;}
-    .tag{padding:5px 8px;}
-    .tag .tnm{font-size:9px;}
+    .mini{font-size:9px;padding:5px 8px;gap:4px;}
+    .hud .tnm{display:none;}
   }
 
   /* ============ SCENE 2 — LAYER ============ */
@@ -156,7 +183,7 @@
     padding:calc(20px + env(safe-area-inset-top)) 16px 16px;}
   #srch.open{display:block;}
   #srch input{width:100%;max-width:640px;margin:0 auto;display:block;background:var(--card);border:1px solid var(--hair2);
-    color:var(--txt);font-family:var(--mono);font-size:15px;padding:15px 18px;border-radius:12px;outline:none;}
+    color:var(--txt);font-family:var(--mono);font-size:16px;padding:15px 18px;border-radius:12px;outline:none;}
   #srch input:focus{border-color:var(--accent);}
   #srele{max-width:640px;margin:14px auto 0;display:flex;flex-direction:column;gap:6px;max-height:70dvh;overflow-y:auto;}
   .sres{display:flex;align-items:center;gap:12px;border:1px solid var(--hair);background:var(--card);
@@ -174,10 +201,22 @@
   <button class="bbtn" id="backBtn" onclick="goOverview()" style="display:none;">←</button>
   <a class="brand" href="index.html">ATLAS<span>APP</span></a>
   <div class="title" id="barTitle">ALL LAYERS</div>
+  <button class="bbtn" id="pbadge" style="display:none;" onclick="curPhase=-1;renderPhaseRail();applyPhaseFilter();"></button>
   <button class="bbtn" onclick="openSearch()">⌕</button>
 </div>
 
 <div id="ov"></div>
+
+<div id="phases">
+  <button class="pbtn" onclick="cyclePhase(-1)">‹</button>
+  <div id="pchip" onclick="phaseSheet()"></div>
+  <button class="pbtn" onclick="cyclePhase(1)">›</button>
+</div>
+
+<div id="zoomctl">
+  <button onclick="zoomBy(1.22)">+</button>
+  <button onclick="zoomBy(0.82)">−</button>
+</div>
 
 <div id="ly">
   <div id="lywrap">
@@ -219,7 +258,7 @@ const N=[
  {id:'evm',l:'experience',n:'EVM & KPIs · CPI/SPI',d:'Earned value and performance metrics — EV, CPI, SPI, EAC — calculated once in the semantic layer, not re-derived per spreadsheet.',g:'CPI is only comparable across projects if EV rules and WBS mapping are governed.',p:['Deltek Cobra','Hexagon EcoSys','Power BI Semantic']},
  {id:'dataprod',l:'experience',n:'Data Products',d:'Packaged, reusable data assets — dashboards, portals, apps, APIs — each with an owner, quality rules and an SLA.',g:'A data product without an owner and SLA is just another dashboard.',p:['Microsoft Fabric','Power Apps','Retool']},
  {id:'gendesign',l:'intelligence',n:'Generative Design',ai:1,d:'Generative site and building configuration: plot and constraints in, scored feasibility options out — massing, unit mix, parking, yield.',g:'Options are only comparable if constraints are governed inputs.',p:['TestFit','Autodesk Forma','Higharc','Finch']},
- {id:'pred',l:'intelligence',n:'Predictive Risk',ai:1,d:'ML models forecasting delay probability, cost overrun and claims exposure from historical and live project data.',g:'Models trained on ungoverned data amplify errors.',p:['nPlan','InEight Schedule','Primavera Cloud','Foresight']},
+ {id:'pred',l:'intelligence',n:'Predictive Risk',ai:1,d:'ML models forecasting delay probability, cost overrun and claims exposure from historical and live project data.',g:'Models trained on ungoverned data amplify errors.',p:['nPlan','InEight Schedule','Foresight']},
  {id:'sched',l:'intelligence',n:'Schedule Intelligence',ai:1,d:'AI-driven WBS normalization and portfolio schedule aggregation — comparing programmes across projects.',g:'Depends on a governed WBS master library.',p:['ALICE','SmartPM','Acumen Fuse','Aphex','Nodes & Links']},
  {id:'cv',l:'intelligence',n:'CV Progress',ai:1,d:'Computer vision on camera and drone imagery to measure physical progress and detect safety issues.',g:'Needs governed baselines (BIM, schedule) to compare observed vs planned.',p:['OpenSpace','Buildots','Track3D','Disperse','AI Clearing']},
  {id:'gen',l:'intelligence',n:'GenAI Copilots',ai:1,d:'Generative assistants drafting reports, specs and RFI responses; querying project data in natural language.',g:'Retrieval must respect permissions and the governed source of truth.',p:['Document Crunch','M365 Copilot','Anthropic Claude','Procore Copilot','Fabric Data Agents']},
@@ -227,9 +266,9 @@ const N=[
  {id:'lake',l:'platform',n:'Lakehouse',d:'Unified analytical store for structured (cost, schedule) and unstructured (documents, imagery) project data.',g:'Where quality rules, access control and lineage are physically enforced.',p:['Databricks','Snowflake','MS Fabric','BigQuery']},
  {id:'kg',l:'platform',n:'Knowledge Graph',d:'Graph of entities — assets, activities, contracts, organizations — connecting records across systems.',g:'Makes governance queryable: who owns what, what depends on what.',p:['Neo4j','Stardog','Neptune']},
  {id:'gis',l:'platform',n:'Geospatial',d:'GIS data: terrain, utilities, logistics, land parcels — spatial context for infrastructure programmes.',g:'Coordinate systems and survey control are governance artifacts too.',p:['Esri ArcGIS','QGIS','Google Earth Engine']},
- {id:'api',l:'integration',n:'Integration Hub',d:'iPaaS / API layer moving data between systems of record and the platform. Replaces spreadsheet exports.',g:'Every integration is a contract: schemas, ownership, change control.',p:['Azure Integration','Toric','Microsoft Excel','MuleSoft','Boomi','Workato']},
+ {id:'api',l:'integration',n:'Integration Hub',d:'iPaaS / API layer moving data between systems of record and the platform. Replaces spreadsheet exports.',g:'Every integration is a contract: schemas, ownership, change control.',p:['Azure Integration','Toric','Excel (the incumbent)','MuleSoft','Boomi','Workato']},
  {id:'bim',l:'systems',n:'BIM / CDE',d:'Common Data Environment holding models and coordinated design information.',g:'Model status codes (WIP/Shared/Published) are governance states.',p:['Autodesk ACC','ProjectWise','Trimble Connect','Dalux','Revizto','Catenda']},
- {id:'p6',l:'systems',n:'Schedule · P6',d:'Planning and scheduling systems — the source of baselines, updates and progress logic.',g:'Baseline change control is a governance process.',p:['Primavera P6','MS Project','Powerproject']},
+ {id:'p6',l:'systems',n:'Schedule · P6',d:'Planning and scheduling systems — the source of baselines, updates and progress logic.',g:'Baseline change control is a governance process.',p:['Primavera P6','Primavera Cloud','MS Project','Synchro 4D','Powerproject']},
  {id:'cost',l:'systems',n:'Cost Management',d:'Budgets, commitments, actuals, forecasts and change orders.',g:'The CBS must reconcile with WBS master data.',p:['Hexagon EcoSys','ARES Prism','InEight','RIB CostX','Kahua']},
  {id:'erp',l:'systems',n:'ERP / Finance',d:'Corporate finance, procurement and HR systems — actuals and payments.',g:'The finance-project reconciliation point.',p:['SAP S/4HANA','Oracle Fusion','Dynamics 365','Trimble Viewpoint','CMiC']},
  {id:'docs',l:'systems',n:'Document Control',d:'Correspondence, transmittals, RFIs and submittals.',g:'The audit trail of decisions — retention rules are contractual.',p:['Oracle Aconex','Asite','Newforma','SharePoint']},
@@ -256,8 +295,18 @@ const E=[['iot','lake'],['cams','cv'],['drones','cv'],['scan','bim'],['forms','d
  ['mdm','p6'],['mdm','cost'],['std','bim'],['dq','lake'],['cat','lake'],['api','lake'],['lake','kg'],
  ['lake','pred'],['lake','gen'],['kg','reason'],['lake','sched'],['gis','twin'],['kg','twin'],['gis','gendesign'],['gendesign','epm'],
  ['pred','dash'],['sched','dash'],['cv','dash'],['gen','report'],['reason','dash'],['lake','report'],['lake','dataprod'],['dq','dataprod'],
- ['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],['evm','report']];
+ ['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],['evm','report'],
+ ['p6','sched'],['mdm','sched'],['bim','twin'],['iot','twin'],['p6','risk'],['cv','hse'],['p6','contract'],['docs','contract']];
 
+const PHASES=[
+ {id:'feas',n:'FEASIBILITY',d:'Site selection, massing options, business case and investment decision.',doms:['gendesign','gis','epm','risk','crm','reason']},
+ {id:'design',n:'DESIGN',d:'Coordinated design development in the CDE under information standards.',doms:['bim','std','docs','gendesign','scan','contract']},
+ {id:'procure',n:'PROCURE',d:'Packages, tendering, contracts and supply chain set-up.',doms:['contract','erp','cost','api','reason','risk']},
+ {id:'construct',n:'CONSTRUCT',d:'Execution: schedule, field capture, progress AI, safety, cost, claims and earned value.',doms:['p6','sched','cv','iot','drones','scan','cams','forms','hse','cost','pred','docs','mdm','dq','evm','contract','risk']},
+ {id:'handover',n:'HANDOVER',d:'Commissioning, as-builts, COBie exchange and the birth of the twin.',doms:['std','dq','twin','docs','cat','scan','bim']},
+ {id:'operate',n:'OPERATE',d:'Operations, maintenance, portfolio reporting and continuous decisions.',doms:['twin','iot','dash','report','evm','dataprod','sem','memory','cams','epm']},
+];
+let curPhase=-1;
 const byId={};N.forEach(n=>byId[n.id]=n);
 const layerOf={};LAYERS.forEach(l=>layerOf[l.id]=l);
 function connsOf(id){
@@ -273,17 +322,25 @@ function connsOf(id){
 let curLayer=null,curSel=null;
 const SP=86,XGAP=30;
 let vRx=55,vRz=-45,vTy=0,dragMoved=false;
+let vSc=1;
 function applyView(){
   const ov=document.getElementById('ov');
   const rx=Math.max(46,Math.min(63,55-vTy*0.02));
   ov.style.setProperty('--rx',rx+'deg');
   ov.style.setProperty('--rz',vRz+'deg');
   ov.style.setProperty('--ty',vTy+'px');
+  ov.style.setProperty('--sc',vSc);
+  ov.classList.toggle('far',vSc<0.8);
   if(typeof updateHud==='function')updateHud();
 }
+window.zoomBy=function(f){
+  vSc=Math.max(.5,Math.min(2.1,vSc*f));
+  applyView();
+};
 function buildOverview(){
   const ov=document.getElementById('ov');
-  ov.innerHTML='<div class="ovhint">THE ECOSYSTEM · SCROLL TO TRAVEL · DRAG TO ORBIT · TAP A LAYER TO ZOOM IN</div>'+
+  ov.innerHTML='<div class="ovhint">SCROLL · DRAG TO ORBIT · PINCH / DOUBLE-TAP TO ZOOM · TAP A LAYER'+
+    '<div style="margin-top:4px;opacity:.65;">'+N.length+' DOMAINS · '+E.length+' FLOWS · CURATED · UPDATED JUL 2026</div></div>'+
     '<div id="stage"><div id="stack"></div></div>';
   const stack=document.getElementById('stack');
   /* z positions: top layer highest, extra gap before cross-cutting plates */
@@ -314,7 +371,7 @@ function buildOverview(){
       const r=Math.floor(j/cols),c=j%cols,inRow=Math.min(cnt-r*cols,cols);
       const x=(c+0.5)/inRow*78+11+((r%2)?3:-3);
       const y=(r+0.5)/rows*66+17+((c%2)?3:-3);
-      h+='<button class="mini bb" style="left:'+x+'%;top:'+y+'%;" '+
+      h+='<button class="mini bb" data-id="'+n.id+'" style="left:'+x+'%;top:'+y+'%;" '+
         'onclick="event.stopPropagation();if(!dragMoved)flyNode(\''+l.id+'\',\''+n.id+'\');"><i></i>'+n.n+'</button>';
     });
     if(i>0)h+='<div class="beam bb" style="left:15%;top:34%;"></div><div class="beam bb" style="left:82%;top:62%;"></div>';
@@ -327,26 +384,37 @@ function buildOverview(){
     const t=document.createElement('div');
     t.className='hud';t.id='hud-'+l.id;
     t.style.setProperty('--hc',l.c);
+    t.style.animationDelay=(.55+i*.06)+'s';
     t.dataset.z=zs[i]-mid;
     t.innerHTML='<span class="tno">'+l.no+'</span><span class="tnm">'+l.name+'</span><span class="tct">'+nodes.length+'</span>';
     t.onclick=e=>{e.stopPropagation();if(!dragMoved)flyLayer(l.id);};
     ov.appendChild(t);
   });
+  /* entrance: plates rise into place bottom-up */
+  const plates=[...stack.children];
+  plates.forEach((p,i)=>{
+    p.style.opacity='0';
+    p.style.transform='translateZ('+(parseFloat(p.dataset.z)-230)+'px)';
+    p.style.transitionDelay=((plates.length-1-i)*70)+'ms';
+  });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    plates.forEach(p=>{
+      p.style.opacity='';
+      p.style.transform='translateZ('+p.dataset.z+'px)';
+    });
+    setTimeout(()=>plates.forEach(p=>{p.style.transitionDelay='';}),1600);
+  }));
   applyView();
 }
 function updateHud(){
   const stack=document.getElementById('stack');
   if(!stack)return;
-  const cx=window.innerWidth/2,cy=window.innerHeight/2;
-  const ps=stack.offsetWidth;
+  const cy=window.innerHeight/2;
   const rx=Math.max(46,Math.min(63,55-vTy*0.02))*Math.PI/180;
   document.querySelectorAll('.hud').forEach(t=>{
     const z=parseFloat(t.dataset.z);
-    const y=cy+vTy-z*Math.sin(rx)-t.offsetHeight/2;
-    const railX=cx-ps*0.74;
-    t.style.top=y+'px';
-    if(railX-10>t.offsetWidth){t.style.left=(railX-t.offsetWidth)+'px';}
-    else{t.style.left='10px';}
+    const y=cy+vTy-z*Math.sin(rx)*vSc-t.offsetHeight/2;
+    t.style.transform='translateY('+y+'px)';
   });
 }
 function flyIn(id,plate,selId){
@@ -372,34 +440,147 @@ function resetPlates(){
     p.style.opacity='';
   });
 }
-/* orbit + travel input */
+/* orbit + travel + zoom input — with inertia */
 (function(){
   const ov=document.getElementById('ov');
-  let px=0,py=0,down=false;
+  const pts=new Map();
+  let px=0,py=0,down=false,pinchD=0,pinchS=1,vx=0,vy=0,coastId=null;
   const lim=()=>Math.max(150,LAYERS.length*SP*0.45);
+  function coast(){
+    vx*=.93;vy*=.93;
+    if(Math.abs(vx)+Math.abs(vy)<.4){ov.classList.remove('drag');coastId=null;return;}
+    vRz=Math.max(-72,Math.min(-18,vRz+vx*0.15));
+    vTy=Math.max(-lim(),Math.min(lim(),vTy+vy));
+    applyView();
+    coastId=requestAnimationFrame(coast);
+  }
   ov.addEventListener('pointerdown',e=>{
-    if(e.button!==undefined&&e.button!==0)return;
-    down=true;dragMoved=false;px=e.clientX;py=e.clientY;
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    if(coastId){cancelAnimationFrame(coastId);coastId=null;ov.classList.remove('drag');}
+    pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pts.size===1){down=true;dragMoved=false;vx=0;vy=0;px=e.clientX;py=e.clientY;}
+    else if(pts.size===2){
+      const a=[...pts.values()];
+      pinchD=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);pinchS=vSc;
+      dragMoved=true;ov.classList.add('drag');
+    }
   });
   ov.addEventListener('pointermove',e=>{
+    if(!pts.has(e.pointerId))return;
+    pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pts.size===2){
+      const a=[...pts.values()];
+      const d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);
+      if(pinchD>0){vSc=Math.max(.5,Math.min(2.1,pinchS*d/pinchD));applyView();}
+      return;
+    }
     if(!down)return;
-    if(e.buttons!==undefined&&e.buttons===0){down=false;ov.classList.remove('drag');return;}
-    const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;
-    if(!dragMoved&&Math.abs(dx)+Math.abs(dy)<=4)return;
-    dragMoved=true;ov.classList.add('drag');
+    const thr=e.pointerType==='touch'?11:5;
+    if(!dragMoved){
+      if(Math.abs(e.clientX-px)+Math.abs(e.clientY-py)<=thr)return;
+      dragMoved=true;ov.classList.add('drag');
+      px=e.clientX;py=e.clientY;return;
+    }
+    const dx=e.clientX-px,dy=e.clientY-py;
+    px=e.clientX;py=e.clientY;
+    vx=0.75*vx+0.25*dx;vy=0.75*vy+0.25*dy;
     vRz=Math.max(-72,Math.min(-18,vRz+dx*0.15));
     vTy=Math.max(-lim(),Math.min(lim(),vTy+dy));
     applyView();
   });
-  const end=()=>{down=false;ov.classList.remove('drag');setTimeout(()=>{dragMoved=false;},60);};
+  const end=e=>{
+    pts.delete(e.pointerId);
+    if(pts.size<2)pinchD=0;
+    if(pts.size===1){const r=[...pts.values()][0];px=r[0];py=r[1];down=true;vx=0;vy=0;}
+    if(pts.size===0){
+      down=false;
+      if(dragMoved&&Math.abs(vx)+Math.abs(vy)>3){coastId=requestAnimationFrame(coast);}
+      else ov.classList.remove('drag');
+      setTimeout(()=>{dragMoved=false;},60);
+    }
+  };
   ov.addEventListener('pointerup',end);
   ov.addEventListener('pointercancel',end);
   ov.addEventListener('wheel',e=>{
     e.preventDefault();
-    vTy=Math.max(-lim(),Math.min(lim(),vTy-e.deltaY*0.45));
+    if(e.ctrlKey||e.metaKey){vSc=Math.max(.5,Math.min(2.1,vSc-e.deltaY*0.0022));}
+    else{vTy=Math.max(-lim(),Math.min(lim(),vTy-e.deltaY*0.45));}
     applyView();
   },{passive:false});
+  ov.addEventListener('dblclick',e=>{
+    if(e.target.closest('.hud')||e.target.closest('.mini'))return;
+    vSc=vSc<1.2?1.55:1;applyView();
+  });
 })();
+/* keyboard */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const s=document.getElementById('srch');
+    if(s.classList.contains('open')){closeSearch();return;}
+    if(document.getElementById('sheet').classList.contains('open')){closeSheet();return;}
+    if(curLayer)goOverview();
+  }
+});
+
+/* ---------------- PHASES ---------------- */
+function phaseIcon(prog){
+  return '<svg viewBox="0 0 20 20" width="19" height="19" style="flex:none;">'+
+    '<path d="M3.5 18.5V8.8L10 4l6.5 4.8v9.7z" fill="none" stroke="#565e6b" stroke-width="1.1"/>'+
+    '<path d="M3.5 18.5V8.8L10 4l6.5 4.8v9.7z" fill="var(--accent)" opacity=".85" style="clip-path:inset('+(100-prog*100)+'% 0 0 0);"/>'+
+    '</svg>';
+}
+function renderPhaseRail(){
+  const c=document.getElementById('pchip');
+  const b=document.getElementById('pbadge');
+  if(curPhase<0){
+    c.innerHTML=phaseIcon(0)+'<span class="pn">ALL PHASES</span><span class="px">CYCLE ›</span>';
+    b.style.display='none';
+  }else{
+    const p=PHASES[curPhase];
+    c.innerHTML=phaseIcon((curPhase+1)/PHASES.length)+
+      '<span class="pn">'+p.n+'</span><span class="px">'+(curPhase+1)+' / '+PHASES.length+'</span>';
+    b.style.display='flex';
+    b.innerHTML=p.n+' · '+p.doms.length+'/'+N.length+' ✕';
+    b.style.color='var(--accent)';
+  }
+}
+function applyPhaseFilter(){
+  const set=curPhase<0?null:new Set(PHASES[curPhase].doms);
+  document.querySelectorAll('.mini').forEach(m=>m.classList.toggle('off',!!set&&!set.has(m.dataset.id)));
+  document.querySelectorAll('.pill').forEach(p=>{
+    const id=p.id.replace('pill-','');
+    p.classList.toggle('off',!!set&&!set.has(id));
+  });
+}
+window.cyclePhase=function(dir){
+  curPhase+=dir;
+  if(curPhase>=PHASES.length)curPhase=-1;
+  if(curPhase<-1)curPhase=PHASES.length-1;
+  renderPhaseRail();applyPhaseFilter();
+};
+window.setPhase=function(i){curPhase=i;renderPhaseRail();applyPhaseFilter();phaseSheet();};
+window.phaseSheet=function(){
+  let h;
+  if(curPhase<0){
+    h='<div class="lk">PROJECT LIFECYCLE</div><h2>Phases</h2>'+
+      '<p>Cycle through the delivery lifecycle. Each phase lights up the domains doing the work — and the structure icon builds as you progress.</p>'+
+      '<div class="sec">Select a phase</div><div class="chips">'+
+      PHASES.map((p,i)=>'<span class="chip link" onclick="setPhase('+i+')">'+(i+1)+' · '+p.n+'</span>').join('')+'</div>';
+  }else{
+    const p=PHASES[curPhase];
+    const doms=p.doms.map(id=>byId[id]).filter(Boolean);
+    const prods=[...new Set(doms.flatMap(n=>n.p||[]))];
+    h='<div class="lk">PHASE '+(curPhase+1)+' / '+PHASES.length+'</div><h2>'+p.n.charAt(0)+p.n.slice(1).toLowerCase()+'</h2><p>'+p.d+'</p>';
+    h+='<div class="sec">Active domains — tap to travel</div><div class="chips">'+
+      doms.map(n=>{const l=layerOf[n.l];
+        return '<span class="chip link" style="color:'+l.c+';border-color:'+l.c+'55;" onclick="travel(\''+n.id+'\')">'+n.n+' · '+l.no+'</span>';}).join('')+'</div>';
+    h+='<div class="sec">Technologies & companies in this phase</div><div class="chips">'+
+      prods.slice(0,24).map(x=>'<span class="chip">'+x+'</span>').join('')+
+      (prods.length>24?'<span class="chip">+'+(prods.length-24)+' more</span>':'')+'</div>';
+  }
+  document.getElementById('sheetBody').innerHTML=h;
+  document.getElementById('sheet').classList.add('open');
+};
 
 /* ---------------- LAYER SCENE ---------------- */
 function slots(count,Wp,Hp){
@@ -440,8 +621,9 @@ function openLayer(id,selId){
     const conns=connsOf(n.id);
     const inL=conns.filter(c=>byId[c.id].l===id).length;
     const outL=conns.length-inL;
-    p.innerHTML=(n.ai?'<span class="ai"></span>':'')+n.n+'<span class="fl">⇅'+outL+'</span>';
+    p.innerHTML=(n.ai?'<span class="ai"></span>':'')+n.n+'<span class="fl">'+outL+' links</span>';
     p.style.left=pts[i].x+'%';p.style.top=pts[i].y+'%';
+    p.style.animationDelay=(i*30)+'ms';
     p.onclick=()=>selectNode(n.id);
     pillsEl.appendChild(p);
     posById[n.id]={x:pts[i].x*Wp/100,y:pts[i].y*Hp/100};
@@ -460,7 +642,7 @@ function openLayer(id,selId){
     }
   });
   ly.classList.add('show');
-  buildSwitch();
+  buildSwitch();applyPhaseFilter();
   if(selId)setTimeout(()=>selectNode(selId),250);
   else closeSheet();
 }
@@ -472,6 +654,7 @@ function goOverview(){
   document.getElementById('barTitle').textContent='ALL LAYERS';
   resetPlates();
   closeSheet();buildSwitch();
+  try{history.replaceState(null,'',location.pathname);}catch(_){}
 }
 function buildSwitch(){
   const sw=document.getElementById('switch');
@@ -479,7 +662,9 @@ function buildSwitch(){
   LAYERS.forEach(l=>{
     const b=document.createElement('button');
     b.innerHTML='<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:'+l.c+';margin-right:5px;vertical-align:1px;"></span>'+l.no;
-    if(curLayer===l.id){b.classList.add('on');b.style.borderColor=l.c;b.style.background=l.c+'1c';}
+    b.title=l.name;b.setAttribute('aria-label',l.name);
+    if(curLayer===l.id){b.classList.add('on');b.style.borderColor=l.c;b.style.background=l.c+'1c';
+      if(window.innerWidth>720)b.innerHTML+=' <span style="letter-spacing:.08em;">'+l.name.split(' ')[0]+'</span>';}
     b.onclick=()=>{curLayer?openLayer(l.id):flyLayer(l.id);};
     sw.appendChild(b);
   });
@@ -501,13 +686,15 @@ function selectNode(id){
     h+='<div class="sec">Connected — tap to travel</div><div class="chips">';
     conns.forEach(c=>{
       const t=byId[c.id],tl=layerOf[t.l];
-      h+='<span class="chip link" style="color:'+tl.c+';border-color:'+tl.c+'55;" onclick="travel(\''+c.id+'\')">'+c.dir+' '+t.n+' · '+tl.no+'</span>';
+      const lname=tl.cls?tl.name.split(' ')[0]:tl.name;
+      h+='<span class="chip link" style="color:'+tl.c+';border-color:'+tl.c+'55;" onclick="travel(\''+c.id+'\')">'+c.dir+' '+t.n+' · '+tl.no+' '+lname+'</span>';
     });
     h+='</div>';
   }
   h+='<div class="sec" style="margin-top:18px;"><a href="builder.html?focus='+id+'" style="color:var(--accent);letter-spacing:.12em;">COMPARE IN THE TECH STACK BUILDER →</a></div>';
   document.getElementById('sheetBody').innerHTML=h;
   document.getElementById('sheet').classList.add('open');
+  try{history.replaceState(null,'','#'+n.l+'/'+id);}catch(_){}
 }
 window.travel=function(id){
   const n=byId[id];
@@ -568,7 +755,14 @@ function renderResults(q){
 document.getElementById('srchIn').addEventListener('input',e=>renderResults(e.target.value.trim().toLowerCase()));
 
 /* ---------------- INIT ---------------- */
-buildOverview();buildSwitch();
+buildOverview();buildSwitch();renderPhaseRail();applyPhaseFilter();
+/* deep link: #layerid or #layerid/nodeid */
+(function(){
+  const m=location.hash.replace('#','').split('/');
+  if(m[0]&&layerOf[m[0]]){
+    setTimeout(()=>{m[1]&&byId[m[1]]?flyNode(m[0],m[1]):flyLayer(m[0]);},900);
+  }
+})();
 window.addEventListener('resize',()=>{if(curLayer)openLayer(curLayer,curSel);else updateHud();});
 </script>
 </body>
