@@ -129,8 +129,11 @@
   .mini::after{content:'';position:absolute;inset:-9px;}
   .mini i{width:5px;height:5px;border-radius:50%;border:1px solid var(--ink);background:transparent;flex:none;}
   .mini:hover{border-color:var(--mark);z-index:9;}
-  #ov.far .mini{font-size:0;gap:0;padding:4px;}
-  #ov.far .mini i{width:6px;height:6px;}
+  #ov.far .mini{font-size:0;gap:0;padding:5px;}
+  #ov.far .mini i{width:10px;height:10px;border-width:2px;}
+  /* heavier pen weight when zoomed out so the drawing never fades */
+  #ov.far .plate{border-width:2px;border-color:rgba(232,241,252,.9);}
+  #ov.far .plate::after{border-width:2px;border-color:rgba(232,241,252,.5);}
   /* construction lines between plates */
   .beam{position:absolute;width:0;height:70px;pointer-events:none;overflow:visible;
     border-left:1px dashed rgba(232,241,252,.28);}
