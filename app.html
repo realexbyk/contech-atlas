@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f3efe6">
-<title>Atlas — the map of construction technology</title>
+<title>The Atlas — the map of construction technology</title>
 <meta name="description" content="Explore construction technology layer by layer. The ConTech Atlas app.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 <style>
   :root{--bg:#f3efe6;--card:#f7f3eb;--hair:rgba(43,46,54,.22);--hair2:rgba(43,46,54,.4);
     --txt:#23262e;--dim:#535966;--faint:#8b9099;--ink:#2b2e36;
-    --accent:#c9432f;--accent2:#c9432f;--amber:#2b2e36;--green:#2b2e36;--lc:#2b2e36;--mark:#c9432f;
+    --accent:#c9432f;--accent2:#c9432f;--amber:#2b2e36;--green:#2b2e36;--lc:#2b2e36;--mark:#c9432f;--tl:#2f9e9e;
     --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Mono',ui-monospace,monospace;}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;overflow:hidden;}
@@ -66,13 +66,13 @@
     transition:transform .5s cubic-bezier(.22,.9,.3,1);}
   #ov.drag #stack{transition:none;}
   .plate{position:absolute;inset:0;transform-style:preserve-3d;border-radius:3px;cursor:pointer;
-    border:1px solid rgba(43,46,54,.55);
-    background:#f6f2e9;
-    box-shadow:0 14px 34px rgba(40,42,52,.13);
+    border:1px solid color-mix(in srgb,var(--pc) 48%,rgba(43,46,54,.28));
+    background:color-mix(in srgb,var(--pc) 9%,rgba(246,242,233,.52));
+    box-shadow:0 10px 26px rgba(40,42,52,.08);
     transition:transform .55s cubic-bezier(.3,.8,.3,1),opacity .38s,border-color .25s;}
-  /* hatched margin band — drafting poché */
+  /* hatched margin band — drafting poché, tinted per layer */
   .plate::before{content:'';position:absolute;inset:0;border-radius:3px;pointer-events:none;padding:9px;
-    background:repeating-linear-gradient(45deg,rgba(43,46,54,.20) 0 1px,transparent 1px 7px);
+    background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--pc) 30%,rgba(43,46,54,.10)) 0 1px,transparent 1px 7px);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;}
   .plate::after{content:'';position:absolute;inset:9px;pointer-events:none;
@@ -92,15 +92,15 @@
     animation:hudin .5s ease backwards;
     transition:transform .5s cubic-bezier(.22,.9,.3,1),border-color .15s;}
   .hud::after{content:'';position:absolute;left:100%;top:50%;width:26px;height:1px;
-    background:repeating-linear-gradient(90deg,rgba(43,46,54,.55) 0 4px,transparent 4px 8px);}
+    background:repeating-linear-gradient(90deg,rgba(47,158,158,.65) 0 4px,transparent 4px 8px);}
   #ov.drag .hud{transition:border-color .15s;}
   @keyframes hudin{from{opacity:0;}}
   @keyframes pop{from{transform:translate(-50%,-50%) scale(.72);opacity:0;}}
   .pill{animation:pop .34s cubic-bezier(.2,.9,.3,1.35) backwards;}
   .hud:hover{border-color:var(--mark);}
-  .hud .tno{font-size:10.5px;color:var(--mark);}
+  .hud .tno{font-size:10.5px;color:var(--hc);font-weight:600;}
   .hud .tnm{font-size:11px;font-weight:600;color:var(--txt);letter-spacing:.1em;}
-  .hud .tct{font-size:9px;color:var(--faint);}
+  .hud .tct{font-size:9px;color:var(--tl);}
   @media(max-width:720px){.hud{padding:5px 8px;gap:5px;}.hud .tnm{font-size:8.5px;}.hud .tno{font-size:9px;}.hud::after{width:14px;}}
   /* location rail (top) + phase chip (bottom-left) */
   #phases{position:fixed;top:calc(82px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);
@@ -132,22 +132,23 @@
   #zoomctl button:hover{background:rgba(43,46,54,.08);}
   #zoomctl button:active{background:rgba(201,67,47,.15);}
   #zlv{width:44px;padding:6px 0;text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;
-    color:var(--faint);background:rgba(247,243,235,.95);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);}
+    color:var(--tl);background:rgba(247,243,235,.95);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);}
+  .chip img{width:14px;height:14px;border-radius:3px;vertical-align:-3px;margin-right:6px;}
   .mini{position:absolute;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;
     font-family:var(--mono);font-size:9px;letter-spacing:.02em;color:var(--txt);
     background:rgba(247,243,235,.9);border:1px solid var(--hair2);
     border-radius:2px;padding:4px 8px;transition:border-color .15s,color .15s,font-size .2s,padding .2s;}
   .mini::after{content:'';position:absolute;inset:-9px;}
-  .mini i{width:5px;height:5px;border-radius:50%;border:1px solid var(--ink);background:transparent;flex:none;}
+  .mini i{width:6px;height:6px;border-radius:50%;border:none;background:var(--pc);flex:none;}
   .mini:hover{border-color:var(--mark);z-index:9;}
   #ov.far .mini{font-size:0;gap:0;padding:5px;}
   #ov.far .mini i{width:10px;height:10px;border-width:2px;}
   /* heavier pen weight when zoomed out so the drawing never fades */
-  #ov.far .plate{border-width:2px;border-color:rgba(43,46,54,.9);}
-  #ov.far .plate::after{border-width:2px;border-color:rgba(43,46,54,.5);}
+  #ov.far .plate{border-width:2px;border-color:color-mix(in srgb,var(--pc) 62%,rgba(43,46,54,.55));}
+  #ov.far .plate::after{border-width:2px;border-color:rgba(43,46,54,.45);}
   /* construction lines between plates */
   .beam{position:absolute;width:0;height:70px;pointer-events:none;overflow:visible;
-    border-left:1px dashed rgba(43,46,54,.28);}
+    border-left:1px dashed rgba(47,158,158,.42);}
   .beam::after{display:none;}
   @media(max-width:720px){
     #ov{--ps:min(72vmin,460px);}
@@ -161,6 +162,8 @@
   #ly.show{opacity:1;pointer-events:auto;transform:none;}
   #lywrap{position:relative;width:100%;height:calc(100% - 64px);overflow:hidden;}
   #lywrap.scrollv{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
+  @media(pointer:fine){#lywrap:not(.scrollv){cursor:grab;}}
+  #pills,#lysvg{transition:transform .18s ease;}
   #pills{position:relative;width:100%;}
   #lysvg{position:absolute;top:0;left:0;width:100%;height:100%;}
   /* breadcrumb back — unmissable */
@@ -176,7 +179,11 @@
   .pill:hover{transform:translate(-50%,-50%) scale(1.06);border-color:var(--ink);z-index:5;}
   .pill.sel{border-color:var(--mark);box-shadow:0 0 0 1px var(--mark);z-index:6;}
   .pill .ai{width:6px;height:6px;border-radius:50%;border:1px solid var(--mark);background:transparent;}
-  .pill .fl{font-size:9px;color:var(--faint);font-weight:500;}
+  .pill .fl{font-size:9px;color:var(--tl);font-weight:500;}
+  /* ghost sheet numeral — vectorworks-style */
+  #lynum{position:absolute;right:4%;bottom:8%;z-index:0;pointer-events:none;font-family:var(--mono);
+    font-size:min(38vh,340px);font-weight:600;line-height:1;
+    color:color-mix(in srgb,var(--lc) 26%,transparent);opacity:.16;}
   .pill.govp{border-style:dashed;}
   .pill.govp.sel{border-color:var(--mark);}
   .pill.fabp{border-style:dotted;}
@@ -186,10 +193,11 @@
     border:1px solid var(--hair);background:rgba(247,243,235,.92);color:var(--dim);font-family:var(--mono);
     font-size:8.5px;letter-spacing:.08em;padding:5px 9px;border-radius:2px;cursor:pointer;white-space:nowrap;
     transition:border-color .15s,color .15s;z-index:4;}
-  .port:hover{border-color:var(--mark);color:var(--txt);}
-  .port b{font-weight:500;color:var(--faint);}
+  .port{border-color:rgba(47,158,158,.45);color:#33706f;}
+  .port:hover{border-color:var(--mark);color:var(--mark);}
+  .port b{font-weight:600;color:var(--tl);}
   .edge{stroke:rgba(43,46,54,.4);stroke-width:1;fill:none;transition:.2s;}
-  .edge.xp{stroke-dasharray:4 5;stroke:rgba(43,46,54,.26);}
+  .edge.xp{stroke-dasharray:4 5;stroke:rgba(47,158,158,.32);}
   .edge.hot{stroke:var(--mark);opacity:1;stroke-width:1.6;stroke-dasharray:none;}
   @media(max-width:720px){.pill{font-size:10px;padding:10px 12px;}.port{font-size:7.5px;padding:4px 7px;}
     #crumb{padding:10px 13px;font-size:9.5px;}}
@@ -250,11 +258,10 @@
 <body>
 
 <div class="bar">
-  <button class="bbtn" id="backBtn" onclick="goOverview()" style="display:none;">←</button>
-  <a class="brand" href="index.html">ATLAS<span>APP</span></a>
+  <button class="bbtn" onclick="openSearch()" aria-label="Search">⌕</button>
+  <a class="brand" href="index.html">THE<span>ATLAS</span></a>
   <div class="title" id="barTitle">ALL LAYERS</div>
   <button class="bbtn" id="pbadge" style="display:none;" onclick="phaseSheet()"></button>
-  <button class="bbtn" onclick="openSearch()">⌕</button>
 </div>
 
 <div id="ov"></div>
@@ -275,6 +282,7 @@
 
 <div id="ly">
   <button id="crumb" onclick="goOverview()">← ALL LAYERS</button>
+  <div id="lynum" aria-hidden="true"></div>
   <div id="lywrap">
     <svg id="lysvg"></svg>
     <div id="pills"></div>
@@ -370,6 +378,11 @@ const PHASES=[
  {id:'operate',n:'OPERATE',img:1,d:'Operations, maintenance, portfolio reporting and continuous decisions.',doms:['twin','iot','dash','report','evm','dataprod','sem','memory','cams','epm']},
 ];
 let curPhase=-1;
+const PDOM={'AI Clearing':'aiclearing.com','ALICE':'alicetechnologies.com','ARES Prism':'aresprism.com','Acumen Fuse':'deltek.com','Anaplan':'anaplan.com','Anthropic Claude':'anthropic.com','Aphex':'aphex.co','Asite':'asite.com','AtScale':'atscale.com','Atlan':'atlan.com','Autodesk ACC':'autodesk.com','Autodesk Build':'autodesk.com','Autodesk Forma':'autodesk.com','Autodesk Tandem':'autodesk.com','Azure Integration':'azure.microsoft.com','Bentley iTwin':'bentley.com','BigQuery':'cloud.google.com','Boomi':'boomi.com','Briq':'briq.com','Buildots':'buildots.com','CEMAR':'thinkproject.com','CMiC':'cmicglobal.com','Catenda':'catenda.com','Cesium':'cesium.com','Collibra':'collibra.com','Cority':'cority.com','Cube':'cube.dev','DJI Enterprise':'dji.com','Dalux':'dalux.com','Dalux Field':'dalux.com','Databricks':'databricks.com','Deltek Cobra':'deltek.com','Disperse':'disperse.io','Document Crunch':'documentcrunch.com','DroneDeploy':'dronedeploy.com','Dynamics 365':'microsoft.com','EarthCam':'earthcam.net','Esri ArcGIS':'esri.com','Excel (the incumbent)':'microsoft.com','FARO':'faro.com','Fabric Data Agents':'microsoft.com','Fieldwire':'fieldwire.com','Finch':'finch3d.com','Foresight':'foresight.works','Glean':'glean.com','Google Earth Engine':'earthengine.google.com','Grafana':'grafana.com','Great Expectations':'greatexpectations.io','HammerTech':'hammertech.com','Hexagon EcoSys':'hexagon.com','Higharc':'higharc.com','Honeywell':'honeywell.com','InEight':'ineight.com','InEight Schedule':'ineight.com','Informatica MDM':'informatica.com','Intelex':'intelex.com','Ironclad':'ironcladapp.com','Kahua':'kahua.com','Leica':'leica-geosystems.com','Looker':'cloud.google.com','M365 Copilot':'microsoft.com','MCP connectors':'anthropic.com','MRI Software':'mrisoftware.com','MS Fabric':'microsoft.com','MS Project':'microsoft.com','MS Purview':'microsoft.com','Mastt':'mastt.com','Matterport':'matterport.com','Mem0':'mem0.ai','Microsoft Fabric':'microsoft.com','Microsoft Graph':'microsoft.com','Milesight':'milesight.com','Monte Carlo':'montecarlodata.com','Morta':'morta.io','MuleSoft':'mulesoft.com','Multivista':'multivista.com','NavVis':'navvis.com','Neo4j':'neo4j.com','Neptune':'aws.amazon.com','Newforma':'newforma.com','Nodes & Links':'nodeslinks.com','Novade':'novade.net','Nvidia Omniverse':'nvidia.com','OpenAI':'openai.com','OpenSpace':'openspace.ai','Oracle Aconex':'oracle.com','Oracle EPM':'oracle.com','Oracle Fusion':'oracle.com','Palantir AIP':'palantir.com','Palantir Foundry':'palantir.com','Palantir Ontology':'palantir.com','Pinecone':'pinecone.io','Pix4D':'pix4d.com','PlanRadar':'planradar.com','Plannerly':'plannerly.com','Power Apps':'powerapps.microsoft.com','Power BI':'powerbi.microsoft.com','Power BI Semantic':'powerbi.microsoft.com','Powerproject':'elecosoft.com','Primavera Cloud':'oracle.com','Primavera P6':'oracle.com','Primavera Risk':'oracle.com','Procore':'procore.com','Procore Analytics':'procore.com','Procore Copilot':'procore.com','Profisee':'profisee.com','ProjectWise':'bentley.com','Propeller':'propelleraero.com','QGIS':'qgis.org','Qlik':'qlik.com','RIB CostX':'rib-software.com','Retool':'retool.com','Revizto':'revizto.com','Riskonnect':'riskonnect.com','SAP Analytics Cloud':'sap.com','SAP S/4HANA':'sap.com','SafetyCulture':'safetyculture.com','Safran Risk':'safran.com','Salesforce':'salesforce.com','Schneider':'se.com','Semarchy':'semarchy.com','Sensera':'senserasystems.com','SharePoint':'microsoft.com','Siemens':'siemens.com','SmartPM':'smartpm.com','Snowflake':'snowflake.com','Soda':'soda.io','Solibri':'solibri.com','Stardog':'stardog.com','Synchro 4D':'bentley.com','Tableau':'tableau.com','TestFit':'testfit.io','Toric':'toric.com','Track3D':'track3d.ai','Trimble Connect':'trimble.com','Trimble Viewpoint':'viewpoint.com','Trimble X9':'trimble.com','TrueLook':'truelook.com','Trunk Tools':'trunk.tools','Workato':'workato.com','Yardi Voyager':'yardi.com','Zep':'getzep.com','dbt Semantic Layer':'getdbt.com','nPlan':'nplan.io','pgvector':'postgresql.org'};
+function pchip(x){
+  const d=PDOM[x];
+  return '<span class="chip">'+(d?'<img src="https://www.google.com/s2/favicons?domain='+d+'&sz=64" alt="" loading="lazy" onerror="this.remove()">':'')+x+'</span>';
+}
 const byId={};N.forEach(n=>byId[n.id]=n);
 const layerOf={};LAYERS.forEach(l=>layerOf[l.id]=l);
 function connsOf(id){
@@ -664,7 +677,7 @@ window.phaseSheet=function(){
       doms.map(n=>{const l=layerOf[n.l];
         return '<span class="chip link" onclick="travel(\''+n.id+'\')">'+n.n+' · '+l.no+'</span>';}).join('')+'</div>';
     h+='<div class="sec">Technologies & companies in this phase</div><div class="chips">'+
-      prods.slice(0,24).map(x=>'<span class="chip">'+x+'</span>').join('')+
+      prods.slice(0,24).map(pchip).join('')+
       (prods.length>24?'<span class="chip">+'+(prods.length-24)+' more</span>':'')+'</div>';
     h+='<div class="chips" style="margin-top:14px;"><span class="chip link" style="color:var(--mark);" '+
       'onclick="curPhase=-1;renderPhaseRail();applyPhaseFilter();closeSheet();">✕ CLEAR PHASE FILTER</span></div>';
@@ -694,7 +707,9 @@ function openLayer(id,selId){
   document.getElementById('barTitle').textContent=l.no+' · '+l.name;
   const tb=document.getElementById('tbSheet');
   if(tb)tb.textContent='L-'+(li+1<10?'0':'')+(li+1)+' · '+l.name;
-  document.getElementById('backBtn').style.display='flex';
+  document.documentElement.style.setProperty('--lc',l.c);
+  const ln=document.getElementById('lynum');
+  if(ln)ln.textContent=l.no;
   document.getElementById('ov').classList.add('hide');
   const ly=document.getElementById('ly');
   const pillsEl=document.getElementById('pills');
@@ -803,7 +818,6 @@ function goOverview(){
   curLayer=null;curSel=null;
   document.getElementById('ly').classList.remove('show');
   document.getElementById('ov').classList.remove('hide');
-  document.getElementById('backBtn').style.display='none';
   document.getElementById('barTitle').textContent='ALL LAYERS';
   const tb=document.getElementById('tbSheet');
   if(tb)tb.textContent='A-01 · TECHNOLOGY STACK';
@@ -817,7 +831,7 @@ function buildSwitch(){
   sw.innerHTML='';
   LAYERS.forEach(l=>{
     const b=document.createElement('button');
-    b.textContent=l.no;
+    b.innerHTML='<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+l.c+';margin-right:6px;vertical-align:1px;"></span>'+l.no;
     b.title=l.name;b.setAttribute('aria-label',l.name);
     if(curLayer===l.id){b.classList.add('on');
       if(window.innerWidth>720)b.innerHTML+=' <span style="letter-spacing:.08em;">'+l.name.split(' ')[0]+'</span>';}
@@ -836,7 +850,7 @@ function selectNode(id){
   let h='<div class="lk">'+l.no+' · '+l.name+'</div><h2>'+n.n+'</h2><p>'+n.d+'</p>';
   h+='<div class="gv">'+n.g+'</div>';
   if(n.p&&n.p.length){
-    h+='<div class="sec">Products</div><div class="chips">'+n.p.map(x=>'<span class="chip">'+x+'</span>').join('')+'</div>';
+    h+='<div class="sec">Products</div><div class="chips">'+n.p.map(pchip).join('')+'</div>';
   }
   if(conns.length){
     h+='<div class="sec">Connected — tap to travel</div><div class="chips">';
@@ -900,6 +914,42 @@ function closeSheet(){
     if(dy>80)closeSheet();
     sy=null;dy=0;
   });
+})();
+
+/* mouse drag up/down inside a layer = previous/next sheet; wheel too */
+(function(){
+  const wrap=document.getElementById('lywrap');
+  let sy=null,dy=0,active=false,wheelLock=0;
+  wrap.addEventListener('pointerdown',e=>{
+    if(e.pointerType!=='mouse'||e.button!==0)return;
+    if(e.target.closest('.pill,.port,#crumb'))return;
+    sy=e.clientY;dy=0;active=true;
+  });
+  wrap.addEventListener('pointermove',e=>{
+    if(!active)return;
+    dy=e.clientY-sy;
+    const t=Math.max(-120,Math.min(120,dy))*0.35;
+    document.getElementById('pills').style.transform='translateY('+t+'px)';
+    document.getElementById('lysvg').style.transform='translateY('+t+'px)';
+  });
+  const end=()=>{
+    if(!active)return;active=false;
+    document.getElementById('pills').style.transform='';
+    document.getElementById('lysvg').style.transform='';
+    if(Math.abs(dy)>90)navLayer(dy<0?1:-1);
+    sy=null;dy=0;
+  };
+  wrap.addEventListener('pointerup',end);
+  wrap.addEventListener('pointercancel',end);
+  wrap.addEventListener('mouseleave',end);
+  wrap.addEventListener('wheel',e=>{
+    if(wrap.classList.contains('scrollv'))return;
+    e.preventDefault();
+    const now=Date.now();
+    if(now-wheelLock<550||Math.abs(e.deltaY)<18)return;
+    wheelLock=now;
+    navLayer(e.deltaY>0?1:-1);
+  },{passive:false});
 })();
 
 /* ---------------- SEARCH ---------------- */
