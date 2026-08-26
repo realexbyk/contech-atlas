@@ -66,7 +66,7 @@
     transition:transform .5s cubic-bezier(.22,.9,.3,1);}
   #ov.drag #stack{transition:none;}
   .plate{position:absolute;inset:0;transform-style:preserve-3d;border-radius:3px;cursor:pointer;
-    border:1px solid color-mix(in srgb,var(--pc) 48%,rgba(43,46,54,.28));
+    border:1.5px solid color-mix(in srgb,var(--pc) 52%,rgba(43,46,54,.32));
     background:color-mix(in srgb,var(--pc) 9%,rgba(246,242,233,.52));
     box-shadow:0 10px 26px rgba(40,42,52,.08);
     transition:transform .55s cubic-bezier(.3,.8,.3,1),opacity .38s,border-color .25s;}
@@ -102,27 +102,25 @@
   .hud .tnm{font-size:11px;font-weight:600;color:var(--txt);letter-spacing:.1em;}
   .hud .tct{font-size:9px;color:var(--tl);}
   @media(max-width:720px){.hud{padding:5px 8px;gap:5px;}.hud .tnm{font-size:8.5px;}.hud .tno{font-size:9px;}.hud::after{width:14px;}}
-  /* location rail (top) + phase chip (bottom-left) */
-  #phases{position:fixed;top:calc(82px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);
-    display:flex;align-items:center;gap:7px;z-index:48;}
-  #pchip .pn{max-width:44vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  #phchip{position:fixed;left:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:52;
-    display:flex;align-items:center;gap:8px;border:1px solid var(--hair2);background:rgba(247,243,235,.95);
-    border-radius:2px;padding:9px 12px;cursor:pointer;font-family:var(--mono);transition:border-color .15s;}
-  #phchip:hover{border-color:var(--mark);}
-  #phchip .pn{font-size:9.5px;font-weight:600;letter-spacing:.1em;color:var(--txt);}
-  #phchip .px{font-size:8px;color:var(--faint);letter-spacing:.06em;}
-  @media(max-width:720px){#phchip{bottom:calc(84px + env(safe-area-inset-bottom));padding:8px 10px;}}
-  .pbtn{width:34px;height:34px;border:1px solid var(--hair2);background:rgba(247,243,235,.92);color:var(--dim);border-radius:2px;
-    cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;}
-  .pbtn:hover{color:var(--txt);border-color:var(--ink);}
-  #pchip{display:flex;align-items:center;gap:9px;border:1px solid var(--hair2);background:rgba(247,243,235,.95);border-radius:2px;
-    padding:7px 13px;cursor:pointer;font-family:var(--mono);transition:border-color .15s;}
-  #pchip:hover{border-color:var(--mark);}
-  #pchip .pn{font-size:10.5px;font-weight:600;letter-spacing:.12em;color:var(--txt);}
-  #pchip .px{font-size:9px;color:var(--faint);letter-spacing:.08em;}
-  .mini.off{opacity:.12;pointer-events:none;}
-  .pill.off{opacity:.18;}
+  /* unified layer rail — the one navigator, left edge, layer mode only */
+  #rail{position:fixed;left:max(14px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);
+    z-index:46;display:none;flex-direction:column;gap:5px;}
+  body.layer-mode #rail{display:flex;}
+  .ri{display:flex;align-items:center;gap:9px;border:1px solid var(--hair);background:rgba(247,243,235,.96);
+    padding:9px 11px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--dim);
+    cursor:pointer;border-radius:2px;text-align:left;transition:border-color .15s,color .15s;}
+  .ri i{width:7px;height:7px;border-radius:50%;background:var(--rc);flex:none;}
+  .ri b{font-weight:600;color:var(--txt);}
+  .ri .rn{white-space:nowrap;letter-spacing:.1em;}
+  .ri:hover{border-color:var(--hair2);color:var(--txt);}
+  .ri.on{border-color:var(--rc);border-left-width:3px;color:var(--txt);}
+  .ri.home{color:var(--txt);border-color:var(--hair2);margin-bottom:8px;}
+  @media(max-width:720px){
+    #rail{left:8px;gap:4px;}
+    .ri{padding:8px 8px;gap:0;}
+    .ri .rn{display:none;}
+    .ri i{margin-right:6px;}
+  }
   .mini,.pill{transition-property:opacity,transform,border-color,box-shadow,color;transition-duration:.3s;}
   /* zoom controls */
   #zoomctl{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));display:flex;
@@ -144,8 +142,12 @@
   #ov.far .mini{font-size:0;gap:0;padding:5px;}
   #ov.far .mini i{width:10px;height:10px;border-width:2px;}
   /* heavier pen weight when zoomed out so the drawing never fades */
-  #ov.far .plate{border-width:2px;border-color:color-mix(in srgb,var(--pc) 62%,rgba(43,46,54,.55));}
+  #ov.far .plate{border-width:2.5px;border-color:color-mix(in srgb,var(--pc) 68%,rgba(43,46,54,.6));}
   #ov.far .plate::after{border-width:2px;border-color:rgba(43,46,54,.45);}
+  /* cross-layer flow lines in the overview — screen-space overlay */
+  #ovlinks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;}
+  .ovln{stroke:rgba(47,158,158,.30);stroke-width:1.4;}
+  #ov.far .ovln{stroke-width:2;stroke:rgba(47,158,158,.42);}
   /* construction lines between plates */
   .beam{position:absolute;width:0;height:70px;pointer-events:none;overflow:visible;
     border-left:1px dashed rgba(47,158,158,.42);}
@@ -157,21 +159,31 @@
   }
 
   /* ============ SCENE 2 — LAYER ============ */
-  #ly{position:fixed;inset:0;padding-top:calc(58px + env(safe-area-inset-top));
+  #ly{position:fixed;inset:0;padding-top:calc(88px + env(safe-area-inset-top));
+    padding-left:calc(216px + env(safe-area-inset-left));padding-bottom:34px;
     opacity:0;pointer-events:none;transition:opacity .28s ease,transform .28s ease;transform:scale(.96);}
   #ly.show{opacity:1;pointer-events:auto;transform:none;}
-  #lywrap{position:relative;width:100%;height:calc(100% - 64px);overflow:hidden;}
+  #ly::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(62% 52% at 56% 42%,color-mix(in srgb,var(--lc) 8%,transparent),transparent 72%);}
+  @media(max-width:720px){#ly{padding-left:52px;}}
+  #lywrap{position:relative;width:100%;height:100%;overflow:hidden;}
   #lywrap.scrollv{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
   @media(pointer:fine){#lywrap:not(.scrollv){cursor:grab;}}
   #pills,#lysvg{transition:transform .18s ease;}
   #pills{position:relative;width:100%;}
   #lysvg{position:absolute;top:0;left:0;width:100%;height:100%;}
-  /* breadcrumb back — unmissable */
-  #crumb{position:absolute;top:calc(64px + env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left));z-index:40;
-    border:1px solid var(--hair2);background:rgba(247,243,235,.94);color:var(--txt);font-family:var(--mono);
-    font-size:10.5px;letter-spacing:.12em;padding:11px 15px;border-radius:2px;cursor:pointer;transition:.15s;}
-  #crumb:hover{border-color:var(--mark);color:var(--mark);}
-  .pill{position:absolute;transform:translate(-50%,-50%);border:1px solid var(--hair2);background:rgba(247,243,235,.98);
+  /* neighbor sheets — feel the stack around you */
+  #nbrTop,#nbrBot{position:absolute;left:0;right:0;height:30px;z-index:6;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;border:none;
+    font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--dim);transition:color .15s;}
+  #nbrTop{top:calc(58px + env(safe-area-inset-top));
+    border-bottom:1.5px dashed color-mix(in srgb,var(--nct) 55%,transparent);
+    background:linear-gradient(180deg,color-mix(in srgb,var(--nct) 16%,transparent),transparent);}
+  #nbrBot{bottom:0;height:34px;
+    border-top:1.5px dashed color-mix(in srgb,var(--ncb) 55%,transparent);
+    background:linear-gradient(0deg,color-mix(in srgb,var(--ncb) 16%,transparent),transparent);}
+  #nbrTop:hover,#nbrBot:hover{color:var(--txt);}
+  .pill{position:absolute;transform:translate(-50%,-50%);border:1.5px solid var(--hair2);background:rgba(247,243,235,.98);
     color:var(--txt);font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;
     padding:12px 16px;border-radius:2px;cursor:pointer;white-space:nowrap;
     transition:transform .22s cubic-bezier(.2,.9,.3,1.4),border-color .18s,box-shadow .18s,opacity .3s;
@@ -196,20 +208,10 @@
   .port{border-color:rgba(47,158,158,.45);color:#33706f;}
   .port:hover{border-color:var(--mark);color:var(--mark);}
   .port b{font-weight:600;color:var(--tl);}
-  .edge{stroke:rgba(43,46,54,.4);stroke-width:1;fill:none;transition:.2s;}
-  .edge.xp{stroke-dasharray:4 5;stroke:rgba(47,158,158,.32);}
-  .edge.hot{stroke:var(--mark);opacity:1;stroke-width:1.6;stroke-dasharray:none;}
-  @media(max-width:720px){.pill{font-size:10px;padding:10px 12px;}.port{font-size:7.5px;padding:4px 7px;}
-    #crumb{padding:10px 13px;font-size:9.5px;}}
-
-  /* layer switcher */
-  .switch{position:fixed;bottom:0;left:0;right:0;display:flex;gap:6px;justify-content:center;align-items:center;
-    padding:10px 12px calc(14px + env(safe-area-inset-bottom));z-index:52;
-    background:linear-gradient(0deg,#f3efe6 55%,transparent);}
-  .switch button{border:1px solid var(--hair);background:rgba(247,243,235,.92);color:var(--dim);font-family:var(--mono);
-    font-size:10.5px;letter-spacing:.06em;padding:9px 12px;border-radius:2px;cursor:pointer;transition:.15s;}
-  .switch button:hover{color:var(--txt);border-color:var(--hair2);}
-  .switch button.on{color:var(--txt);border-color:var(--mark);box-shadow:inset 0 -2px 0 var(--mark);}
+  .edge{stroke:rgba(43,46,54,.5);stroke-width:1.6;fill:none;transition:.2s;}
+  .edge.xp{stroke-dasharray:4 5;stroke:rgba(47,158,158,.42);stroke-width:1.4;}
+  .edge.hot{stroke:var(--mark);opacity:1;stroke-width:2.2;stroke-dasharray:none;}
+  @media(max-width:720px){.pill{font-size:10px;padding:10px 12px;}.port{font-size:7.5px;padding:4px 7px;}}
 
   /* detail sheet — drawing annotation panel */
   #sheet{position:fixed;left:0;right:0;bottom:0;z-index:80;max-height:66dvh;overflow-y:auto;
@@ -261,16 +263,11 @@
   <button class="bbtn" onclick="openSearch()" aria-label="Search">⌕</button>
   <a class="brand" href="index.html">THE<span>ATLAS</span></a>
   <div class="title" id="barTitle">ALL LAYERS</div>
-  <button class="bbtn" id="pbadge" style="display:none;" onclick="phaseSheet()"></button>
 </div>
 
 <div id="ov"></div>
 
-<div id="phases">
-  <button class="pbtn" onclick="navLayer(-1)">‹</button>
-  <div id="pchip" onclick="locTap()"></div>
-  <button class="pbtn" onclick="navLayer(1)">›</button>
-</div>
+<nav id="rail" aria-label="Layers"></nav>
 
 <div id="zoomctl">
   <button id="zin" aria-label="Zoom in">+</button>
@@ -278,15 +275,14 @@
   <button id="zout" aria-label="Zoom out">−</button>
 </div>
 
-<button id="phchip" aria-label="Cycle lifecycle phase" onclick="cyclePhase(1)"></button>
-
 <div id="ly">
-  <button id="crumb" onclick="goOverview()">← ALL LAYERS</button>
   <div id="lynum" aria-hidden="true"></div>
+  <button id="nbrTop" onclick="navLayer(-1)"></button>
   <div id="lywrap">
     <svg id="lysvg"></svg>
     <div id="pills"></div>
   </div>
+  <button id="nbrBot" onclick="navLayer(1)"></button>
 </div>
 
 <div id="tblock" aria-hidden="true">
@@ -295,8 +291,6 @@
   <div><span>SCALE</span><b>NTS</b><span>REV</span><b>2026.07</b></div>
   <div><span>DRAWN</span><b>CA</b><span>STATUS</span><b>FOR REVIEW</b></div>
 </div>
-
-<div class="switch" id="switch"></div>
 
 <aside id="sheet">
   <button class="shx" onclick="closeSheet()">✕</button>
@@ -369,15 +363,6 @@ const E=[['iot','lake'],['cams','cv'],['drones','cv'],['scan','bim'],['forms','d
  ['lake','sem'],['sem','evm'],['sem','dash'],['kg','context'],['context','gen'],['context','reason'],['memory','reason'],['evm','report'],
  ['p6','sched'],['mdm','sched'],['bim','twin'],['iot','twin'],['p6','risk'],['cv','hse'],['p6','contract'],['docs','contract']];
 
-const PHASES=[
- {id:'feas',n:'FEASIBILITY',img:1,d:'Site selection, massing options, business case and investment decision.',doms:['gendesign','gis','epm','risk','crm','reason']},
- {id:'design',n:'DESIGN',img:1,d:'Coordinated design development in the CDE under information standards.',doms:['bim','std','docs','gendesign','scan','contract']},
- {id:'procure',n:'PROCURE',img:1,d:'Packages, tendering, contracts and supply chain set-up.',doms:['contract','erp','cost','api','reason','risk']},
- {id:'construct',n:'CONSTRUCT',img:1,d:'Execution: schedule, field capture, progress AI, safety, cost, claims and earned value.',doms:['p6','sched','cv','iot','drones','scan','cams','forms','hse','cost','pred','docs','mdm','dq','evm','contract','risk']},
- {id:'handover',n:'HANDOVER',img:1,d:'Commissioning, as-builts, COBie exchange and the birth of the twin.',doms:['std','dq','twin','docs','cat','scan','bim']},
- {id:'operate',n:'OPERATE',img:1,d:'Operations, maintenance, portfolio reporting and continuous decisions.',doms:['twin','iot','dash','report','evm','dataprod','sem','memory','cams','epm']},
-];
-let curPhase=-1;
 const PDOM={'AI Clearing':'aiclearing.com','ALICE':'alicetechnologies.com','ARES Prism':'aresprism.com','Acumen Fuse':'deltek.com','Anaplan':'anaplan.com','Anthropic Claude':'anthropic.com','Aphex':'aphex.co','Asite':'asite.com','AtScale':'atscale.com','Atlan':'atlan.com','Autodesk ACC':'autodesk.com','Autodesk Build':'autodesk.com','Autodesk Forma':'autodesk.com','Autodesk Tandem':'autodesk.com','Azure Integration':'azure.microsoft.com','Bentley iTwin':'bentley.com','BigQuery':'cloud.google.com','Boomi':'boomi.com','Briq':'briq.com','Buildots':'buildots.com','CEMAR':'thinkproject.com','CMiC':'cmicglobal.com','Catenda':'catenda.com','Cesium':'cesium.com','Collibra':'collibra.com','Cority':'cority.com','Cube':'cube.dev','DJI Enterprise':'dji.com','Dalux':'dalux.com','Dalux Field':'dalux.com','Databricks':'databricks.com','Deltek Cobra':'deltek.com','Disperse':'disperse.io','Document Crunch':'documentcrunch.com','DroneDeploy':'dronedeploy.com','Dynamics 365':'microsoft.com','EarthCam':'earthcam.net','Esri ArcGIS':'esri.com','Excel (the incumbent)':'microsoft.com','FARO':'faro.com','Fabric Data Agents':'microsoft.com','Fieldwire':'fieldwire.com','Finch':'finch3d.com','Foresight':'foresight.works','Glean':'glean.com','Google Earth Engine':'earthengine.google.com','Grafana':'grafana.com','Great Expectations':'greatexpectations.io','HammerTech':'hammertech.com','Hexagon EcoSys':'hexagon.com','Higharc':'higharc.com','Honeywell':'honeywell.com','InEight':'ineight.com','InEight Schedule':'ineight.com','Informatica MDM':'informatica.com','Intelex':'intelex.com','Ironclad':'ironcladapp.com','Kahua':'kahua.com','Leica':'leica-geosystems.com','Looker':'cloud.google.com','M365 Copilot':'microsoft.com','MCP connectors':'anthropic.com','MRI Software':'mrisoftware.com','MS Fabric':'microsoft.com','MS Project':'microsoft.com','MS Purview':'microsoft.com','Mastt':'mastt.com','Matterport':'matterport.com','Mem0':'mem0.ai','Microsoft Fabric':'microsoft.com','Microsoft Graph':'microsoft.com','Milesight':'milesight.com','Monte Carlo':'montecarlodata.com','Morta':'morta.io','MuleSoft':'mulesoft.com','Multivista':'multivista.com','NavVis':'navvis.com','Neo4j':'neo4j.com','Neptune':'aws.amazon.com','Newforma':'newforma.com','Nodes & Links':'nodeslinks.com','Novade':'novade.net','Nvidia Omniverse':'nvidia.com','OpenAI':'openai.com','OpenSpace':'openspace.ai','Oracle Aconex':'oracle.com','Oracle EPM':'oracle.com','Oracle Fusion':'oracle.com','Palantir AIP':'palantir.com','Palantir Foundry':'palantir.com','Palantir Ontology':'palantir.com','Pinecone':'pinecone.io','Pix4D':'pix4d.com','PlanRadar':'planradar.com','Plannerly':'plannerly.com','Power Apps':'powerapps.microsoft.com','Power BI':'powerbi.microsoft.com','Power BI Semantic':'powerbi.microsoft.com','Powerproject':'elecosoft.com','Primavera Cloud':'oracle.com','Primavera P6':'oracle.com','Primavera Risk':'oracle.com','Procore':'procore.com','Procore Analytics':'procore.com','Procore Copilot':'procore.com','Profisee':'profisee.com','ProjectWise':'bentley.com','Propeller':'propelleraero.com','QGIS':'qgis.org','Qlik':'qlik.com','RIB CostX':'rib-software.com','Retool':'retool.com','Revizto':'revizto.com','Riskonnect':'riskonnect.com','SAP Analytics Cloud':'sap.com','SAP S/4HANA':'sap.com','SafetyCulture':'safetyculture.com','Safran Risk':'safran.com','Salesforce':'salesforce.com','Schneider':'se.com','Semarchy':'semarchy.com','Sensera':'senserasystems.com','SharePoint':'microsoft.com','Siemens':'siemens.com','SmartPM':'smartpm.com','Snowflake':'snowflake.com','Soda':'soda.io','Solibri':'solibri.com','Stardog':'stardog.com','Synchro 4D':'bentley.com','Tableau':'tableau.com','TestFit':'testfit.io','Toric':'toric.com','Track3D':'track3d.ai','Trimble Connect':'trimble.com','Trimble Viewpoint':'viewpoint.com','Trimble X9':'trimble.com','TrueLook':'truelook.com','Trunk Tools':'trunk.tools','Workato':'workato.com','Yardi Voyager':'yardi.com','Zep':'getzep.com','dbt Semantic Layer':'getdbt.com','nPlan':'nplan.io','pgvector':'postgresql.org'};
 function pchip(x){
   const d=PDOM[x];
@@ -395,7 +380,7 @@ function connsOf(id){
 }
 
 /* ---------------- OVERVIEW · ISOMETRIC STACK ---------------- */
-let curLayer=null,curSel=null;
+let curLayer=null,curSel=null,linkEls=null;
 const SP=86,XGAP=30;
 let vRx=55,vRz=-45,vTy=0,dragMoved=false;
 let vSc=1;
@@ -425,7 +410,9 @@ function buildOverview(){
   const ov=document.getElementById('ov');
   ov.innerHTML='<div class="ovhint">SCROLL · DRAG TO ORBIT · PINCH / DOUBLE-TAP TO ZOOM · TAP A LAYER'+
     '<div style="margin-top:4px;opacity:.65;">'+N.length+' DOMAINS · '+E.length+' FLOWS · CURATED · UPDATED JUL 2026</div></div>'+
+    '<svg id="ovlinks"></svg>'+
     '<div id="stage"><div id="stack"></div></div>';
+  linkEls=null;
   const stack=document.getElementById('stack');
   /* z positions: top layer highest, extra gap before cross-cutting plates */
   const zs=[];let cur=0;
@@ -490,6 +477,34 @@ function buildOverview(){
   }));
   applyView();
 }
+/* cross-layer flow lines in overview — follow the minis every frame */
+function drawLinks(){
+  const svg=document.getElementById('ovlinks');
+  if(!svg)return;
+  const ov=document.getElementById('ov');
+  if(ov.classList.contains('hide')||document.hidden){svg.style.display='none';return;}
+  svg.style.display='';
+  if(!linkEls){
+    linkEls=[];
+    const NS='http://www.w3.org/2000/svg';
+    E.forEach(([a,b])=>{
+      if(byId[a].l===byId[b].l)return;
+      const ea=document.querySelector('.mini[data-id="'+a+'"]');
+      const eb=document.querySelector('.mini[data-id="'+b+'"]');
+      if(!ea||!eb)return;
+      const ln=document.createElementNS(NS,'line');
+      ln.setAttribute('class','ovln');
+      svg.appendChild(ln);
+      linkEls.push([ea,eb,ln]);
+    });
+  }
+  linkEls.forEach(([ea,eb,ln])=>{
+    const ra=ea.getBoundingClientRect(),rb=eb.getBoundingClientRect();
+    ln.setAttribute('x1',ra.left+ra.width/2);ln.setAttribute('y1',ra.top+ra.height/2);
+    ln.setAttribute('x2',rb.left+rb.width/2);ln.setAttribute('y2',rb.top+rb.height/2);
+  });
+}
+(function lloop(){drawLinks();requestAnimationFrame(lloop);})();
 function updateHud(){
   const stack=document.getElementById('stack');
   if(!stack)return;
@@ -531,9 +546,9 @@ function resetPlates(){
   let px=0,py=0,down=false,pinchD=0,pinchS=1,vx=0,vy=0,coastId=null;
   const lim=()=>Math.max(150,LAYERS.length*SP*0.45);
   function coast(){
-    vx*=.93;vy*=.93;
+    vx*=.95;vy*=.95;
     if(Math.abs(vx)+Math.abs(vy)<.4){ov.classList.remove('drag');coastId=null;return;}
-    vRz=Math.max(-72,Math.min(-18,vRz-vx*0.15));
+    vRz=Math.max(-72,Math.min(-18,vRz-vx*0.28));
     vTy=Math.max(-lim(),Math.min(lim(),vTy+vy));
     applyView();
     coastId=requestAnimationFrame(coast);
@@ -568,7 +583,7 @@ function resetPlates(){
     const dx=e.clientX-px,dy=e.clientY-py;
     px=e.clientX;py=e.clientY;
     vx=0.75*vx+0.25*dx;vy=0.75*vy+0.25*dy;
-    vRz=Math.max(-72,Math.min(-18,vRz-dx*0.15));
+    vRz=Math.max(-72,Math.min(-18,vRz-dx*0.28));
     vTy=Math.max(-lim(),Math.min(lim(),vTy+dy));
     applyView();
   });
@@ -588,7 +603,7 @@ function resetPlates(){
   ov.addEventListener('wheel',e=>{
     e.preventDefault();
     if(e.ctrlKey||e.metaKey){vSc=Math.max(.4,Math.min(2.6,vSc-e.deltaY*0.0022));}
-    else{vTy=Math.max(-lim(),Math.min(lim(),vTy-e.deltaY*0.45));}
+    else{vTy=Math.max(-lim(),Math.min(lim(),vTy-e.deltaY*0.7));}
     applyView();
   },{passive:false});
   ov.addEventListener('dblclick',e=>{
@@ -606,84 +621,21 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ---------------- PHASES ---------------- */
-function phaseIcon(prog){
-  return '<svg viewBox="0 0 20 20" width="19" height="19" style="flex:none;">'+
-    '<path d="M3.5 18.5V8.8L10 4l6.5 4.8v9.7z" fill="none" stroke="rgba(43,46,54,.5)" stroke-width="1.1"/>'+
-    '<path d="M3.5 18.5V8.8L10 4l6.5 4.8v9.7z" fill="var(--accent)" opacity=".85" style="clip-path:inset('+(100-prog*100)+'% 0 0 0);"/>'+
-    '</svg>';
-}
-function renderPhaseRail(){
-  const c=document.getElementById('phchip');
-  const b=document.getElementById('pbadge');
-  if(curPhase<0){
-    c.innerHTML=phaseIcon(0)+'<span class="pn">PHASE: ALL</span><span class="px">TAP ›</span>';
-    b.style.display='none';
-  }else{
-    const p=PHASES[curPhase];
-    c.innerHTML=phaseIcon((curPhase+1)/PHASES.length)+
-      '<span class="pn">'+p.n+'</span><span class="px">'+(curPhase+1)+' / '+PHASES.length+'</span>';
-    b.style.display='flex';
-    b.innerHTML=p.n+' · '+p.doms.length+'/'+N.length;
-    b.style.color='var(--accent)';
-  }
-}
-/* location rail — where am I */
-function renderLoc(){
-  const c=document.getElementById('pchip');
-  if(!curLayer){
-    c.innerHTML='<span class="pn">ALL LAYERS</span><span class="px">'+LAYERS.length+' SHEETS</span>';
-  }else{
-    const i=LAYERS.findIndex(l=>l.id===curLayer),l=LAYERS[i];
-    c.innerHTML='<span class="pn">'+l.no+' · '+l.name+'</span><span class="px">'+(i+1)+' / '+LAYERS.length+'</span>';
-  }
+/* ---------------- NAVIGATION RAIL ---------------- */
+function renderRail(){
+  const r=document.getElementById('rail');
+  if(!r)return;
+  let h='<button class="ri home" onclick="goOverview()">⌂<span class="rn">&nbsp;ALL LAYERS</span></button>';
+  LAYERS.forEach(l=>{
+    h+='<button class="ri'+(curLayer===l.id?' on':'')+'" style="--rc:'+l.c+'" title="'+l.name+'" '+
+      'onclick="openLayer(\''+l.id+'\')"><i></i><b>'+l.no+'</b><span class="rn">'+l.name+'</span></button>';
+  });
+  r.innerHTML=h;
 }
 window.navLayer=function(dir){
   if(!curLayer){flyLayer(LAYERS[dir>0?0:LAYERS.length-1].id);return;}
   const i=LAYERS.findIndex(l=>l.id===curLayer);
   openLayer(LAYERS[(i+dir+LAYERS.length)%LAYERS.length].id);
-};
-window.locTap=function(){if(curLayer)goOverview();};
-function applyPhaseFilter(){
-  const set=curPhase<0?null:new Set(PHASES[curPhase].doms);
-  document.querySelectorAll('.mini').forEach(m=>m.classList.toggle('off',!!set&&!set.has(m.dataset.id)));
-  document.querySelectorAll('.pill').forEach(p=>{
-    const id=p.id.replace('pill-','');
-    p.classList.toggle('off',!!set&&!set.has(id));
-  });
-}
-window.cyclePhase=function(dir){
-  curPhase+=dir;
-  if(curPhase>=PHASES.length)curPhase=-1;
-  if(curPhase<-1)curPhase=PHASES.length-1;
-  renderPhaseRail();applyPhaseFilter();
-};
-window.setPhase=function(i){curPhase=i;renderPhaseRail();applyPhaseFilter();phaseSheet();};
-window.phaseSheet=function(){
-  let h;
-  if(curPhase<0){
-    h='<div class="lk">PROJECT LIFECYCLE</div><h2>Phases</h2>'+
-      '<p>Cycle through the delivery lifecycle. Each phase lights up the domains doing the work — and the structure icon builds as you progress.</p>'+
-      '<div class="sec">Select a phase</div><div class="chips">'+
-      PHASES.map((p,i)=>'<span class="chip link" onclick="setPhase('+i+')">'+(i+1)+' · '+p.n+'</span>').join('')+'</div>';
-  }else{
-    const p=PHASES[curPhase];
-    const doms=p.doms.map(id=>byId[id]).filter(Boolean);
-    const prods=[...new Set(doms.flatMap(n=>n.p||[]))];
-    h='<div class="lk">PHASE '+(curPhase+1)+' / '+PHASES.length+'</div><h2>'+p.n.charAt(0)+p.n.slice(1).toLowerCase()+'</h2>';
-    if(p.img)h+='<img src="phase-'+p.id+'.jpg" alt="" style="width:100%;border-radius:10px;margin:8px 0 10px;border:1px solid var(--hair);" onerror="this.remove()">';
-    h+='<p>'+p.d+'</p>';
-    h+='<div class="sec">Active domains — tap to travel</div><div class="chips">'+
-      doms.map(n=>{const l=layerOf[n.l];
-        return '<span class="chip link" onclick="travel(\''+n.id+'\')">'+n.n+' · '+l.no+'</span>';}).join('')+'</div>';
-    h+='<div class="sec">Technologies & companies in this phase</div><div class="chips">'+
-      prods.slice(0,24).map(pchip).join('')+
-      (prods.length>24?'<span class="chip">+'+(prods.length-24)+' more</span>':'')+'</div>';
-    h+='<div class="chips" style="margin-top:14px;"><span class="chip link" style="color:var(--mark);" '+
-      'onclick="curPhase=-1;renderPhaseRail();applyPhaseFilter();closeSheet();">✕ CLEAR PHASE FILTER</span></div>';
-  }
-  document.getElementById('sheetBody').innerHTML=h;
-  document.getElementById('sheet').classList.add('open');
 };
 
 /* ---------------- LAYER SCENE ---------------- */
@@ -710,6 +662,12 @@ function openLayer(id,selId){
   document.documentElement.style.setProperty('--lc',l.c);
   const ln=document.getElementById('lynum');
   if(ln)ln.textContent=l.no;
+  document.body.classList.add('layer-mode');
+  /* neighbor sheets above and below */
+  const up=LAYERS[(li-1+LAYERS.length)%LAYERS.length],dn=LAYERS[(li+1)%LAYERS.length];
+  const nt=document.getElementById('nbrTop'),nb=document.getElementById('nbrBot');
+  nt.style.setProperty('--nct',up.c);nt.innerHTML='↑ '+up.no+' · '+up.name;
+  nb.style.setProperty('--ncb',dn.c);nb.innerHTML='↓ '+dn.no+' · '+dn.name;
   document.getElementById('ov').classList.add('hide');
   const ly=document.getElementById('ly');
   const pillsEl=document.getElementById('pills');
@@ -810,7 +768,7 @@ function openLayer(id,selId){
   placePorts(bots,Hc-(isM?(56+(botRows-1)*40):Math.max(34,HpV*0.05)),'↓',true);
   document.getElementById('zoomctl').style.display='none';
   ly.classList.add('show');
-  renderLoc();buildSwitch();applyPhaseFilter();
+  renderRail();
   if(selId)setTimeout(()=>selectNode(selId),250);
   else closeSheet();
 }
@@ -822,22 +780,10 @@ function goOverview(){
   const tb=document.getElementById('tbSheet');
   if(tb)tb.textContent='A-01 · TECHNOLOGY STACK';
   document.getElementById('zoomctl').style.display='';
+  document.body.classList.remove('layer-mode');
   resetPlates();
-  renderLoc();closeSheet();buildSwitch();
+  renderRail();closeSheet();
   try{history.replaceState(null,'',location.pathname);}catch(_){}
-}
-function buildSwitch(){
-  const sw=document.getElementById('switch');
-  sw.innerHTML='';
-  LAYERS.forEach(l=>{
-    const b=document.createElement('button');
-    b.innerHTML='<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+l.c+';margin-right:6px;vertical-align:1px;"></span>'+l.no;
-    b.title=l.name;b.setAttribute('aria-label',l.name);
-    if(curLayer===l.id){b.classList.add('on');
-      if(window.innerWidth>720)b.innerHTML+=' <span style="letter-spacing:.08em;">'+l.name.split(' ')[0]+'</span>';}
-    b.onclick=()=>{curLayer?openLayer(l.id):flyLayer(l.id);};
-    sw.appendChild(b);
-  });
 }
 
 /* ---------------- SELECT + SHEET ---------------- */
@@ -922,13 +868,13 @@ function closeSheet(){
   let sy=null,dy=0,active=false,wheelLock=0;
   wrap.addEventListener('pointerdown',e=>{
     if(e.pointerType!=='mouse'||e.button!==0)return;
-    if(e.target.closest('.pill,.port,#crumb'))return;
+    if(e.target.closest('.pill,.port,#nbrTop,#nbrBot'))return;
     sy=e.clientY;dy=0;active=true;
   });
   wrap.addEventListener('pointermove',e=>{
     if(!active)return;
     dy=e.clientY-sy;
-    const t=Math.max(-120,Math.min(120,dy))*0.35;
+    const t=Math.max(-150,Math.min(150,dy))*0.6;
     document.getElementById('pills').style.transform='translateY('+t+'px)';
     document.getElementById('lysvg').style.transform='translateY('+t+'px)';
   });
@@ -936,7 +882,7 @@ function closeSheet(){
     if(!active)return;active=false;
     document.getElementById('pills').style.transform='';
     document.getElementById('lysvg').style.transform='';
-    if(Math.abs(dy)>90)navLayer(dy<0?1:-1);
+    if(Math.abs(dy)>70)navLayer(dy<0?1:-1);
     sy=null;dy=0;
   };
   wrap.addEventListener('pointerup',end);
@@ -975,7 +921,7 @@ function renderResults(q){
 document.getElementById('srchIn').addEventListener('input',e=>renderResults(e.target.value.trim().toLowerCase()));
 
 /* ---------------- INIT ---------------- */
-buildOverview();buildSwitch();renderPhaseRail();renderLoc();applyPhaseFilter();
+buildOverview();renderRail();
 /* deep link: #layerid or #layerid/nodeid */
 (function(){
   const m=location.hash.replace('#','').split('/');
